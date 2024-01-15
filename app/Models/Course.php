@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Course extends Model
+{
+    use HasFactory,SoftDeletes;
+
+    public function courseTranslation()
+    {
+        return $this->hasMany(CourseTranslation::class, 'course_id', 'id');
+    }
+    public function courseConfig()
+    {
+        return $this->hasMany(CourseConfigration::class, 'course_id', 'id');
+    }
+
+}
