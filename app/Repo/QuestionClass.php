@@ -192,89 +192,61 @@ protected $qAudioname='';
         try {
             $id = $request->q_id;
 
-
-
-
             DB::beginTransaction();
-
-
-            if ($file = $request->file($request['opt_a_audio'][0]['title'])){
-            $this->optAAudio = $this->handleFiles($file, $this->qAudioPath);
-        }
-            return $response = ([
-                "status" => "success",
-                "data" =>$this->optAAudio,
-                "messege" => (($id)?"Question Translation Updated Successfully":"Question Translation Added Successfully")
-            ]);
-
-
 
             for ($c = 0; $c < count($request->t_lang); $c++) {
 
-
-                if ($audio = $request->opt_a_audio) {
-                    $file = $request->file('opt_a_audio');
-                    $this->qAudioname = $this->handleFiles($file, $this->qAudioPath);
-                }
-
-//                if ($file = $request->file('opt_a_audio')) {
-//                    $this->optAAudio = $this->handleFiles($file, $this->qAudioPath);
-//                }
-//
-//                if ($file = $request->file('opt_b_audio')) {
-//                    $this->optBAudio = $this->handleFiles($file, $this->qAudioPath);
-//                }
-//                if ($file = $request->file('opt_c_audio')) {
-//                    $this->optCAudio = $this->handleFiles($file, $this->qAudioPath);
-//                }
-
-
-                $role = QuestionTranslation::updateOrCreate(
-                    [
-                        'q_id' => $request->q_id,
-                        'lang' => $request['t_lang'][$c],
-                    ],
-
-                    [
-                        'q_id' =>$request->q_id,
-                        'lang_id' =>$request['t_lang_id'][$c],
-                        'q_title' =>$request['q_title'][$c]['title'],
-                        'q_audio' => 1,
-//                        'q_audio' => 1,
-                        'opt_a' =>$request['opt_a'][$c]['title'],
-                        'opt_b' =>$request['opt_b'][$c]['title'],
-                        'opt_c' =>$request['opt_c'][$c]['title'],
-//                        'opt_a_audio' =>$request['opt_a_audio'][$c]['title'],
-//                        'opt_b_audio' =>$request['opt_b_audio'][$c]['title'],
-//                        'opt_c_audio' =>$request['opt_c_audio'][$c]['title'],
-                        'opt_a_audio' => $this->qAudioname,
-                        'opt_b_audio' =>1,
-                        'opt_c_audio' =>1,
-                        'lang' => $request['t_lang'][$c],
-                    ]
-                );
-
+            $qTranslation = new QuestionTranslation();
+            if (QuestionTranslation::where('q_id',$request->q_id)->where('lang',$request['t_lang'][$c])->first()) {
+                $qTranslation = QuestionTranslation::where('q_id', $request->q_id)->where('lang',$request['t_lang'][$c])->first();
             }
 
+            $qTranslation->q_id = $request->q_id;
+            $qTranslation->lang_id = $request['t_lang_id'][$c];
+            $qTranslation->q_title = $request['q_title'][$c]['title'];
+            $qTranslation->opt_a = $request['opt_a'][$c]['title'];
+            $qTranslation->opt_b = $request['opt_b'][$c]['title'];
+            $qTranslation->opt_c = $request['opt_c'][$c]['title'];
+                if($request['q_audio']){
+                    foreach ($request['q_audio'][$c] as $key => $audioFile) {
+                        if ($audioFile != null && $key == $request['t_lang'][$c]){
+                            $this->qAudioname = $this->handleFiles($audioFile, $this->qAudioPath);
 
+                        }
+                    }
+                }
+                ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : '';
+                if($request['opt_a_audio']){
+                    foreach ($request['opt_a_audio'][$c] as $key => $audioFile) {
+                        if ($audioFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optAAudio = $this->handleFiles($audioFile, $this->qAudioPath);
 
+                        }
+                    }
+                }
+                ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : '';
+                if($request['opt_b_audio']){
+                    foreach ($request['opt_b_audio'][$c] as $key => $audioFile) {
+                        if ($audioFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optBAudio = $this->handleFiles($audioFile, $this->qAudioPath);
 
+                        }
+                    }
+                }
+                ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : '';
+                if($request['opt_c_audio']){
+                    foreach ($request['opt_c_audio'][$c] as $key => $audioFile) {
+                        if ($audioFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optCAudio = $this->handleFiles($audioFile, $this->qAudioPath);
 
+                        }
+                    }
+                }
+                ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : '';
+            $qTranslation->lang = $request['t_lang'][$c];
+            $qTranslation->save();
 
-//            $qTranslation->q_id = $question->id;
-//            $qTranslation->lang_id = $request->lang_id;
-//            $qTranslation->q_title = $request->q_title;
-//            $qTranslation->opt_a = $request->opt_a;
-//            $qTranslation->opt_b = $request->opt_b;
-//            $qTranslation->opt_c = $request->opt_c;
-//            ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : '';
-//            ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : '';
-//            ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : '';
-//            ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : '';
-//            $qTranslation->lang = 'en';
-//            $qTranslation->save();
-
-
+            }
             DB::commit();
             $data=QuestionTranslation::where('q_id',$id)->get();
             return $response = ([

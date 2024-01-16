@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Repo\BranchClass;
 use App\Repo\CategoryClass;
 use App\Repo\ConfigurationClass;
 use App\Repo\CourseClass;
 use App\Repo\ExamClass;
+use App\Repo\Interfaces\BranchInterface;
 use App\Repo\Interfaces\CategoryInterface;
 use App\Repo\Interfaces\ConfigurationInterface;
 use App\Repo\Interfaces\CourseInterface;
@@ -46,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(QuestionInterface::class,QuestionClass::class);
         $this->app->bind(ResultInterface::class,ResultClass::class);
         $this->app->bind(CourseInterface::class,CourseClass::class);
+        $this->app->bind(BranchInterface::class,BranchClass::class);
 
     }
 
