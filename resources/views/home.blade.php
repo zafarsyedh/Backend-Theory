@@ -8,39 +8,35 @@
         <meta name="author" content="Dreamguys - Bootstrap Admin Template">
         <meta name="robots" content="noindex, nofollow">
         <title>HRMS</title>
-		
+
 		<!-- Favicon -->
         <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.png">
-		
+
 		<!-- Bootstrap CSS -->
         <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-		
+
 		<!-- Fontawesome CSS -->
         <link rel="stylesheet" href="assets/css/font-awesome.min.css">
-		
+
 		<!-- Lineawesome CSS -->
         <link rel="stylesheet" href="assets/css/line-awesome.min.css">
-		
+
 		<!-- Chart CSS -->
 		<link rel="stylesheet" href="assets/plugins/morris/morris.css">
-		
+
 		<!-- Main CSS -->
         <link rel="stylesheet" href="assets/css/style.css">
-		
-		<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-		<!--[if lt IE 9]>
-			<script src="assets/js/html5shiv.min.js"></script>
-			<script src="assets/js/respond.min.js"></script>
-		<![endif]-->
+
+
     </head>
-	
+
     <body>
 		<!-- Main Wrapper -->
         <div class="main-wrapper">
-		
+
 			<!-- Header -->
             <div class="header">
-			
+
 				<!-- Logo -->
                 <div class="header-left">
                     <a href="index.html" class="logo">
@@ -48,7 +44,7 @@
 					</a>
                 </div>
 				<!-- /Logo -->
-				
+
 				<a id="toggle_btn" href="javascript:void(0);">
 					<span class="bar-icon">
 						<span></span>
@@ -56,18 +52,18 @@
 						<span></span>
 					</span>
 				</a>
-				
+
 				<!-- Header Title -->
                 <div class="page-title-box">
 					<h3>Dreamguy's Technologies</h3>
                 </div>
 				<!-- /Header Title -->
-				
+
 				<a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa fa-bars"></i></a>
-				
+
 				<!-- Header Menu -->
 				<ul class="nav user-menu">
-				
+
 					<!-- Search -->
 					<li class="nav-item">
 						<div class="top-nav-search">
@@ -81,7 +77,7 @@
 						</div>
 					</li>
 					<!-- /Search -->
-				
+
 					<!-- Flag -->
 					<li class="nav-item dropdown has-arrow flag-nav">
 						<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button">
@@ -95,7 +91,7 @@
 								<img src="assets/img/flags/fr.png" alt="" height="16"> French
 							</a>
 							<a href="javascript:void(0);" class="dropdown-item">
-								<img src="assets/img/flags/es.png" alt="" height="16"> Spanish
+								<img src="assets/img/flags/es.png" alt="" height="16"> Spanish 1
 							</a>
 							<a href="javascript:void(0);" class="dropdown-item">
 								<img src="assets/img/flags/de.png" alt="" height="16"> German
@@ -103,7 +99,7 @@
 						</div>
 					</li>
 					<!-- /Flag -->
-				
+
 					<!-- Notifications -->
 					<li class="nav-item dropdown">
 						<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
@@ -189,7 +185,7 @@
 						</div>
 					</li>
 					<!-- /Notifications -->
-					
+
 					<!-- Message Notifications -->
 					<li class="nav-item dropdown">
 						<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
@@ -310,7 +306,7 @@
 					</li>
 				</ul>
 				<!-- /Header Menu -->
-				
+
 				<!-- Mobile Menu -->
 				<div class="dropdown mobile-user-menu">
 					<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
@@ -321,16 +317,16 @@
 					</div>
 				</div>
 				<!-- /Mobile Menu -->
-				
+
             </div>
 			<!-- /Header -->
-			
+
 			<!-- Sidebar -->
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-inner slimscroll">
 					<div id="sidebar-menu" class="sidebar-menu">
 						<ul>
-							<li class="menu-title"> 
+							<li class="menu-title">
 								<span>Main</span>
 							</li>
 							<li class="submenu">
@@ -359,7 +355,7 @@
 									<li><a href="file-manager.html">File Manager</a></li>
 								</ul>
 							</li>
-							<li class="menu-title"> 
+							<li class="menu-title">
 								<span>Employees</span>
 							</li>
 							<li class="submenu">
@@ -379,7 +375,7 @@
 									<li><a href="overtime.html">Overtime</a></li>
 								</ul>
 							</li>
-							<li> 
+							<li>
 								<a href="clients.html"><i class="la la-users"></i> <span>Clients</span></a>
 							</li>
 							<li class="submenu">
@@ -390,13 +386,13 @@
 									<li><a href="task-board.html">Task Board</a></li>
 								</ul>
 							</li>
-							<li> 
+							<li>
 								<a href="leads.html"><i class="la la-user-secret"></i> <span>Leads</span></a>
 							</li>
-							<li> 
+							<li>
 								<a href="tickets.html"><i class="la la-ticket"></i> <span>Tickets</span></a>
 							</li>
-							<li class="menu-title"> 
+							<li class="menu-title">
 								<span>HR</span>
 							</li>
 							<li class="submenu">
@@ -427,7 +423,7 @@
 									<li><a href="payroll-items.html"> Payroll Items </a></li>
 								</ul>
 							</li>
-							<li> 
+							<li>
 								<a href="policies.html"><i class="la la-file-pdf-o"></i> <span>Policies</span></a>
 							</li>
 							<li class="submenu">
@@ -446,7 +442,7 @@
 									<li><a href="daily-reports.html"> Daily Report </a></li>
 								</ul>
 							</li>
-							<li class="menu-title"> 
+							<li class="menu-title">
 								<span>Performance</span>
 							</li>
 							<li class="submenu">
@@ -475,10 +471,10 @@
 							<li><a href="promotion.html"><i class="la la-bullhorn"></i> <span>Promotion</span></a></li>
 							<li><a href="resignation.html"><i class="la la-external-link-square"></i> <span>Resignation</span></a></li>
 							<li><a href="termination.html"><i class="la la-times-circle"></i> <span>Termination</span></a></li>
-							<li class="menu-title"> 
+							<li class="menu-title">
 								<span>Administration</span>
 							</li>
-							<li> 
+							<li>
 								<a href="assets.html"><i class="la la-object-ungroup"></i> <span>Assets</span></a>
 							</li>
 							<li class="submenu">
@@ -497,19 +493,19 @@
 									<li><a href="apptitude-result.html"> Aptitude Results </a></li>
 								</ul>
 							</li>
-							<li> 
+							<li>
 								<a href="knowledgebase.html"><i class="la la-question"></i> <span>Knowledgebase</span></a>
 							</li>
-							<li> 
+							<li>
 								<a href="activities.html"><i class="la la-bell"></i> <span>Activities</span></a>
 							</li>
-							<li> 
+							<li>
 								<a href="users.html"><i class="la la-user-plus"></i> <span>Users</span></a>
 							</li>
-							<li> 
+							<li>
 								<a href="settings.html"><i class="la la-cog"></i> <span>Settings</span></a>
 							</li>
-							<li class="menu-title"> 
+							<li class="menu-title">
 								<span>Pages</span>
 							</li>
 							<li class="submenu">
@@ -554,10 +550,10 @@
 									<li><a href="blank-page.html"> Blank Page </a></li>
 								</ul>
 							</li>
-							<li class="menu-title"> 
+							<li class="menu-title">
 								<span>UI Interface</span>
 							</li>
-							<li> 
+							<li>
 								<a href="components.html"><i class="la la-puzzle-piece"></i> <span>Components</span></a>
 							</li>
 							<li class="submenu">
@@ -578,13 +574,13 @@
 									<li><a href="data-tables.html">Data Table </a></li>
 								</ul>
 							</li>
-							<li class="menu-title"> 
+							<li class="menu-title">
 								<span>Extras</span>
 							</li>
-							<li> 
+							<li>
 								<a href="#"><i class="la la-file-text"></i> <span>Documentation</span></a>
 							</li>
-							<li> 
+							<li>
 								<a href="javascript:void(0);"><i class="la la-info"></i> <span>Change Log</span> <span class="badge badge-primary ml-auto">v3.4</span></a>
 							</li>
 							<li class="submenu">
@@ -614,13 +610,13 @@
                 </div>
             </div>
 			<!-- /Sidebar -->
-			
+
 			<!-- Page Wrapper -->
             <div class="page-wrapper">
-			
+
 				<!-- Page Content -->
                 <div class="content container-fluid">
-				
+
 					<!-- Page Header -->
 					<div class="page-header">
 						<div class="row">
@@ -633,7 +629,7 @@
 						</div>
 					</div>
 					<!-- /Page Header -->
-				
+
 					<div class="row">
 						<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
 							<div class="card dash-widget">
@@ -680,7 +676,7 @@
 							</div>
 						</div>
 					</div>
-					
+
 					<div class="row">
 						<div class="col-md-12">
 							<div class="row">
@@ -703,7 +699,7 @@
 							</div>
 						</div>
 					</div>
-					
+
 					<div class="row">
 						<div class="col-md-12">
 							<div class="card-group m-b-30">
@@ -724,7 +720,7 @@
 										<p class="mb-0">Overall Employees 218</p>
 									</div>
 								</div>
-							
+
 								<div class="card">
 									<div class="card-body">
 										<div class="d-flex justify-content-between mb-3">
@@ -742,7 +738,7 @@
 										<p class="mb-0">Previous Month <span class="text-muted">$1,15,852</span></p>
 									</div>
 								</div>
-							
+
 								<div class="card">
 									<div class="card-body">
 										<div class="d-flex justify-content-between mb-3">
@@ -760,7 +756,7 @@
 										<p class="mb-0">Previous Month <span class="text-muted">$7,500</span></p>
 									</div>
 								</div>
-							
+
 								<div class="card">
 									<div class="card-body">
 										<div class="d-flex justify-content-between mb-3">
@@ -779,9 +775,9 @@
 									</div>
 								</div>
 							</div>
-						</div>	
+						</div>
 					</div>
-					
+
 					<!-- Statistics Widget -->
 					<div class="row">
 						<div class="col-md-12 col-lg-12 col-xl-4 d-flex">
@@ -823,7 +819,7 @@
 								</div>
 							</div>
 						</div>
-						
+
 						<div class="col-md-12 col-lg-6 col-xl-4 d-flex">
 							<div class="card flex-fill">
 								<div class="card-body">
@@ -861,7 +857,7 @@
 								</div>
 							</div>
 						</div>
-						
+
 						<div class="col-md-12 col-lg-6 col-xl-4 d-flex">
 							<div class="card flex-fill">
 								<div class="card-body">
@@ -908,7 +904,7 @@
 						</div>
 					</div>
 					<!-- /Statistics Widget -->
-					
+
 					<div class="row">
 						<div class="col-md-6 d-flex">
 							<div class="card card-table flex-fill">
@@ -976,7 +972,7 @@
 									<h3 class="card-title mb-0">Payments</h3>
 								</div>
 								<div class="card-body">
-									<div class="table-responsive">	
+									<div class="table-responsive">
 										<table class="table custom-table table-nowrap mb-0">
 											<thead>
 												<tr>
@@ -1025,7 +1021,7 @@
 							</div>
 						</div>
 					</div>
-					
+
 					<div class="row">
 						<div class="col-md-6 d-flex">
 							<div class="card card-table flex-fill">
@@ -1339,33 +1335,33 @@
 							</div>
 						</div>
 					</div>
-				
+
 				</div>
 				<!-- /Page Content -->
 
             </div>
 			<!-- /Page Wrapper -->
-			
+
         </div>
 		<!-- /Main Wrapper -->
-		
+
 		<!-- jQuery -->
         <script src="assets/js/jquery-3.5.1.min.js"></script>
-		
+
 		<!-- Bootstrap Core JS -->
         <script src="assets/js/popper.min.js"></script>
         <script src="assets/js/bootstrap.min.js"></script>
-		
+
 		<!-- Slimscroll JS -->
 		<script src="assets/js/jquery.slimscroll.min.js"></script>
-		
+
 		<!-- Chart JS -->
 		<script src="assets/plugins/morris/morris.min.js"></script>
 		<script src="assets/plugins/raphael/raphael.min.js"></script>
 		<script src="assets/js/chart.js"></script>
-		
+
 		<!-- Custom JS -->
 		<script src="assets/js/app.js"></script>
-		
+
     </body>
 </html>
