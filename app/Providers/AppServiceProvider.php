@@ -18,6 +18,7 @@ use App\Repo\Interfaces\ResultInterface;
 use App\Repo\Interfaces\RoleInterface;
 use App\Repo\Interfaces\RoomInterface;
 use App\Repo\Interfaces\StudentInterface;
+use App\Repo\Interfaces\SystemInterface;
 use App\Repo\Interfaces\TopicAreaInterface;
 use App\Repo\Interfaces\UserInterface;
 use App\Repo\LanguageClass;
@@ -26,6 +27,7 @@ use App\Repo\ResultClass;
 use App\Repo\RoleClass;
 use App\Repo\RoomClass;
 use App\Repo\StudentClass;
+use App\Repo\SystemRepositryClass;
 use App\Repo\TopicAreaClass;
 use App\Repo\UserClass;
 use Illuminate\Support\ServiceProvider;
@@ -52,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CourseInterface::class,CourseClass::class);
         $this->app->bind(BranchInterface::class,BranchClass::class);
         $this->app->bind(RoomInterface::class,RoomClass::class);
+        $this->app->bind(SystemInterface::class,SystemRepositryClass::class);
 
     }
 

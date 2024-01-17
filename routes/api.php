@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\RoomController;
+use App\Http\Controllers\Api\SystemController;
 
 
 
@@ -92,10 +93,14 @@ Route::any('get-all-rooms',[RoomController::class,'index']);
 Route::any('get-rooms-list',[RoomController::class,'roomsList']);
 Route::any('delete-room/{id}',[RoomController::class,'deleteRoom']);
 
+Route::any('system-list',[SystemController::class,'systemList']);
+Route::post('system-create',[SystemController::class,'saveSystem']);
+
 
 
 
 Route::any('count-course-audio-video-question',[CategoryController::class,'countCourseAudioVideoQuestion']);
+
 
 //});
 
