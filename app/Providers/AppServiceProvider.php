@@ -16,6 +16,7 @@ use App\Repo\Interfaces\LanguageInterface;
 use App\Repo\Interfaces\QuestionInterface;
 use App\Repo\Interfaces\ResultInterface;
 use App\Repo\Interfaces\RoleInterface;
+use App\Repo\Interfaces\RoomInterface;
 use App\Repo\Interfaces\StudentInterface;
 use App\Repo\Interfaces\TopicAreaInterface;
 use App\Repo\Interfaces\UserInterface;
@@ -23,6 +24,7 @@ use App\Repo\LanguageClass;
 use App\Repo\QuestionClass;
 use App\Repo\ResultClass;
 use App\Repo\RoleClass;
+use App\Repo\RoomClass;
 use App\Repo\StudentClass;
 use App\Repo\TopicAreaClass;
 use App\Repo\UserClass;
@@ -49,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ResultInterface::class,ResultClass::class);
         $this->app->bind(CourseInterface::class,CourseClass::class);
         $this->app->bind(BranchInterface::class,BranchClass::class);
+        $this->app->bind(RoomInterface::class,RoomClass::class);
 
     }
 

@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\ResultController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\BranchController;
+use App\Http\Controllers\Api\RoomController;
 
 
 
@@ -85,6 +86,11 @@ Route::any('save-branch',[BranchController::class,'saveBranch']);
 Route::any('get-all-branches',[BranchController::class,'index']);
 Route::any('get-branches-list',[BranchController::class,'branchesList']);
 Route::any('delete-branch/{id}',[BranchController::class,'deleteBranch']);
+
+Route::post('save-room',[RoomController::class,'saveRoom']);
+Route::any('get-all-rooms',[RoomController::class,'index']);
+Route::any('get-rooms-list',[RoomController::class,'roomsList']);
+Route::any('delete-room/{id}',[RoomController::class,'deleteRoom']);
 
 
 
