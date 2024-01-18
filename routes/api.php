@@ -95,6 +95,7 @@ Route::any('delete-room/{id}',[RoomController::class,'deleteRoom']);
 
 Route::any('system-list',[SystemController::class,'systemList']);
 Route::post('system-create',[SystemController::class,'saveSystem']);
+Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
 
 

@@ -47,4 +47,13 @@ class SystemController extends Controller
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
+
+    public function deleteSystem( $id){
+        try {
+            $res = $this->system->deleteSystem($id);
+            return Helper::ajaxSuccess($res->get('data'),$res->get('message'));
+        } catch (\Exception $e) {
+            return Helper::ajaxError($e->getMessage());
+        }
+    }
 }

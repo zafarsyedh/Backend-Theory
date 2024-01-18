@@ -102,12 +102,12 @@ class SystemRepositryClass implements Interfaces\SystemInterface
 
 
 
-    public function deleteRoom($id)
+    public function deleteSystem($id)
     {
         try {
-            $role = Room::find($id);
+            $role = System::find($id);
             $role->delete();
-            return Helper::success($role, $message="Room Deleted");
+            return Helper::success($role, $message="Record Deleted");
         } catch (ValidationException $validationException) {
             DB::rollBack();
             return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());

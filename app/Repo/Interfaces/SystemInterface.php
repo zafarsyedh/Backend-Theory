@@ -5,7 +5,7 @@ interface SystemInterface{
 
     public function getAllSystems();
     public function createSystem($request);
-    public function deleteRoom($id);
+    public function deleteSystem($id);
     public function getAllRoomForDropdown();
 
 
