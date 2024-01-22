@@ -21,17 +21,17 @@ use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\SystemController;
 
 
+Route::any('login',[LoginController::class,'login']);
+Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);
 
-
-//Route::middleware('auth:sanctum')->group(function () {
+Route::middleware([\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])->group(function () {
 
 Route::any('create-user', [UserController::class, 'saveUser']);
-Route::any('get-all-users', [UserController::class, 'index']);
+
 Route::any('delete-user/{id}',[UserController::class,'deleteUser']);
 Route::any('edit-user',[UserController::class,'editUser']);
 Route::any('update-user',[UserController::class,'updateUser']);
 Route::any('get-invigilator',[UserController::class,'getInvigilator']);
-
 
 Route::any('save-lang',[LanguagesController::class,'saveLanguage']);
 Route::any('delete-lang/{id}',[LanguagesController::class,'deleteLanguage']);
@@ -46,11 +46,8 @@ Route::any('delete-course/{id}',[CourseController::class,'deleteCourse']);
 Route::any('update-course',[CourseController::class,'updateCourse']);
 Route::any('get-all-courses',[CourseController::class,'index']);
 
-
 Route::any('get-course-config/{id}',[CourseController::class,'getCourseConfig']);
 Route::any('save-course-config',[CourseController::class,'saveCourseConfig']);
-
-
 
 Route::any('save-topic-area',[TopicAreaController::class,'saveTopicArea']);
 Route::any('get-all-topics',[TopicAreaController::class,'index']);
@@ -58,7 +55,7 @@ Route::any('delete-topic/{id}',[TopicAreaController::class,'deleteTopic']);
 Route::any('update-topic',[TopicAreaController::class,'updateTopic']);
 Route::any('save-topic-area-translation',[TopicAreaController::class,'saveTopicTranslation']);
 
-Route::any('get-all-roles',[RoleController::class,'index']);
+
 Route::any('save-role',[RoleController::class,'saveRole']);
 Route::any('edit-role',[RoleController::class,'editRole']);
 Route::any('update-role',[RoleController::class,'updateRole']);
@@ -66,7 +63,6 @@ Route::any('update-role',[RoleController::class,'updateRole']);
 Route::any('delete-role/{id}',[RoleController::class,'deleteRole']);
 Route::any('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
 Route::any('save-role-permissions',[RoleController::class,'saveRolePermissions']);
-
 
 Route::any('get-config',[ConfigurationController::class,'index']);
 Route::any('save-config',[ConfigurationController::class,'saveConfig']);
@@ -97,17 +93,10 @@ Route::any('system-list',[SystemController::class,'systemList']);
 Route::post('system-create',[SystemController::class,'saveSystem']);
 Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
-
-
-
-Route::any('count-course-audio-video-question',[CategoryController::class,'countCourseAudioVideoQuestion']);
-
-
-//});
-
-Route::any('login',[LoginController::class,'login']);
-Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);
 Route::any('import-question', [QuestionController::class, 'importQuestion']);
 
+});
 
+Route::any('get-all-users', [UserController::class, 'index']);
+Route::any('get-all-roles',[RoleController::class,'index']);
 
