@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\SystemController;
 
 
 
-//Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
 Route::any('create-user', [UserController::class, 'saveUser']);
 Route::any('get-all-users', [UserController::class, 'index']);
@@ -100,10 +100,16 @@ Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
 
 
+
+
 Route::any('count-course-audio-video-question',[CategoryController::class,'countCourseAudioVideoQuestion']);
 
+});
 
-//});
+// Student Area
+Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
+
+
 
 Route::any('login',[LoginController::class,'login']);
 Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);
