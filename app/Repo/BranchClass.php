@@ -21,11 +21,7 @@ class BranchClass implements Interfaces\BranchInterface
             $qry=Branch::query();
             $qry=$qry->where('status',1);
             $qry=$qry->get();
-            return $response = ([
-                "status" => "success",
-                "data" => $qry,
-                "messege" => "Branch Lists"
-            ]);
+       return  Helper::successWithData($qry,'Record found');
         } catch (ValidationException $validationException) {
             return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         }

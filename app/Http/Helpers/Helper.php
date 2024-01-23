@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Helpers;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
 
 class Helper{
     public static function sendError($message, $errors= [], $code = 400)
@@ -57,37 +58,8 @@ class Helper{
 
 
 
-
-//    public static function sendError($message, $errors = [], $code = 401)
-//    {
-//        $response = ['success' => false, 'message' => $message];
-//        if (!empty($errors)) {
-//            $response['data'] = $errors;
-//        }
-//        throw new HttpResponseException(response()->json($response, $code));
-//    }
-
-//    public static function createAPIResponce($is_error, $code, $message, $content)
-//    {
-//        $result = [];
-//        if ($is_error) {
-//            $result['success'] = false;
-//            $result['code'] = $code;
-//            $result['message'] = $message;
-//        } else {
-//            $result['success'] = true;
-//            $result['code'] = $code;
-//            if ($content == null) {
-//                $result['message'] = $message;
-//            } else {
-//                $result['data'] = $content;
-//            }
-//        }
-//        return $result;
-//    }
-
     // below functions created by Ahsan
-    public static function success($data, $message = 'success')
+    public static function successWithData($data, $message = 'success')
     {
 
         try {
@@ -97,7 +69,7 @@ class Helper{
         }
     }
 
-    public static function error($message = 'success')
+    public static function errorOld($message = 'success')
     {
         try {
             return collect(['status' => false, 'message' => $message]);
@@ -124,14 +96,6 @@ class Helper{
         }
     }
 
-//    public static function ajaxError($message = 'success')
-//    {
-//        try {
-//            return response()->json(collect(['status' => false, 'message' => $message]), 400);
-//        } catch (\Exception $exception) {
-//            return response()->json(collect(['status' => false, 'message' => $exception->getMessage()]), 400);
-//        }
-//    }
 
     public static function ajaxErrorWithData($message = 'error', $data)
     {
@@ -162,6 +126,27 @@ class Helper{
         } catch (\Exception $exception) {
             return response()->json(collect(['status' => false, 'message' => $exception->getMessage()]), 400);
         }
+    }
+
+    public function success($data, $message = 'Success', $color = "4BB543")
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'message' => $message,
+            'message_color' => $color,
+        ], 200);
+    }
+
+    public function error($message, $exception = false, $color = "C91432")
+    {
+        Log::channel('api')->error($message);
+        $message = ($exception) ? (config('app.debug') ? $message : __('Internet Server Error! Please contact customer support')) : $message;
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'message_color' => $color,
+        ], 400);
     }
 
 

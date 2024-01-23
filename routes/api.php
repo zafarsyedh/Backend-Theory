@@ -24,7 +24,11 @@ use App\Http\Controllers\Api\SystemController;
 Route::any('login',[LoginController::class,'login']);
 Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);
 
+
 Route::middleware([\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])->group(function () {
+
+
+
 
 Route::any('create-user', [UserController::class, 'saveUser']);
 
@@ -93,9 +97,26 @@ Route::any('system-list',[SystemController::class,'systemList']);
 Route::post('system-create',[SystemController::class,'saveSystem']);
 Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
-Route::any('import-question', [QuestionController::class, 'importQuestion']);
+
+
+
+
+
+Route::any('count-course-audio-video-question',[CategoryController::class,'countCourseAudioVideoQuestion']);
 
 });
+
+// Student Area
+Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
+
+
+
+Route::any('login',[LoginController::class,'login']);
+Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);
+
+Route::any('import-question', [QuestionController::class, 'importQuestion']);
+
+
 
 Route::any('get-all-users', [UserController::class, 'index']);
 Route::any('get-all-roles',[RoleController::class,'index']);
