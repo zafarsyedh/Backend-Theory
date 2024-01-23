@@ -21,11 +21,12 @@ class BranchController extends Controller
     public function index(){
 
         try{
-            $response['branches']=$this->branch->getAllBranches();
-            if($response){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response['branches']['data']);
+            $response=$this->branch->getAllBranches();
+
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $response);
+                $response= Helper::error($response['message'],$response['data']);
             }
             return response()->json($response);
         } catch (\Exception $e) {
