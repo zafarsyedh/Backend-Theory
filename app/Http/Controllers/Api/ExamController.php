@@ -24,12 +24,14 @@ class ExamController extends Controller
         try{
              $request->all();
             $std_id=$request->std_id;
-           $lang= $request->lang;
+            $lang= $request->lang;
             $exam_type=$request->exam_type;
 
-            return $response=$this->questions->questionMoveInSolvedQuestionTable($request);
-
-            return response()->json($response);
+             $response=$this->questions->questionMoveInSolvedQuestionTable($request);
+            if($response['status']){
+               $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
+               return Helper::success($res,'Questions list');
+            }
         } catch (\Exception $e) {
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }

@@ -20,10 +20,10 @@ return new class extends Migration
             $table->unsignedBigInteger('q_id');
             $table->foreign('q_id')->references('id')->on('questions')->onDelete('restrict')->onUpdate('cascade');
             $table->string('choosed_option')->nullable()->default(null);
-            $table->enum('is_correct_ans',[0,1,null])->nullable()->default(null);
-            $table->enum('is_answered',[0,1])->nullable()->default(0);
-            $table->string('q_lnag');
-            $table->string('audio_lnag');
+            $table->integer('is_correct_ans')->nullable()->default(null);
+            $table->boolean('is_answered')->nullable()->default(0);
+            $table->string('q_lang');
+            $table->string('audio_lang');
             $table->timestamps();
         });
     }

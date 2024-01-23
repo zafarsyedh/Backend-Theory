@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('attempts', function (Blueprint $table) {
             $table->id();
-            $table->enum('status',[0,1]);
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }

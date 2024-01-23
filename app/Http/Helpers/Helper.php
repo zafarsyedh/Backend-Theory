@@ -128,7 +128,7 @@ class Helper{
         }
     }
 
-    public function success($data, $message = 'Success', $color = "4BB543")
+    public static function success($data, $message = 'Success', $color = "4BB543")
     {
         return response()->json([
             'success' => true,
@@ -138,7 +138,7 @@ class Helper{
         ], 200);
     }
 
-    public function error($message, $exception = false, $color = "C91432")
+    public static function error($message, $exception = false, $color = "C91432")
     {
         Log::channel('api')->error($message);
         $message = ($exception) ? (config('app.debug') ? $message : __('Internet Server Error! Please contact customer support')) : $message;
