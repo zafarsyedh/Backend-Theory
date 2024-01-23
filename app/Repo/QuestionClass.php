@@ -297,7 +297,7 @@ protected $qAudioname='';
     public function findQuestionById($id)
     {
         try {
-            $res = QuestionTranslation::with('questions.qCourses');
+            $res = QuestionTranslation::with('questions.qCourses.course.courseTranslation:id,course_id,full_name');
             $res = $res->where('q_id',$id);
             $res = $res->first();
             return Helper::success($res, $message = __('translation.record_found'));
@@ -308,7 +308,7 @@ protected $qAudioname='';
     public function getQuestionTranslationsById($id)
     {
         try {
-            $res = Question::with('questionTranslations');
+            $res = Question::with('questionTranslations','qCourses.course.courseTranslation:id,course_id,full_name');
             $res = $res->where('id',$id);
             $res = $res->first();
             return Helper::success($res, $message = __('translation.record_found'));
