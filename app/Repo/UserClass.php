@@ -1,13 +1,17 @@
 <?php
 
 namespace App\Repo;
+use App\Http\Helpers\Helper;
+use App\Models\Branch;
 use App\Models\Role;
 use App\Models\User;
 use App\Traits\HandleFiles;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class UserClass implements Interfaces\UserInterface
 {
@@ -18,96 +22,79 @@ protected $path='user-images/';
 
     public function getAllUser()
     {
-        $qry=User::with('role');
-        $qry=$qry->get();
-        return $qry;
-    }
-    public function getInvigilator()
-    {
-        $qry=User::query();
-        $qry=$qry->where('is_take_test',1);
-        $qry=$qry->where('status',1);
-        $qry=$qry->where('is_deleted',0)
-            ->orderBy('id','DESC');
-        $qry=$qry->get();
-        return $qry;
-    }
+        try {
+            $qry=User::with('role');
+            $qry=$qry->get();
+            return  Helper::successWithData($qry,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
 
+    }
     public function createUser($request)
     {
 
-            if (User::where('email', $request->email)->first()) {
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>"This record already exist"
-                ];
-            }
-            $user = new User();
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            $user->phone = $request->phone;
-            $user->role_id = $request->role_id;
-            $user->status = $request->status;
+        try {
 
-        if($user->save()){
-            $user->roles()->attach($user->role_id);
-            $data = User::with("role")->find($user->id);
-            return $response=([
-                "status"=>"success",
-                "data"=>$user,
-                "messege"=>"User Added Successfully"
+            $id = $request->id;
+            DB::beginTransaction();
+            $validator = Validator::make($request->all(), [
+                'name' => 'required',
+                'email' => 'required',
+                'phone' => 'required',
+                'password' => 'required',
+                'role_id' => 'required',
+                'status' => 'required',
             ]);
-        }else{
-            return $response=[
-                "status"=>"false",
-                "messege"=>"Record not save due to some technical error"
-            ];
+            if ($validator->fails())
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
+            $user = User::updateOrCreate(
+                [
+                    'id' => $request->id,
+                    'email' =>$request->email,
+                ],
+                [
+                    'name' =>$request->name,
+                    'email' =>$request->email,
+                    'password' =>Hash::make($request->password),
+                    'phone' =>$request->phone,
+                    'role_id' =>$request->role_id,
+                    'status' =>$request->status,
+                ]
+            );
+            if($id)
+            {
+                $user->roles()->sync($user->role_id);
+            }else
+            {
+                $user->roles()->attach($user->role_id);
+            }
+
+            DB::commit();
+            $data = User::with("role")->find($user->id);
+            return  Helper::successWithData($data,(($id)?"User Updated Successfully":"User Added Successfully"));
+        } catch (ValidationException $validationException) {
+            DB::rollBack();
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(), $e);
         }
 
 
-    }
 
+    }
     public function deleteUser($id)
     {
-        // TODO: Implement deleteAddon() method.
-        $addon =User::find($id);
-        $addon->delete();
-        return 1;
-    }
-
-    public function editUser($id)
-    {
-        // TODO: Implement editAddon() method.
-        return $category = User::find($id);
-    }
-
-    public function updateUser($request)
-    {
-
-        $user =  User::find($request->id);
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->phone = $request->phone;
-        $user->role_id = $request->role_id;
-        $user->status = $request->status;
-        if($user->save()){
-            $user->roles()->sync($user->role_id);
-//            $user->roles()->attach($user->role_id);
-            $data = User::with("role")->find($user->id);
-            return $response=([
-                "status"=>"success",
-                "data"=>$data,
-                "messege"=>"User Updated Successfully"
-            ]);
-        }else{
-            return $response=[
-                "status"=>"false",
-                "messege"=>"Record not save due to some technical error"
-            ];
-
+        try {
+            $role = User::find($id);
+            $role->delete();
+            return Helper::successWithData($role, $message="User Deleted");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
+
 }

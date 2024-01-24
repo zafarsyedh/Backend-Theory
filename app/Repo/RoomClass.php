@@ -22,13 +22,9 @@ class RoomClass implements Interfaces\RoomInterface
             $qry=Room::query();
             $qry=$qry->where('status',1);
             $qry=$qry->get();
-            return $response = ([
-                "status" => "success",
-                "data" => $qry,
-                "messege" => "Rooms Lists"
-            ]);
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return  Helper::successWithData($qry,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
     public function getAllRooms()
@@ -36,13 +32,9 @@ class RoomClass implements Interfaces\RoomInterface
         try {
             $qry=Room::with('branch');
             $qry=$qry->get();
-            return $response = ([
-                "status" => "success",
-                "data" => $qry,
-                "messege" => "Rooms Lists"
-            ]);
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return  Helper::successWithData($qry,'Record found');
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
 
@@ -58,10 +50,7 @@ class RoomClass implements Interfaces\RoomInterface
                 'status' => 'required',
             ]);
             if ($validator->fails())
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>$validator->errors()
-                ];
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
             $role = Room::updateOrCreate(
                 [
@@ -77,23 +66,13 @@ class RoomClass implements Interfaces\RoomInterface
 
             DB::commit();
             $data = Room::with('branch')->find($role->id);
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => (($id)?"Room Updated Successfully":"Room Added Successfully")
-            ]);
+            return  Helper::successWithData($data,(($id)?"Room Updated Successfully":"Room Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
     }
 
@@ -104,10 +83,10 @@ class RoomClass implements Interfaces\RoomInterface
         try {
             $role = Room::find($id);
             $role->delete();
-            return Helper::success($role, $message="Room Deleted");
-        } catch (ValidationException $validationException) {
+            return Helper::successWithData($role, $message="Branch Deleted");
+        }catch (\Exception $e) {
             DB::rollBack();
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
 

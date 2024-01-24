@@ -23,13 +23,9 @@ class SystemRepositryClass implements Interfaces\SystemInterface
             $qry=Room::query();
             $qry=$qry->where('status',1);
             $qry=$qry->get();
-            return $response = ([
-                "status" => "success",
-                "data" => $qry,
-                "messege" => "Rooms Lists"
-            ]);
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return  Helper::successWithData($qry,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
     public function getAllSystems()
@@ -37,13 +33,9 @@ class SystemRepositryClass implements Interfaces\SystemInterface
         try {
             $qry=System::with('room');
             $qry=$qry->get();
-            return $response = ([
-                "status" => "success",
-                "data" => $qry,
-                "message" => "System List found"
-            ]);
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return  Helper::successWithData($qry,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
 
@@ -60,10 +52,7 @@ class SystemRepositryClass implements Interfaces\SystemInterface
                 'status' => 'required',
             ]);
             if ($validator->fails())
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>$validator->errors()
-                ];
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
             $role = System::updateOrCreate(
                 [
@@ -80,23 +69,13 @@ class SystemRepositryClass implements Interfaces\SystemInterface
 
             DB::commit();
             $data = System::with('room')->find($role->id);
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => (($id)?"System Updated Successfully":"System Added Successfully")
-            ]);
+            return  Helper::successWithData($data,(($id)?"System Updated Successfully":"System Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
     }
 
@@ -104,13 +83,14 @@ class SystemRepositryClass implements Interfaces\SystemInterface
 
     public function deleteSystem($id)
     {
+
         try {
             $role = System::find($id);
             $role->delete();
-            return Helper::success($role, $message="Record Deleted");
-        } catch (ValidationException $validationException) {
+            return Helper::successWithData($role, $message="System Deleted");
+        }catch (\Exception $e) {
             DB::rollBack();
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
 

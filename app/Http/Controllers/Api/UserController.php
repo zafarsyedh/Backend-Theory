@@ -27,86 +27,47 @@ class UserController extends Controller
     }
 
     public function index(){
-        $data['users']=$this->user->getAllUser();
-        $data['roles']=$this->role->getAllRoles();
-        if($data){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $data);
-
-        }else{
-            $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $data);
-
+        try{
+            $response['users']=$this->user->getAllUser();
+            if($response['users']['status']){
+                $response['roles']=$this->role->getAllRoles();
+                $response= Helper::success($response,$response['users']['message']);
+            }else{
+                $response= Helper::error($response['users']['message'],$response['users']['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
-    }
 
+    }
 
     public function saveUser(Request $request)
     {
-
-        try {
-            $res=$this->user->createUser($request);
-            if( $res['status'] == 'success'){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
+        try{
+            $response=$this->user->createUser($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
-            }
+
+    }
     public function deleteUser($id){
-
-        $res=$this->user->deleteUser($id);
-        if($res==1){
-            return response()->json(['success' => 'Record deleted successfully']);
-            $response=$this->createAPIResponce($is_error=false,$code=200,$message='Record save',$res);
-            return response()->json($response, $status = 200);
-        }else{
-            return response()->json(['error' =>$res]);
-            $response=$this->createAPIResponce($is_error=true,$code=401,$message=$res,$res);
-
-            return response()->json($response, $status = 401);
+        try {
+            $response = $this->user->deleteUser($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
     }
-
-
-    public function editUser(Request $request){
-        $id=$request->user_id;
-        $res=$this->user->editUser($id);
-        if($res){
-
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'Record found', $res);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 404, $message = 'data not found', $res);
-
-        }
-        return response()->json($response);
-    }
-    public function updateUser(Request $request){
-
-           $res=$this->user->updateUser($request);
-        if( $res['status'] == 'success')
-        {
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
-        }else{
-            $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
-        }
-        return response()->json($response);
-    }
-
-    //getInvigilator
-
-    public function getInvigilator()
-    {
-        $response=$this->user->getInvigilator();
-        if($response->count() > 0)
-        {
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'data found', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 404, $message = 'data not found', $response);
-        }
-        return response()->json($response);
-    }
-
 }

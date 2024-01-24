@@ -25,7 +25,7 @@ Route::any('login',[LoginController::class,'login']);
 Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);
 
 
-Route::middleware([\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])->group(function () {
+//Route::middleware([\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])->group(function () {
 
 
 
@@ -47,7 +47,6 @@ Route::any('get-all-lang-for-dropdown',[LanguagesController::class,'getAllLangFo
 Route::any('save-course',[CourseController::class,'saveCourse']);
 Route::any('save-course-translation',[CourseController::class,'saveCourseTranslation']);
 Route::any('delete-course/{id}',[CourseController::class,'deleteCourse']);
-Route::any('update-course',[CourseController::class,'updateCourse']);
 Route::any('get-all-courses',[CourseController::class,'index']);
 
 Route::any('get-course-config/{id}',[CourseController::class,'getCourseConfig']);
@@ -71,17 +70,14 @@ Route::any('save-role-permissions',[RoleController::class,'saveRolePermissions']
 Route::any('get-config',[ConfigurationController::class,'index']);
 Route::any('save-config',[ConfigurationController::class,'saveConfig']);
 
-Route::any('create-video-questions',[QuestionController::class,'createVideoQuestion']);
+
 Route::any('create-questions',[QuestionController::class,'createQuestion']);
 Route::any('get-data-question/{id}',[QuestionController::class,'getDataQuestion']);
-Route::any('get-translation-question/{id}',[QuestionController::class,'getTranslationQuestion']);
 Route::any('get-all-questions',[QuestionController::class,'index']);
 Route::any('delete-question/{id}',[QuestionController::class,'deleteQuestion']);
 
+Route::any('get-translation-question/{id}',[QuestionController::class,'getTranslationQuestion']);
 Route::any('save-question-translation',[QuestionController::class,'saveQuestionTranslation']);
-
-Route::any('edit-question',[QuestionController::class,'editQuestion']);
-Route::any('update-question',[QuestionController::class,'updateQuestion']);
 
 Route::any('save-branch',[BranchController::class,'saveBranch']);
 Route::any('get-all-branches',[BranchController::class,'index']);
@@ -97,19 +93,10 @@ Route::any('system-list',[SystemController::class,'systemList']);
 Route::post('system-create',[SystemController::class,'saveSystem']);
 Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
-
-
-
-
-
-Route::any('count-course-audio-video-question',[CategoryController::class,'countCourseAudioVideoQuestion']);
-
-});
+//});
 
 // Student Area
 Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
-
-
 
 Route::any('login',[LoginController::class,'login']);
 Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);

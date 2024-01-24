@@ -17,23 +17,30 @@ class ConfigurationController extends Controller
     }
 
     public function index(){
-        $response=$this->config->getConfigInfo();
-        if($response && $response->count() > 0){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 206, $message = 'Content not available', $response);
+
+        try{
+            $response=$this->config->getConfigInfo();
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
     }
     public function saveConfig(Request $request){
-
-         $request->all();
-        $res=$this->config->saveConfig($request);
-        if( $res['status'] == 'success'){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
-        }else{
-            $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+        try{
+            $response=$this->config->saveConfig($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
     }
 }

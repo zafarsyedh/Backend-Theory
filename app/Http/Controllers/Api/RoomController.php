@@ -20,56 +20,61 @@ class RoomController extends Controller
     }
 
     public function index(){
-
         try{
-            $response['branches']=$this->branch->getAllBranchForDropdown();
             $response['rooms']=$this->room->getAllRooms();
-            if($response){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
+            if($response['rooms']['status']){
+                $response['branches']=$this->branch->getAllBranchForDropdown();
+                $response= Helper::success($response,$response['rooms']['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $response);
+                $response= Helper::error($response['rooms']['message'],$response['rooms']['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
     public function roomsList(){
 
         try{
             $response['rooms']=$this->room->getAllRoomForDropdown();
-            if($response){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response['branches']['data']);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $response);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
+
     }
     public function saveRoom(Request $request){
 
         try{
-            $res=$this->room->createRoom($request);
-            if( $res['status'] == 'success'){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
+            $response=$this->room->createRoom($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
 
 
     public function deleteRoom( $id){
         try {
-            $res = $this->room->deleteRoom($id);
-            return Helper::ajaxSuccess($res->get('data'),$res->get('message'));
+            $response = $this->room->deleteRoom($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
         } catch (\Exception $e) {
-            return Helper::ajaxError($e->getMessage());
+            return Helper::error($e->getMessage(),$e);
         }
     }
 

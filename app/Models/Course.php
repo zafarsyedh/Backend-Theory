@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Course extends Model
 {
     use HasFactory,SoftDeletes;
+    protected $fillable = [
+        'id', 'short_name', 'status',
+    ];
 
     public function courseTranslation()
     {
