@@ -395,8 +395,8 @@ protected $qAudioname='';
         try {
 
 
-            $qLang=$request->qLang;
-            $audioLang=$request->audioLang;
+            $qLang=$request->q_lang;
+            $audioLang=$request->audio_lang;
 
             $qry=QuestionSolved::query();
             $qry=$qry->with(['question.questionTranslations' => function ($query) use ($qLang) {

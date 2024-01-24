@@ -24,7 +24,7 @@ class ExamController extends Controller
         try{
              $request->all();
             $std_id=$request->std_id;
-            $lang= $request->lang;
+            $lang= $request->q_lang;
             $exam_type=$request->exam_type;
 
              $response=$this->questions->questionMoveInSolvedQuestionTable($request);
