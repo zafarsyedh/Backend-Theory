@@ -41,4 +41,36 @@ class ExamController extends Controller
         }
     }
 
+    //saveQuestionsForExam
+    public function saveQuestionsForExam(Request $request){
+
+        try{
+            $response=$this->exam->saveExamQuestion($request);
+            if($response['status']){
+                return Helper::success($response,'Questions saved');
+            }else{
+                return Helper::errorWithData($response,'Questions not saved');
+            }
+
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
+    //savePracticeQuestions
+    public function savePracticeQuestions(Request $request){
+
+        try{
+            $response=$this->exam->savePracticeQuestion($request);
+            if($response['status']){
+                return Helper::success($response,'Questions saved');
+            }else{
+                return Helper::errorWithData($response,'Questions not saved');
+            }
+
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
 }
