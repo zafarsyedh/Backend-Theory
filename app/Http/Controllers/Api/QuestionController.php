@@ -12,9 +12,6 @@ use App\Models\Attempt;
 use App\Models\Exam;
 use App\Models\Language;
 use App\Models\Question;
-use App\Models\Result;
-use App\Models\SolvedQuestions;
-use App\Repo\Interfaces\CategoryInterface;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\LanguageInterface;
@@ -34,10 +31,9 @@ class QuestionController extends Controller
     public  $exam;
     public  $response='';
 
-    public function __construct(QuestionInterface $question,CategoryInterface $category,LanguageInterface $language,ExamInterface $exam, CourseInterface $course,TopicAreaInterface $topicArea)
+    public function __construct(QuestionInterface $question,LanguageInterface $language,ExamInterface $exam, CourseInterface $course,TopicAreaInterface $topicArea)
     {
         $this->question=$question;
-        $this->category=$category;
         $this->course=$course;
         $this->topicArea=$topicArea;
         $this->language=$language;

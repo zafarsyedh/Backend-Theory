@@ -147,9 +147,9 @@ class Helper{
     } public static function error($message = 'error', $data)
     {
         try {
-            return collect(['status' => false, 'data' => $data, 'message' => $message]);
+            return collect(['status' => false,'success' => false, 'data' => $data, 'message' => $message]);
         } catch (\Exception $exception) {
-            return collect(['status' => false, 'data' => null, 'message' => $exception->getMessage()]);
+            return collect(['status' => false, 'success' => false, 'data' => null, 'message' => $exception->getMessage()]);
         }
     }
 

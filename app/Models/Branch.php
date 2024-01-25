@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Branch extends Model
 {
     use HasFactory,SoftDeletes;
-//    protected $fillable = [
-//        'title','status',
-//    ];
+    protected $fillable = [
+        'title','status',
+    ];
 }
