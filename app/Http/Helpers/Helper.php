@@ -57,11 +57,8 @@ class Helper{
     }
 
 
-
-    // below functions created by Ahsan
     public static function successWithData($data, $message = 'success')
     {
-
         try {
             return collect(['status' => true, 'data'=> $data, 'message' => $message]);
         } catch (\Exception $exception) {
@@ -138,7 +135,10 @@ class Helper{
         ], 200);
     }
 
+
+
     public static function error($message, $exception = false, $color = "C91432")
+
     {
         Log::channel('api')->error($message);
         $message = ($exception) ? (config('app.debug') ? $message : __('Internet Server Error! Please contact customer support')) : $message;
@@ -147,8 +147,14 @@ class Helper{
             'message' => $message,
             'message_color' => $color,
         ], 400);
+    } public static function error($message = 'error', $data)
+    {
+        try {
+            return collect(['status' => false,'success' => false, 'data' => $data, 'message' => $message]);
+        } catch (\Exception $exception) {
+            return collect(['status' => false, 'success' => false, 'data' => null, 'message' => $exception->getMessage()]);
+        }
     }
-
 
 
 

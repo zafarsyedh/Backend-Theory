@@ -4,35 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Language extends Model
 {
-    use HasFactory;
+    use HasFactory,SoftDeletes;
+    protected $fillable = [
+        'id', 'lang', 'lang_short','direction','status',
+    ];
 
-//    public function getStatusAttribute($value)
-//    {
-//        if($value==1){
-//            $getVal='Active';
-//        }
-//        if($value==0){
-//            $getVal='In-Active';
-//        }
-//        return $getVal;
-//    }
-//
-//    public function getDirectionAttribute($value)
-//    {
-//        if($value==2){
-//            $getVal='LTR';
-//        }
-//        if($value==1){
-//            $getVal='RTL';
-//        }
-//        return $getVal;
-//    }
-
-    public function questionTranslation()
-    {
-        return $this->hasOne(QuestionTranslation::class, 'lang_id', 'id');
-    }
 }

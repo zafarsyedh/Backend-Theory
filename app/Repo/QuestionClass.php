@@ -66,7 +66,7 @@ protected $qAudioname='';
             }
 
             if ($validator->fails())
-                $response =Helper::vaidationError($status = 'false', $errors = $validator->errors(), $message = $validator->errors()->first());
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
 
             if ($file = $request->file('q_image')) {
@@ -168,28 +168,18 @@ protected $qAudioname='';
 
             DB::commit();
             $data=Question::with('questionDetail','course.courseTranslation','topic.topicAreaTranslation')->find($question->id);
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => (($id)?"Question Updated Successfully":"Question Added Successfully")
-            ]);
+            return  Helper::successWithData($data,(($id)?"Question Updated Successfully":"Question Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
 
 
         }
-        public function saveQuestionTranslation($request)
+   public function saveQuestionTranslation($request)
     {
 
         try {
@@ -252,58 +242,51 @@ protected $qAudioname='';
             }
             DB::commit();
             $data=QuestionTranslation::where('q_id',$id)->get();
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => (($id)?"Question Translation Updated Successfully":"Question Translation Added Successfully")
-            ]);
+            return  Helper::successWithData($data,(($id)?"Question Translation Updated Successfully":"Question Translation Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
 
 
         }
-
-
     public function getAllQuestionForAdminSide()
     {
-        $qry=Question::with('questionDetail','course.courseTranslation','topic.topicAreaTranslation');
-        $qry=$qry->orderBy('id','ASC');
-        $qry=$qry->get();
-        return $qry;
+        try {
+            $qry=Question::with('questionDetail','course.courseTranslation','topic.topicAreaTranslation');
+            $qry=$qry->orderBy('id','ASC');
+            $qry=$qry->get();
+            return  Helper::successWithData($qry,'Record found');
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
     }
     public function deleteQuestion($id)
     {
         try {
+            DB::beginTransaction();
             $role = Question::find($id);
             $role->delete();
             $qtr=QuestionTranslation::where('q_id',$id)->delete();
-            return Helper::success($role, $message = "Question Deleted");
-        } catch (ValidationException $validationException) {
+            DB::commit();
+            return Helper::successWithData($role, $message="Question Deleted");
+        }catch (\Exception $e) {
             DB::rollBack();
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
-
     public function findQuestionById($id)
     {
         try {
             $res = QuestionTranslation::with('questions.qCourses.course.courseTranslation:id,course_id,full_name');
             $res = $res->where('q_id',$id);
             $res = $res->first();
-            return Helper::success($res, $message = __('translation.record_found'));
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return  Helper::successWithData($res,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
     public function getQuestionTranslationsById($id)
@@ -312,10 +295,13 @@ protected $qAudioname='';
             $res = Question::with('questionTranslations','qCourses.course.courseTranslation:id,course_id,full_name');
             $res = $res->where('id',$id);
             $res = $res->first();
-            return Helper::success($res, $message = __('translation.record_found'));
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+
+            return  Helper::successWithData($res,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
+    }
+
     }
 
     public function createNewAttempt($request)
@@ -416,5 +402,6 @@ protected $qAudioname='';
             return Helper::errorWithData($e->getMessage(), []);
         }
     }
+
 
 }

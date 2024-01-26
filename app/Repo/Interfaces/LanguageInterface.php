@@ -9,7 +9,5 @@ interface LanguageInterface{
     public function saveLanguage($request);
     public function deleteLanguage($id);
 
-    public function editLanguage($id);
-    public function updateLanguage($request);
 
 }

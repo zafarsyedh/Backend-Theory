@@ -19,58 +19,58 @@ class BranchController extends Controller
     }
 
     public function index(){
-
         try{
             $response=$this->branch->getAllBranches();
-
             if($response['status']){
                 $response= Helper::success($response['data'],$response['message']);
             }else{
                 $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
     public function branchesList(){
-
         try{
-            $response['branches']=$this->branch->getAllBranchForDropdown();
-            if($response){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response['branches']['data']);
+            $response=$this->branch->getAllBranchForDropdown();
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $response);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
     public function saveBranch(Request $request){
 
         try{
-            $res=$this->branch->createBranch($request);
-            if( $res['status'] == 'success'){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
+            $response=$this->branch->createBranch($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
-
 
     public function deleteBranch( $id){
         try {
-            $res = $this->branch->deleteBranch($id);
-            return Helper::ajaxSuccess($res->get('data'),$res->get('message'));
+            $response = $this->branch->deleteBranch($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
         } catch (\Exception $e) {
-            return Helper::ajaxError($e->getMessage());
+            return Helper::error($e->getMessage(),$e);
         }
     }
-
 
 }
