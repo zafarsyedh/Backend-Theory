@@ -8,13 +8,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Question extends Model
 {
-    use   SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory;
 
     protected $fillable = [
         'code', 'q_type', 'q_is_video', 'course_id', 'topic_id', 'correct_opt', 'q_image', 'q_audio', 'q_video', 'status',
     ];
 
-
+    public function questionDetail()
+    {
+        return $this->hasOne(QuestionTranslation::class, 'q_id', 'id');
+    }
 
     public function questionTranslations()
     {
@@ -25,7 +28,10 @@ class Question extends Model
     {
         return $this->belongsTo(TopicArea::class, 'topic_id', 'id')->select(['id']);
     }
-
+    public function course()
+    {
+        return $this->belongsTo(Course::class, 'course_id', 'id')->select(['id','short_name']);
+    }
 
     public function qCourses()
     {
@@ -35,6 +41,27 @@ class Question extends Model
     public function qLangAudio()
     {
         return   $this->hasOne(QuestionTranslation::class, 'q_id', 'id')->select(['id','q_id','lang','q_title','q_audio','opt_a_audio','opt_b_audio','opt_c_audio']);
+    }
+
+    public function setQTypeAttribute($value)
+    {
+        if($value=='specific'){
+            $value=2;
+        }
+        if($value=='common'){
+            $value=1;
+        }
+        $this->attributes['q_type'] =$value;
+    }
+    public function getQTypeAttribute($value)
+    {
+        if($value==1){
+            $getVal='common';
+        }
+        if($value==2){
+            $getVal='specific';
+        }
+        return $getVal;
     }
 
 
