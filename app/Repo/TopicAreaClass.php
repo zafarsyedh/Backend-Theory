@@ -46,7 +46,7 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'full_name' => 'required',
+                'full_name' => 'required|unique:topic_area_translations,full_name,' . $id,
                 'status' => 'required',
             ]);
             if ($validator->fails())

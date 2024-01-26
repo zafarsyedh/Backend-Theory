@@ -20,7 +20,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email','phone', 'password','role_id','status'
+        'name', 'email','phone', 'password','role_id','branch_id','status'
     ];
 
 
@@ -46,6 +46,10 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(\Spatie\Permission\Models\Role::class, 'role_id', 'id')->select(['id','name']);
+    }
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id', 'id')->select(['id','title']);
     }
 
    /* public function getStatusAttribute($value)

@@ -47,7 +47,7 @@ class RoleClass implements Interfaces\RoleInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'name' => 'required',
+                'name' => 'required|unique:roles,name,' . $id,
                 'status' => 'required',
             ]);
             if ($validator->fails())
