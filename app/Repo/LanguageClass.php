@@ -1,94 +1,89 @@
 <?php
 
 namespace App\Repo;
+use App\Http\Helpers\Helper;
+use App\Models\Branch;
 use App\Models\Language;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+
 class LanguageClass implements Interfaces\LanguageInterface
 {
 
     public function getAllLanguages()
     {
-        $qry=Language::Query();
-        $qry=$qry->where('is_deleted',0)
-            ->orderBy('is_default','DESC');
-//        $qry=$qry->paginate(5);
-        $qry=$qry->get();
-        return $qry;
-
+        try {
+            $qry=Language::Query();
+            $qry=$qry->orderBy('is_default','DESC');;
+            $qry=$qry->get();
+            return  Helper::successWithData($qry,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
     }
     public function getAllLangForDropdown()
     {
-        $qry=Language::Query();
-        $qry=$qry->where('is_deleted',0);
-        $qry=$qry->where('status',1)
-            ->orderBy('is_default','DESC');
-        $qry=$qry->get();
-        return $qry;
+        try {
+            $qry=Language::Query();
+            $qry=$qry->where('status',1)->orderBy('is_default','DESC');;
+            $qry=$qry->get();
+            return  Helper::successWithData($qry,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
 
     }
 
     public function saveLanguage($request)
     {
-        // TODO: Implement saveAddon() method.
-        if(Language::where('lang',$request->lang)->where('is_deleted',0)->first()){
-            return $response=[
-                "status"=>"false",
-                "messege"=>"This record already exist"
-            ];
-        }
-        $language=new Language();
-        $language->lang=$request->lang;
-        $language->lang_short=$request->short_code;
-        $language->direction=$request->direction;
-        $language->status=$request->status;
-        if($language->save()){
-            return $response=([
-                "status"=>"success",
-                "data"=>$language,
-                "messege"=>"Languages Added Successfully"
-            ]);
-        }else{
-            return $response=[
-                "status"=>"false",
-                "messege"=>"Record not save due to some technical error"
-            ];
 
+        try {
+
+            $id = $request->id;
+            DB::beginTransaction();
+            $validator = Validator::make($request->all(), [
+                'lang' => 'required',
+                'short_code' => 'required',
+                'direction' => 'required',
+                'status' => 'required',
+            ]);
+            if ($validator->fails())
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
+
+            $role = Language::updateOrCreate(
+                [
+                    'id' => $request->id,
+                ],
+                [
+                    'lang' => $request->lang,
+                    'lang_short' =>$request->short_code,
+                    'direction' =>$request->direction,
+                    'status' =>$request->status,
+                ]
+            );
+            DB::commit();
+            return  Helper::successWithData($role,(($id)?"Language Updated Successfully":"Language Added Successfully"));
+        } catch (ValidationException $validationException) {
+            DB::rollBack();
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(), $e);
         }
+
     }
 
     public function deleteLanguage($id)
     {
-        // TODO: Implement deleteAddon() method.
-        $addon =Language::find($id);
-        $addon->is_deleted=1;
-        $addon->save();
-        return 1;
-    }
-
-    public function editLanguage($id)
-    {
-        // TODO: Implement editAddon() method.
-        return $addon = Language::find($id);
-    }
-
-    public function updateLanguage($request)
-    {
-        // TODO: Implement updateAddon() method.
-        $language=Language::find($request->id);
-        $language->lang=$request->lang;
-        $language->direction=($request->direction);
-        $language->status=$request->status;
-        if($language->save()){
-            return $response=([
-                "status"=>"success",
-                "data"=>$language,
-                "messege"=>"Languages Updated Successfully"
-            ]);
-        }else{
-            return $response=[
-                "status"=>"false",
-                "messege"=>"Record not save due to some technical error"
-            ];
-
+        try {
+            $role = Language::find($id);
+            $role->delete();
+            return Helper::successWithData($role, $message="Language Deleted");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
+
 }

@@ -11,7 +11,7 @@ interface CourseInterface{
     public function saveCourseTranslation($request);
     public function saveCourseConfig($request);
     public function deleteCourse($id);
-    public function editCourse($id);
-    public function updateCourse($request);
+
+
 
 }

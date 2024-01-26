@@ -11,19 +11,19 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use mysql_xdevapi\Exception;
 
 class BranchClass implements Interfaces\BranchInterface
 {
-
     public function getAllBranchForDropdown()
     {
         try {
             $qry=Branch::query();
             $qry=$qry->where('status',1);
             $qry=$qry->get();
-       return  Helper::successWithData($qry,'Record found');
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+             return  Helper::successWithData($qry,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
     public function getAllBranches()
@@ -31,17 +31,12 @@ class BranchClass implements Interfaces\BranchInterface
         try {
             $qry=Branch::query();
             $qry=$qry->get();
-            return $response = ([
-                "status" => "success",
-                "data" => $qry,
-                "messege" => "Branch Lists"
-            ]);
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return  Helper::successWithData($qry,'Record found');
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
+
     }
-
-
     public function createBranch($request)
     {
         try {
@@ -52,58 +47,38 @@ class BranchClass implements Interfaces\BranchInterface
                 'status' => 'required',
             ]);
             if ($validator->fails())
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>$validator->errors()
-                ];
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
             $role = Branch::updateOrCreate(
                 [
                     'id' => $request->id,
                 ],
-
                 [
                     'title' =>$request->title,
                     'status' =>$request->status,
-
                 ]
             );
-
             DB::commit();
             $data = Branch::find($role->id);
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => (($id)?"Branch Updated Successfully":"Branch Added Successfully")
-            ]);
+            return  Helper::successWithData($data,(($id)?"Branch Updated Successfully":"Branch Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
     }
-
-
-
     public function deleteBranch($id)
     {
         try {
             $role = Branch::find($id);
             $role->delete();
-            return Helper::success($role, $message="Branch Deleted");
-        } catch (ValidationException $validationException) {
+            return Helper::successWithData($role, $message="Branch Deleted");
+        }catch (\Exception $e) {
             DB::rollBack();
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
-
 
 }

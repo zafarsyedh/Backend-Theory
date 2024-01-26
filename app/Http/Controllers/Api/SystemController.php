@@ -19,41 +19,44 @@ class SystemController extends Controller
         $this->room=$room;
     }
     public function systemList(){
-
         try{
             $response['systems']=$this->system->getAllSystems();
-            $response['rooms']=$this->room->getAllRoomForDropdown();
-            if($response){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
+            if($response['systems']['status']){
+                $response['rooms']=$this->room->getAllRoomForDropdown();
+                $response= Helper::success($response,$response['systems']['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $response);
+                $response= Helper::error($response['systems']['message'],$response['systems']['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
     public function saveSystem(Request $request){
-
         try{
-            $res=$this->system->createSystem($request);
-            if( $res['status'] == 'success'){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
+            $response=$this->system->createSystem($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
 
     public function deleteSystem( $id){
         try {
-            $res = $this->system->deleteSystem($id);
-            return Helper::ajaxSuccess($res->get('data'),$res->get('message'));
+            $response =  $this->system->deleteSystem($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
         } catch (\Exception $e) {
-            return Helper::ajaxError($e->getMessage());
+            return Helper::error($e->getMessage(),$e);
         }
     }
 }
