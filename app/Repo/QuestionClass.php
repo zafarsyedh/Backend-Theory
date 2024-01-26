@@ -8,6 +8,7 @@ use App\Models\Language;
 use App\Models\Question;
 use App\Models\QuestionCourse;
 use App\Models\QuestionSection;
+use App\Models\QuestionSolved;
 use App\Models\QuestionTranslation;
 use App\Models\Role;
 use App\Models\SolvedQuestions;
@@ -294,12 +295,113 @@ protected $qAudioname='';
             $res = Question::with('questionTranslations','qCourses.course.courseTranslation:id,course_id,full_name');
             $res = $res->where('id',$id);
             $res = $res->first();
+
             return  Helper::successWithData($res,'Record found');
         } catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(),$e);
         }
     }
 
+    }
+
+    public function createNewAttempt($request)
+    {
+        try {
+         $attempt=Attempt::where('std_id',$request->std_id)->where('status',0)->latest('id')->first();
+                if(!$attempt){
+                    $attempt = new Attempt();
+                }
+                $attempt->std_id= $request->std_id;
+                $attempt->save();
+                return $attempt->id;
+
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+    public function questionMoveInSolvedQuestionTable($request)
+    {
+        try {
+            DB::beginTransaction();
+            $courseId=1;
+            $qLang='en';
+            $audioLang='en';
+
+            $attemptId= $this->createNewAttempt($request);
+            if(QuestionSolved::where('attempt_id',$attemptId)->where('is_answered',0)->count() > 0 ){
+                return  Helper::successWithData($attemptId,'Record created');
+            }
+
+
+            $qry = Question::query();
+            $qry = $qry->select('id');
+            $qry = $qry->where(function ($query) use ($courseId) {
+                $query->whereRelation('qCourses','course_id',$courseId)
+                    ->orWhere('q_type','2');
+            });
+            $qry = $qry->where('status', 1);
+            $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
+            {
+                $query->where('lang',$qLang);
+            });
+
+
+            $qry=$qry->limit(10);
+            $qry=$qry->inRandomOrder();
+              $allQuestion = $qry->get();
+
+            foreach($allQuestion as $row){
+                $question=QuestionSolved::updateOrCreate(
+                    [
+                        'q_id'=> $row->id,
+                        'attempt_id'=>$attemptId,
+                    ],
+                    [
+
+                        'attempt_id' =>$attemptId,
+                        'q_id'=> $row->id,
+                        'is_answered' =>0,
+                        'lang'=>$qLang,
+                        'audio_lang'=>$audioLang,
+                    ]
+                );
+            }
+            DB::commit();
+
+            return  Helper::successWithData($question->attempt_id,'Record created');
+
+        }
+        catch (\Exception $e) {
+            DB::rollBack();
+            return  Helper::error($e->getMessage(),$e);
+        }
+    }
+    public function getMovedQuestionForTheoryPractice($request,$attemptId)
+    {
+        try {
+
+
+            $qLang=$request->q_lang;
+            $audioLang=$request->audio_lang;
+
+            $qry=QuestionSolved::query();
+            $qry=$qry->with(['question.questionTranslations' => function ($query) use ($qLang) {
+                $query->where('lang',$qLang);
+            },'question.qLangAudio'=>  function ($query) use ($audioLang) {
+                return $query->where('lang',$audioLang);
+            },'question']);
+
+            $qry=$qry->select('id','q_id','attempt_id');
+            $qry=$qry->where('attempt_id',$attemptId);
+            $qry= $qry->where('is_answered',0);
+            return   $qry=$qry->get();
+
+            return Helper::success($qry,'record found');
+        }catch (\Exception $e) {
+            return  $e->getMessage();
+            return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
 
 
 }

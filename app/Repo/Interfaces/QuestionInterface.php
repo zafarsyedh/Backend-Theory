@@ -11,4 +11,11 @@ interface QuestionInterface{
     public function getQuestionTranslationsById($id);
 
 
+
+
+    public function createNewAttempt($request);
+
+    public function questionMoveInSolvedQuestionTable($request);
+    public function   getMovedQuestionForTheoryPractice($request,$attemptId);
+
 }
