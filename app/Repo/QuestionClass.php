@@ -302,7 +302,7 @@ protected $qAudioname='';
         }
     }
 
-    }
+
 
     public function createNewAttempt($request)
     {
