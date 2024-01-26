@@ -302,7 +302,7 @@ protected $qAudioname='';
         }
     }
 
-    }
+
 
     public function createNewAttempt($request)
     {
@@ -349,6 +349,9 @@ protected $qAudioname='';
             $qry=$qry->limit(10);
             $qry=$qry->inRandomOrder();
               $allQuestion = $qry->get();
+              if($allQuestion->count() ==0){
+                  return  Helper::errorWithData('Record not found',$allQuestion);
+              }
 
             foreach($allQuestion as $row){
                 $question=QuestionSolved::updateOrCreate(

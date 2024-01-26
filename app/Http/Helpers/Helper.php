@@ -137,17 +137,9 @@ class Helper{
 
 
 
-    public static function error($message, $exception = false, $color = "C91432")
 
-    {
-        Log::channel('api')->error($message);
-        $message = ($exception) ? (config('app.debug') ? $message : __('Internet Server Error! Please contact customer support')) : $message;
-        return response()->json([
-            'success' => false,
-            'message' => $message,
-            'message_color' => $color,
-        ], 400);
-    } public static function error($message = 'error', $data)
+
+ public static function error($message = 'error', $data)
     {
         try {
             return collect(['status' => false,'success' => false, 'data' => $data, 'message' => $message]);

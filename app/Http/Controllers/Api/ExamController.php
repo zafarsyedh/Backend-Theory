@@ -22,6 +22,7 @@ class ExamController extends Controller
     public function getQuestionsForExam(Request $request){
 
         try{
+
              $request->all();
             $std_id=$request->std_id;
             $lang= $request->q_lang;
@@ -29,9 +30,44 @@ class ExamController extends Controller
 
              $response=$this->questions->questionMoveInSolvedQuestionTable($request);
             if($response['status']){
+
                $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
                return Helper::success($res,'Questions list');
+            }else{
+                return Helper::errorWithData('Record not exist',[]);
             }
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
+    //saveQuestionsForExam
+    public function saveQuestionsForExam(Request $request){
+
+        try{
+            $response=$this->exam->saveExamQuestion($request);
+            if($response['status']){
+                return Helper::success($response,'Questions saved');
+            }else{
+                return Helper::errorWithData($response,'Questions not saved');
+            }
+
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
+    //savePracticeQuestions
+    public function savePracticeQuestions(Request $request){
+
+        try{
+            $response=$this->exam->savePracticeQuestion($request);
+            if($response['status']){
+                return Helper::success($response,'Questions saved');
+            }else{
+                return Helper::errorWithData($response,'Questions not saved');
+            }
+
         } catch (\Exception $e) {
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }

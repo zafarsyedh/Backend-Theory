@@ -97,6 +97,8 @@ Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
 // Student Area
 Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
+Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
+Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 
 Route::any('login',[LoginController::class,'login']);
 Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);
