@@ -45,7 +45,7 @@ class RoomClass implements Interfaces\RoomInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'title' => 'required',
+                'title' => 'required|unique:rooms,title,' . $id,
                 'branch_id' => 'required',
                 'status' => 'required',
             ]);

@@ -46,9 +46,9 @@ class SystemRepositryClass implements Interfaces\SystemInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'title' => 'required',
+                'title' => 'required|unique:systems,title,' . $id,
                 'room_id' => 'required',
-                'system_ip' => 'required',
+                'system_ip' => 'required|unique:systems,system_ip,' . $id,
                 'status' => 'required',
             ]);
             if ($validator->fails())

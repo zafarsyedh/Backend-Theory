@@ -43,7 +43,7 @@ class BranchClass implements Interfaces\BranchInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'title' => 'required',
+                'title' => 'required|unique:branches,title,' . $id,
                 'status' => 'required',
             ]);
             if ($validator->fails())

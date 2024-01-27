@@ -43,8 +43,8 @@ class LanguageClass implements Interfaces\LanguageInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'lang' => 'required',
-                'short_code' => 'required',
+                'lang' => 'required|unique:languages,lang,' . $id,
+                'short_code' => 'required|unique:languages,lang_short,' . $id,
                 'direction' => 'required',
                 'status' => 'required',
             ]);

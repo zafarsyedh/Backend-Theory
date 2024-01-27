@@ -65,7 +65,7 @@ class CourseClass implements CourseInterface
             $id=$request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'short_name' => 'required',
+                'short_name' => 'required|unique:courses,short_name,' . $id,
                 'status' => 'required',
             ]);
             if ($validator->fails())

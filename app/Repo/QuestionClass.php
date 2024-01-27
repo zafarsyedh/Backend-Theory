@@ -256,7 +256,7 @@ protected $qAudioname='';
     public function getAllQuestionForAdminSide()
     {
         try {
-            $qry=Question::with('questionDetail','course.courseTranslation','topic.topicAreaTranslation');
+            $qry=Question::with('questionDetail','topic.topicAreaTranslation','qCourses.course');
             $qry=$qry->orderBy('id','ASC');
             $qry=$qry->get();
             return  Helper::successWithData($qry,'Record found');

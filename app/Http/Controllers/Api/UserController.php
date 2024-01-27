@@ -7,6 +7,7 @@ use App\Http\Helpers\Helper;
 use App\Http\Requests\LanguageRequest;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Repo\Interfaces\BranchInterface;
 use App\Repo\Interfaces\RoleInterface;
 use App\Repo\Interfaces\UserInterface;
 use Carbon\Carbon;
@@ -20,10 +21,12 @@ class UserController extends Controller
 {
     public  $user;
     public $role;
-    public function __construct(UserInterface $user, RoleInterface $role)
+    public $branch;
+    public function __construct(UserInterface $user, RoleInterface $role,BranchInterface $branch)
     {
         $this->user=$user;
         $this->role=$role;
+        $this->branch=$branch;
     }
 
     public function index(){
@@ -31,6 +34,7 @@ class UserController extends Controller
             $response['users']=$this->user->getAllUser();
             if($response['users']['status']){
                 $response['roles']=$this->role->getAllRoles();
+                $response['branches']=$this->branch->getAllBranchForDropdown();
                 $response= Helper::success($response,$response['users']['message']);
             }else{
                 $response= Helper::error($response['users']['message'],$response['users']['data']);
