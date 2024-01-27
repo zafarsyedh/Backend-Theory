@@ -87,6 +87,9 @@ Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
 Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
 Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
+Route::post('get-results',[ExamController::class,'getResults']);
+
+
 Route::any('login',[LoginController::class,'login']);
 Route::any('get-all-users', [UserController::class, 'index']);
 Route::any('get-all-roles',[RoleController::class,'index']);

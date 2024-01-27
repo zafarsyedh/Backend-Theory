@@ -379,10 +379,10 @@ protected $qAudioname='';
             return  Helper::error($e->getMessage(),$e);
         }
     }
-    public function getMovedQuestionForTheoryPractice($request,$attemptId)
+    public function getMovedQuestionForTheoryPractice($request,$attemptId,$purpose=1)
     {
         try {
-
+         //   $purpose 2 for result and 1 for get question for exam
 
             $qLang=$request->q_lang;
             $audioLang=$request->audio_lang;
@@ -394,9 +394,9 @@ protected $qAudioname='';
                 return $query->where('lang',$audioLang);
             },'question']);
 
-            $qry=$qry->select('id','q_id','attempt_id');
+            $qry=$qry->select('id','q_id','attempt_id','choosed_option','is_correct_ans','is_answered');
             $qry=$qry->where('attempt_id',$attemptId);
-            $qry= $qry->where('is_answered',0);
+            ($purpose==1)? $qry= $qry->where('is_answered',0):'';
             return   $qry=$qry->get();
 
             return Helper::success($qry,'record found');

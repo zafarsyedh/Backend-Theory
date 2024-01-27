@@ -73,4 +73,25 @@ class ExamController extends Controller
         }
     }
 
+    //getResults
+    public function getResults(Request $request){
+
+        try{
+
+            $request->all();
+
+
+           return $response=$this->questions->getMovedQuestionForTheoryPractice($request,$request->attempt_id,2);
+            if($response['status']){
+
+                $res=$this->questions->get($request,$response['data']);
+                return Helper::success($res,'Questions list');
+            }else{
+                return Helper::errorWithData('Record not exist',[]);
+            }
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
 }

@@ -11,14 +11,16 @@ class ExamClass implements Interfaces\ExamInterface
     public function saveExamQuestion($request)
     {
         try {
-         foreach ($request->markedQuestions as $q){
+            if(count($request->markedQuestions) > 0) {
+                foreach ($request->markedQuestions as $q) {
 
-             $examQ= QuestionSolved::find($q['id']);
-             $examQ->choosed_option=$q['selectedValue'];
-             $examQ->is_correct_ans=($q['correctAns']==$q['selectedValue'])?1:0;
-             $examQ->is_answered=1;
-             $examQ->save();
+                    $examQ = QuestionSolved::find($q['id']);
+                    $examQ->choosed_option = $q['selectedValue'];
+                    $examQ->is_correct_ans = ($q['correctAns'] == $q['selectedValue']) ? 1 : 0;
+                    $examQ->is_answered = 1;
+                    $examQ->save();
 
+                }
             }
             return Helper::successWithData([],'record save');
 
