@@ -36,8 +36,6 @@ protected $path='user-images/';
 
         try {
 
-
-
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [

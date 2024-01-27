@@ -49,13 +49,9 @@ Route::any('delete-topic/{id}',[TopicAreaController::class,'deleteTopic']);
 Route::any('save-topic-area-translation',[TopicAreaController::class,'saveTopicTranslation']);
 
 
-Route::any('save-role',[RoleController::class,'saveRole']);
-Route::any('edit-role',[RoleController::class,'editRole']);
-Route::any('delete-role/{id}',[RoleController::class,'deleteRole']);
-Route::any('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
-Route::any('save-role-permissions',[RoleController::class,'saveRolePermissions']);
 
-Route::any('get-config',[ConfigurationController::class,'index']);
+
+
 Route::any('save-config',[ConfigurationController::class,'saveConfig']);
 
 
@@ -81,17 +77,24 @@ Route::any('system-list',[SystemController::class,'systemList']);
 Route::post('system-create',[SystemController::class,'saveSystem']);
 Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
-});
 
+
+});
+Route::any('get-config',[ConfigurationController::class,'index']);
 // Student Area
 Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
 Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
 Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 Route::any('login',[LoginController::class,'login']);
-Route::any('get-all-users', [UserController::class, 'index']);
-Route::any('get-all-roles',[RoleController::class,'index']);
+
 Route::any('import-question', [QuestionController::class, 'importQuestion']);
 Route::any('verify_token', [LoginController::class, 'apiVerifyToken']);
 
+Route::any('get-all-users', [UserController::class, 'index']);
+Route::any('get-all-roles',[RoleController::class,'index']);
 
-
+Route::any('save-role',[RoleController::class,'saveRole']);
+Route::any('edit-role',[RoleController::class,'editRole']);
+Route::any('delete-role/{id}',[RoleController::class,'deleteRole']);
+Route::any('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
+Route::any('save-role-permissions',[RoleController::class,'saveRolePermissions']);
