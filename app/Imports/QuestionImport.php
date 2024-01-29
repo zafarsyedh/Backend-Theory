@@ -28,11 +28,10 @@ class QuestionImport implements ToModel, WithHeadingRow
 
 
         if ($row['question']) {
+
             $lang=Language::where('lang',$row['language'])->first();
-            if($row['language'] =='English') {
+            if($row['language'] == 'English') {
                 $courseId=NULL;
-
-
                 if(!$topicTrans=TopicAreaTranslation::where('full_name',$row['topic_area'])->first()){
                     $topic=new TopicArea();
                     $topic->status=1;

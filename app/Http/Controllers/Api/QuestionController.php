@@ -128,7 +128,7 @@ class QuestionController extends Controller
     {
         try{
                 $file =Excel::import(new QuestionImport,request()->file('file'));
-                $response= Helper::success($file,'Upload successfully');
+                $response= Helper::success("imported",'Upload successfully');
                 return $response;
             } catch (\Exception $e) {
                 return Helper::error($e->getMessage(),$e);

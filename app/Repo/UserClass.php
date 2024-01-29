@@ -36,15 +36,13 @@ protected $path='user-images/';
 
         try {
 
-
-
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
                 'email' =>  'required|email|unique:users,email,' . $id,
                 'phone' => 'required',
-                'password' => 'required',
+                'password' =>'nullable|string|min:8',
                 'role_id' => 'required',
                 'status' => 'required',
             ]);

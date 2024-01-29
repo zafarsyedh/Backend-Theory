@@ -83,7 +83,7 @@ class RoomClass implements Interfaces\RoomInterface
         try {
             $role = Room::find($id);
             $role->delete();
-            return Helper::successWithData($role, $message="Branch Deleted");
+            return Helper::successWithData($role, $message="Room Deleted");
         }catch (\Exception $e) {
             DB::rollBack();
             return Helper::errorWithData($e->getMessage(),$e);
