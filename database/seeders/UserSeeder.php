@@ -24,9 +24,9 @@ class UserSeeder extends Seeder
                 'email' => 'admin@gmail.com',
             ],
             [
-                'name' => 'John doe',
+                'name' => 'SalmanRaza',
                 'email' => 'admin@gmail.com',
-                'phone' => '911234567891',
+                'phone' => '03334636416',
                 'password' => Hash::make('iub12345678'),
                 'role_id' => '1',
                 'status' => '1'
