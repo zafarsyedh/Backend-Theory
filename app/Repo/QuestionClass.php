@@ -312,6 +312,7 @@ protected $qAudioname='';
                     $attempt = new Attempt();
                 }
                 $attempt->std_id= $request->std_id;
+                $attempt->exam_type= $request->exam_type;
                 $attempt->save();
                 return $attempt->id;
 
@@ -328,6 +329,7 @@ protected $qAudioname='';
             $audioLang='en';
 
             $attemptId= $this->createNewAttempt($request);
+
             if(QuestionSolved::where('attempt_id',$attemptId)->where('is_answered',0)->count() > 0 ){
                 return  Helper::successWithData($attemptId,'Record created');
             }
@@ -379,10 +381,10 @@ protected $qAudioname='';
             return  Helper::error($e->getMessage(),$e);
         }
     }
-    public function getMovedQuestionForTheoryPractice($request,$attemptId)
+    public function getMovedQuestionForTheoryPractice($request,$attemptId,$purpose=1)
     {
         try {
-
+         //   $purpose 2 for result and 1 for get question for exam
 
             $qLang=$request->q_lang;
             $audioLang=$request->audio_lang;
@@ -394,9 +396,9 @@ protected $qAudioname='';
                 return $query->where('lang',$audioLang);
             },'question']);
 
-            $qry=$qry->select('id','q_id','attempt_id');
+            $qry=$qry->select('id','q_id','attempt_id','choosed_option','is_correct_ans','is_answered');
             $qry=$qry->where('attempt_id',$attemptId);
-            $qry= $qry->where('is_answered',0);
+            ($purpose==1)? $qry= $qry->where('is_answered',0):'';
             return   $qry=$qry->get();
 
             return Helper::success($qry,'record found');

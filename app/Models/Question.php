@@ -55,6 +55,7 @@ class Question extends Model
     }
     public function getQTypeAttribute($value)
     {
+        $getVal=0;
         if($value==1){
             $getVal='common';
         }
