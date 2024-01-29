@@ -312,6 +312,7 @@ protected $qAudioname='';
                     $attempt = new Attempt();
                 }
                 $attempt->std_id= $request->std_id;
+                $attempt->exam_type= $request->exam_type;
                 $attempt->save();
                 return $attempt->id;
 
@@ -328,6 +329,7 @@ protected $qAudioname='';
             $audioLang='en';
 
             $attemptId= $this->createNewAttempt($request);
+
             if(QuestionSolved::where('attempt_id',$attemptId)->where('is_answered',0)->count() > 0 ){
                 return  Helper::successWithData($attemptId,'Record created');
             }

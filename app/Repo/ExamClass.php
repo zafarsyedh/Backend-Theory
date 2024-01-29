@@ -2,6 +2,7 @@
 
 namespace App\Repo;
 use App\Http\Helpers\Helper;
+use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
 
 
@@ -38,6 +39,21 @@ class ExamClass implements Interfaces\ExamInterface
                 $examQ->is_answered=1;
                 $examQ->save();
             return Helper::successWithData([],'record save');
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+
+    //getScheduleExamList
+    public function  getScheduleExamList()
+    {
+        try {
+            $qry=ExamSchedule::query();
+            $qry->with('student:id,std_name','course:id,short_name','qLang:id,lang,lang_short','audioLang:id,lang,lang_short');
+            $qry->with('invigilator:id,name','system:id,title,system_ip');
+            $examSchedule=$qry->get();
+            return Helper::successWithData($examSchedule,'record found');
 
         }  catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(), []);

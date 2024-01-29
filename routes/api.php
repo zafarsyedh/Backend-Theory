@@ -89,6 +89,7 @@ Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']
 Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 Route::post('get-results',[ExamController::class,'getResults']);
 
+Route::any('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
 
 Route::any('login',[LoginController::class,'login']);
 Route::any('get-all-users', [UserController::class, 'index']);
