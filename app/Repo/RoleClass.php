@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Category;
 use App\Models\PermissionModule;
 use App\Models\RoleHasPermission;
+use App\Models\UserRoles;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -18,7 +19,7 @@ class RoleClass implements Interfaces\RoleInterface
     public function getAllRoles()
     {
         try {
-            $qry=Role::with('users');
+            $qry=UserRoles::with('user');
             $qry=$qry->orderBy('id','DESC');
             $qry=$qry->get();
             return  Helper::successWithData($qry,'Record found');
@@ -32,7 +33,7 @@ class RoleClass implements Interfaces\RoleInterface
     {
         try {
             $data["permissions"]=PermissionModule::with('permissions')->get();
-            $data['roleName'] = Role::select(['id','name'])->find($id);
+            $data['roleName'] = UserRoles::select(['id','name'])->find($id);
             $data['rolepermissions'] = $data['roleName']->permissions;
             return  Helper::successWithData($data,'Record found');
         }catch (\Exception $e) {
@@ -53,7 +54,7 @@ class RoleClass implements Interfaces\RoleInterface
             if ($validator->fails())
                 return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
-            $role = Role::updateOrCreate(
+            $role = UserRoles::updateOrCreate(
                 [
                     'id' => $request->id
                 ],
@@ -63,7 +64,7 @@ class RoleClass implements Interfaces\RoleInterface
                     'status'=>$request->status
                 ]);
             DB::commit();
-            $data=Role::with('users')->find($role->id);
+            $data=UserRoles::with('user')->find($role->id);
             return  Helper::successWithData($data,(($id)?"Role Updated Successfully":"Role Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
@@ -78,7 +79,7 @@ class RoleClass implements Interfaces\RoleInterface
     public function deleteRole($id)
     {
         try {
-            $role = Role::find($id);
+            $role = UserRoles::find($id);
             $role->delete();
             return Helper::successWithData($role, $message="Role Deleted");
         }catch (\Exception $e) {
@@ -94,7 +95,7 @@ class RoleClass implements Interfaces\RoleInterface
     {
         try {
             DB::beginTransaction();
-            $role= Role::find($request->roleId);
+            $role= UserRoles::find($request->roleId);
             $role->syncPermissions($request->permissions);
             DB::commit();
             return  Helper::successWithData($role,'Role Permissions Updated Successfully');
