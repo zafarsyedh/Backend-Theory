@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class TopicAreaClass implements Interfaces\TopicAreaInterface
@@ -46,7 +47,12 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'full_name' => 'required|unique:topic_area_translations,full_name,' . $id,
+                'full_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('topic_area_translations')->whereNull('deleted_at') . $id,
+                ],
                 'status' => 'required',
             ]);
             if ($validator->fails())
@@ -138,8 +144,11 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
 
 
         try {
+            DB::beginTransaction();
             $role = TopicArea::find($id);
             $role->delete();
+            $qtr=TopicAreaTranslation::where('topic_area_id',$id)->delete();
+            DB::commit();
             return Helper::successWithData($role, $message="Topic Area Deleted");
         }catch (\Exception $e) {
             DB::rollBack();

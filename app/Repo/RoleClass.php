@@ -9,6 +9,7 @@ use App\Models\RoleHasPermission;
 use App\Models\UserRoles;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -48,7 +49,12 @@ class RoleClass implements Interfaces\RoleInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'name' => 'required|unique:roles,name,' . $id,
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('roles')->whereNull('deleted_at') . $id,
+                ],
                 'status' => 'required',
             ]);
             if ($validator->fails())

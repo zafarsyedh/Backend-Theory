@@ -12,6 +12,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class SystemRepositryClass implements Interfaces\SystemInterface
@@ -31,7 +32,7 @@ class SystemRepositryClass implements Interfaces\SystemInterface
     public function getAllSystems()
     {
         try {
-            $qry=System::with('room');
+            $qry=System::with('room.branch');
             $qry=$qry->get();
             return  Helper::successWithData($qry,'Record found');
         } catch (\Exception $e) {
@@ -46,9 +47,19 @@ class SystemRepositryClass implements Interfaces\SystemInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'title' => 'required|unique:systems,title,' . $id,
+                'title' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('systems')->whereNull('deleted_at') . $id,
+                ],
                 'room_id' => 'required',
-                'system_ip' => 'required|unique:systems,system_ip,' . $id,
+                'system_ip' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('systems')->whereNull('deleted_at') . $id,
+                ],
                 'status' => 'required',
             ]);
             if ($validator->fails())
@@ -68,7 +79,7 @@ class SystemRepositryClass implements Interfaces\SystemInterface
             );
 
             DB::commit();
-            $data = System::with('room')->find($role->id);
+            $data = System::with('room.branch')->find($role->id);
             return  Helper::successWithData($data,(($id)?"System Updated Successfully":"System Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();

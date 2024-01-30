@@ -10,7 +10,7 @@ class Language extends Model
 {
     use HasFactory,SoftDeletes;
     protected $fillable = [
-        'id', 'lang', 'lang_short','direction','status',
+        'id', 'lang', 'lang_short','direction','status','is_default',
     ];
 
 }

@@ -11,6 +11,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class RoomClass implements Interfaces\RoomInterface
@@ -19,7 +20,7 @@ class RoomClass implements Interfaces\RoomInterface
     public function getAllRoomForDropdown()
     {
         try {
-            $qry=Room::query();
+            $qry=Room::with('branch');
             $qry=$qry->where('status',1);
             $qry=$qry->get();
             return  Helper::successWithData($qry,'Record found');
@@ -45,7 +46,12 @@ class RoomClass implements Interfaces\RoomInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'title' => 'required|unique:rooms,title,' . $id,
+                'title' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('rooms')->whereNull('deleted_at') . $id,
+                ],
                 'branch_id' => 'required',
                 'status' => 'required',
             ]);

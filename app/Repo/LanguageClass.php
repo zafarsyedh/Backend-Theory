@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Language;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class LanguageClass implements Interfaces\LanguageInterface
@@ -43,8 +44,18 @@ class LanguageClass implements Interfaces\LanguageInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'lang' => 'required|unique:languages,lang,' . $id,
-                'short_code' => 'required|unique:languages,lang_short,' . $id,
+                'lang' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('languages')->whereNull('deleted_at') . $id,
+                ],
+                'lang_short' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('languages')->whereNull('deleted_at'),
+                ],
                 'direction' => 'required',
                 'status' => 'required',
             ]);
@@ -57,7 +68,8 @@ class LanguageClass implements Interfaces\LanguageInterface
                 ],
                 [
                     'lang' => $request->lang,
-                    'lang_short' =>$request->short_code,
+                    'lang_short' =>$request->lang_short,
+                    'is_default' =>($request->lang_short == "en") ? 1 : 0,
                     'direction' =>$request->direction,
                     'status' =>$request->status,
                 ]
