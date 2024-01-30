@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class ExamSchedule extends Model
 {
     use HasFactory;
+    protected $fillable=['system_id','std_id','course_id','invg_id','q_lang','audio_lang','exam_status','exam_type1'];
 
     public function student()
     {

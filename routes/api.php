@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+use App\Http\Controllers\Api\StudentController;
+
 
 //public urls
 Route::get('get-config',[ConfigurationController::class,'index']);
@@ -74,7 +76,7 @@ Route::any('get-all-rooms',[RoomController::class,'index']);
 Route::any('get-rooms-list',[RoomController::class,'roomsList']);
 Route::any('delete-room/{id}',[RoomController::class,'deleteRoom']);
 
-Route::any('system-list',[SystemController::class,'systemList']);
+
 Route::post('system-create',[SystemController::class,'saveSystem']);
 Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
@@ -89,13 +91,23 @@ Route::any('get-all-roles',[RoleController::class,'index']);
 
 });
 
+Route::any('system-list',[SystemController::class,'systemList']);
+
 // Student Area
 Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
 Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
 Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 
+
+Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
+
+
 Route::post('get-results',[ExamController::class,'getResults']);
 Route::any('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
+Route::any('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
+
+Route::any('test-data',[StudentController::class,'testData']);
+
 
 
 

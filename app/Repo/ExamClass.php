@@ -29,7 +29,6 @@ class ExamClass implements Interfaces\ExamInterface
             return Helper::errorWithData($e->getMessage(), []);
         }
     }
-
     public function savePracticeQuestion($request)
     {
         try {
@@ -44,7 +43,6 @@ class ExamClass implements Interfaces\ExamInterface
             return Helper::errorWithData($e->getMessage(), []);
         }
     }
-
     //getScheduleExamList
     public function  getScheduleExamList()
     {
@@ -57,6 +55,40 @@ class ExamClass implements Interfaces\ExamInterface
 
         }  catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+
+
+
+    public function createExam($request,$data=null)
+    {
+
+        try {
+
+            $trans = ExamSchedule::updateOrCreate(
+                [
+                    'id' =>0
+                ],
+                [
+                    'system_id' =>$request->system_id,
+                    'std_id' =>$data['stdId'],
+                    'course_id' =>$data['courseId'],
+                    'invg_id' =>$data['invgId'],
+                    'q_lang' =>$request->q_lang,
+                    'audio_lang' =>$request->audio_lang,
+                    'exam_status' =>1,
+                    'exam_type' =>$request->exam_type,
+
+                ]
+            );
+
+
+
+            return Helper::success($trans,'Record created successfully');
+        } catch (ValidationException $validationException) {
+            throw $validationException;
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 }

@@ -22,4 +22,6 @@ class Course extends Model
         return $this->hasMany(CourseConfigration::class, 'course_id', 'id');
     }
 
+
+
 }

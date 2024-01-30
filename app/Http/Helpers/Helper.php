@@ -1,5 +1,7 @@
 <?php
 namespace App\Http\Helpers;
+use App\Repo\ExamClass;
+use App\Repositries\leadgers\LeadgerRepositry;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Log;
 
@@ -146,6 +148,12 @@ class Helper{
         } catch (\Exception $exception) {
             return collect(['status' => false, 'success' => false, 'data' => null, 'message' => $exception->getMessage()]);
         }
+    }
+
+    public static function createExamHelper($request,$paramData){
+
+        $exam=new ExamClass();
+        $exam->createExam($request,$paramData);
     }
 
 
