@@ -11,7 +11,7 @@ class ExamSchedule extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $fillable=['system_id','std_id','course_id','invg_id','q_lang','audio_lang','exam_status','exam_type1'];
+    protected $fillable=['system_id','std_id','course_id','invg_id','q_lang','audio_lang','exam_status','exam_type'];
 
     public function student()
     {
