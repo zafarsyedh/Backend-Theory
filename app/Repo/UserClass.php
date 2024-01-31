@@ -45,7 +45,7 @@ protected $path='user-images/';
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('users')->whereNull('deleted_at'),
+                    Rule::unique('users')->whereNull('deleted_at') .$id,
                 ],
                 'phone' => 'required',
                 'password' =>'nullable|string|min:8',
@@ -58,7 +58,6 @@ protected $path='user-images/';
             $user = User::updateOrCreate(
                 [
                     'id' => $request->id,
-                    'email' =>$request->email,
                 ],
                 [
                     'name' =>$request->name,
