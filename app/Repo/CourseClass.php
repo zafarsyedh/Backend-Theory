@@ -10,6 +10,7 @@ use App\Repo\Interfaces\CourseInterface;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class CourseClass implements CourseInterface
@@ -65,7 +66,12 @@ class CourseClass implements CourseInterface
             $id=$request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'short_name' => 'required|unique:courses,short_name,' . $id,
+                'short_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('courses')->whereNull('deleted_at') . $id,
+                ],
                 'status' => 'required',
             ]);
             if ($validator->fails())
@@ -198,8 +204,11 @@ class CourseClass implements CourseInterface
     public function deleteCourse($id)
     {
         try {
+            DB::beginTransaction();
             $course =Course::find($id);
             $course->delete();
+            $qtr=CourseTranslation::where('course_id',$id)->delete();
+            DB::commit();
             return Helper::successWithData($course, $message="Course Deleted");
         }catch (\Exception $e) {
             DB::rollBack();

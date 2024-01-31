@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use mysql_xdevapi\Exception;
 
@@ -43,7 +44,12 @@ class BranchClass implements Interfaces\BranchInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'title' => 'required|unique:branches,title,' . $id,
+                'title' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('branches')->whereNull('deleted_at') . $id,
+                ],
                 'status' => 'required',
             ]);
             if ($validator->fails())

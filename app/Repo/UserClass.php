@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class UserClass implements Interfaces\UserInterface
@@ -40,7 +41,12 @@ protected $path='user-images/';
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
-                'email' =>  'required|email|unique:users,email,' . $id,
+                'email' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('users')->whereNull('deleted_at'),
+                ],
                 'phone' => 'required',
                 'password' =>'nullable|string|min:8',
                 'role_id' => 'required',

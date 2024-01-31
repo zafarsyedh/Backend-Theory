@@ -13,8 +13,6 @@ class CourseTranslation extends Model
         'course_id', 'lang', 'full_name',
     ];
 
-
-
     public function course()
     {
         return $this->belongsTo(Course::class, 'course_id', 'id');
