@@ -143,13 +143,44 @@ class ExamController extends Controller
 
             $response=$this->exam->getScheduleExamList($request);
             if($response['status']){
-
                 return Helper::success($response['data'],'Questions list');
             }else{
                 return Helper::errorWithData('Record not exist',[]);
             }
         } catch (\Exception $e) {
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
+
+    //updateScheduleExam
+    public function updateScheduleExam(Request $request){
+
+        try{
+
+            $response=$this->exam->updateExam($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],'Exam save successfully');
+            }else{
+                $response= Helper::error($response['message'],[]);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
+
+    public function deleteExam($id){
+        try {
+            $response = $this->exam->deleteExam($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
     }
 }
