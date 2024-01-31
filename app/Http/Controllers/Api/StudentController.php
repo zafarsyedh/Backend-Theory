@@ -55,6 +55,8 @@ class StudentController extends Controller
         }
     }
 
+
+
     public function testData(Request $request){
 
         return  $response= Helper::success($request->traffic_id,'return request');

@@ -4,6 +4,8 @@ namespace App\Repo;
 use App\Http\Helpers\Helper;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
+use Dotenv\Exception\ValidationException;
+use Illuminate\Support\Facades\Validator;
 
 
 class ExamClass implements Interfaces\ExamInterface
@@ -48,7 +50,7 @@ class ExamClass implements Interfaces\ExamInterface
     {
         try {
             $qry=ExamSchedule::query();
-            $qry->with('student:id,std_name','course:id,short_name','qLang:id,lang,lang_short','audioLang:id,lang,lang_short');
+            $qry->with('student:id,std_name,traffic_id,email','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage:id,lang,lang_short');
             $qry->with('invigilator:id,name','system:id,title,system_ip');
             $examSchedule=$qry->get();
             return Helper::successWithData($examSchedule,'record found');
@@ -89,6 +91,54 @@ class ExamClass implements Interfaces\ExamInterface
             throw $validationException;
         } catch (\Exception $e) {
             throw $e;
+        }
+    }
+
+    public function updateExam($request)
+    {
+
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'exam_type' => 'required',
+                'q_lang' => 'required',
+                'audio_lang' => 'required',
+                'system_id' => 'required',
+
+            ]);
+            if ($validator->fails())
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
+
+            if($exam=ExamSchedule::find($request->id)){
+                $exam->system_id=$request->system_id;
+                $exam->q_lang=$request->q_lang;
+                $exam->audio_lang=$request->audio_lang;
+                $exam->exam_type=$request->exam_type;
+                $exam->save();
+                return  Helper::successWithData($exam,'Record created successfully');
+
+            }
+            else{
+                return Helper::error('Exam not exist',[]);
+            }
+
+        } catch (ValidationException $validationException) {
+            throw $validationException;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    //    public function deleteSystem($id);
+    public function deleteExam($id)
+    {
+
+        try {
+            $role = ExamSchedule::find($id);
+            $role->delete();
+            return Helper::successWithData($role, $message="Exam Deleted");
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
 }
