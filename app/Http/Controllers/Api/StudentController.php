@@ -30,7 +30,7 @@ class StudentController extends Controller
                 $responseData = $response->json();
                 $response= Helper::success($responseData['data'],$response['message']);
             }else{
-                $response= Helper::error('Invalid traffic ID',[]);
+                $response= Helper::error('Invalid traffic ID',['error']);
             }
             return $response;
 

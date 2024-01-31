@@ -84,8 +84,6 @@ class ExamClass implements Interfaces\ExamInterface
                 ]
             );
 
-
-
             return Helper::success($trans,'Record created successfully');
         } catch (ValidationException $validationException) {
             throw $validationException;
@@ -115,7 +113,13 @@ class ExamClass implements Interfaces\ExamInterface
                 $exam->audio_lang=$request->audio_lang;
                 $exam->exam_type=$request->exam_type;
                 $exam->save();
-                return  Helper::successWithData($exam,'Record created successfully');
+
+
+                $qry=ExamSchedule::query();
+                $qry->with('student:id,std_name,traffic_id,email','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage:id,lang,lang_short');
+                $qry->with('invigilator:id,name','system:id,title,system_ip');
+                $examSchedule=$qry->find($request->id);
+                return  Helper::successWithData($examSchedule,'Record created successfully');
 
             }
             else{
