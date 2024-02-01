@@ -44,6 +44,7 @@ class QuestionController extends Controller
 
         try{
             $response=$this->question->getAllQuestionForAdminSide();
+
             if($response['status']){
                 $response= Helper::success($response,$response['message']);
             }else{

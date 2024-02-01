@@ -208,7 +208,7 @@ protected $qAudioname='';
                         }
                     }
                 }
-                ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : '';
+                ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : null;
                 if($request['opt_a_audio']){
                     foreach ($request['opt_a_audio'][$c] as $key => $audioFile) {
                         if ($audioFile != null && $key == $request['t_lang'][$c] ){

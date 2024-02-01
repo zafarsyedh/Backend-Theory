@@ -54,7 +54,7 @@ class LanguageClass implements Interfaces\LanguageInterface
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('languages')->whereNull('deleted_at'),
+                    Rule::unique('languages')->whereNull('deleted_at') . $id,
                 ],
                 'direction' => 'required',
                 'status' => 'required',
