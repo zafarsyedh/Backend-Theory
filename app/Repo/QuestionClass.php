@@ -204,38 +204,38 @@ protected $qAudioname='';
                     foreach ($request['q_audio'][$c] as $key => $audioFile) {
                         if ($audioFile != null && $key == $request['t_lang'][$c]){
                             $this->qAudioname = $this->handleFiles($audioFile, $this->qAudioPath);
-
+                            ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : "";
                         }
                     }
                 }
-                ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : '';
+
                 if($request['opt_a_audio']){
-                    foreach ($request['opt_a_audio'][$c] as $key => $audioFile) {
-                        if ($audioFile != null && $key == $request['t_lang'][$c] ){
-                            $this->optAAudio = $this->handleFiles($audioFile, $this->qAudioPath);
-
+                    foreach ($request['opt_a_audio'][$c] as $key => $audioAFile) {
+                        if ($audioAFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optAAudio = $this->handleFiles($audioAFile, $this->qAudioPath);
+                            ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : '';
                         }
                     }
                 }
-                ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : '';
+
                 if($request['opt_b_audio']){
-                    foreach ($request['opt_b_audio'][$c] as $key => $audioFile) {
-                        if ($audioFile != null && $key == $request['t_lang'][$c] ){
-                            $this->optBAudio = $this->handleFiles($audioFile, $this->qAudioPath);
-
+                    foreach ($request['opt_b_audio'][$c] as $key => $audioBFile) {
+                        if ($audioBFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optBAudio = $this->handleFiles($audioBFile, $this->qAudioPath);
+                            ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : '';
                         }
                     }
                 }
-                ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : '';
+
                 if($request['opt_c_audio']){
-                    foreach ($request['opt_c_audio'][$c] as $key => $audioFile) {
-                        if ($audioFile != null && $key == $request['t_lang'][$c] ){
-                            $this->optCAudio = $this->handleFiles($audioFile, $this->qAudioPath);
-
+                    foreach ($request['opt_c_audio'][$c] as $key => $audioCFile) {
+                        if ($audioCFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optCAudio = $this->handleFiles($audioCFile, $this->qAudioPath);
+                            ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : '';
                         }
                     }
                 }
-                ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : '';
+
             $qTranslation->lang = $request['t_lang'][$c];
             $qTranslation->save();
 

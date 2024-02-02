@@ -22,6 +22,7 @@ class PermissionSeeder extends Seeder
         $topic_module = PermissionModule::updateOrCreate(['title' => 'Topic Area'], ['title' =>'Topic Area'] );
         $q_module = PermissionModule::updateOrCreate(['title' => 'Question'], ['title' =>'Question'] );
         $branch_module = PermissionModule::updateOrCreate(['title' => 'Branch'], ['title' =>'Branch'] );
+        $exam_module = PermissionModule::updateOrCreate(['title' => 'Exam'], ['title' =>'Exam'] );
         $room_module = PermissionModule::updateOrCreate(['title' => 'Room'], ['title' =>'Room'] );
         $system_module = PermissionModule::updateOrCreate(['title' => 'System'], ['title' =>'System'] );
         $lang_module = PermissionModule::updateOrCreate(['title' => 'Languages'], ['title' =>'Languages'] );
@@ -49,6 +50,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'q-edit', 'module_id' =>$q_module->id, 'guard_name' => 'web'],
             ['name' => 'q-delete', 'module_id' =>$q_module->id, 'guard_name' => 'web'],
             ['name' => 'q-translate', 'module_id' =>$q_module->id, 'guard_name' => 'web'],
+
+            //exam
+            ['name' => 'exam-view', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-create', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-edit', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-delete', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
 
             //Branch
             ['name' => 'branch-view', 'module_id' =>$branch_module->id, 'guard_name' => 'web'],
