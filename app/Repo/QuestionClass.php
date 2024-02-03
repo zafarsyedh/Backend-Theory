@@ -366,7 +366,7 @@ protected $qAudioname='';
                         'attempt_id' =>$attemptId,
                         'q_id'=> $row->id,
                         'is_answered' =>0,
-                        'lang'=>$qLang,
+                        'q_lang'=>$qLang,
                         'audio_lang'=>$audioLang,
                     ]
                 );

@@ -1,40 +1,4 @@
 <?php return array (
-  'beyondcode/laravel-websockets' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'BeyondCode\\LaravelWebSockets\\WebSocketsServiceProvider',
-    ),
-    'aliases' => 
-    array (
-      'WebSocketRouter' => 'BeyondCode\\LaravelWebSockets\\Facades\\WebSocketRouter',
-    ),
-  ),
-  'codebyray/laravel-review-rateable' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Codebyray\\ReviewRateable\\ReviewRateableServiceProvider',
-    ),
-  ),
-  'fruitcake/laravel-cors' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Fruitcake\\Cors\\CorsServiceProvider',
-    ),
-  ),
-  'jorenvanhocht/laravel-share' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Jorenvh\\Share\\Providers\\ShareServiceProvider',
-    ),
-    'aliases' => 
-    array (
-      'Share' => 'Jorenvh\\Share\\ShareFacade',
-    ),
-  ),
   'laravel/sail' => 
   array (
     'providers' => 
@@ -86,17 +50,6 @@
       'Excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
     ),
   ),
-  'munafio/chatify' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Chatify\\ChatifyServiceProvider',
-    ),
-    'aliases' => 
-    array (
-      'Chatify' => 'Chatify\\Facades\\ChatifyMessenger',
-    ),
-  ),
   'nesbot/carbon' => 
   array (
     'providers' => 
@@ -118,28 +71,6 @@
       0 => 'Termwind\\Laravel\\TermwindServiceProvider',
     ),
   ),
-  'simplesoftwareio/simple-qrcode' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'SimpleSoftwareIO\\QrCode\\QrCodeServiceProvider',
-    ),
-    'aliases' => 
-    array (
-      'QrCode' => 'SimpleSoftwareIO\\QrCode\\Facades\\QrCode',
-    ),
-  ),
-  'spatie/laravel-google-calendar' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Spatie\\GoogleCalendar\\GoogleCalendarServiceProvider',
-    ),
-    'aliases' => 
-    array (
-      'GoogleCalendar' => 'Spatie\\GoogleCalendar\\GoogleCalendarFacade',
-    ),
-  ),
   'spatie/laravel-ignition' => 
   array (
     'providers' => 
@@ -156,39 +87,6 @@
     'providers' => 
     array (
       0 => 'Spatie\\Permission\\PermissionServiceProvider',
-    ),
-  ),
-  'srmklive/paypal' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Srmklive\\PayPal\\Providers\\PayPalServiceProvider',
-    ),
-    'aliases' => 
-    array (
-      'PayPal' => 'Srmklive\\PayPal\\Facades\\PayPal',
-    ),
-  ),
-  'yajra/laravel-datatables-oracle' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Yajra\\DataTables\\DataTablesServiceProvider',
-    ),
-    'aliases' => 
-    array (
-      'DataTables' => 'Yajra\\DataTables\\Facades\\DataTables',
-    ),
-  ),
-  'yoeunes/toastr' => 
-  array (
-    'providers' => 
-    array (
-      0 => 'Yoeunes\\Toastr\\ToastrServiceProvider',
-    ),
-    'aliases' => 
-    array (
-      'Toastr' => 'Yoeunes\\Toastr\\Facades\\Toastr',
     ),
   ),
 );
