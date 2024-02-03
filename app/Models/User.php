@@ -52,16 +52,16 @@ class User extends Authenticatable
         return $this->belongsTo(Branch::class, 'branch_id', 'id')->select(['id','title']);
     }
 
-   /* public function getStatusAttribute($value)
-    {
-        if($value==1){
-            $getVal='Active';
-        }
-        if($value==2){
-            $getVal='In-Active';
-        }
-        return $getVal;
-    }*/
+    /* public function getStatusAttribute($value)
+     {
+         if($value==1){
+             $getVal='Active';
+         }
+         if($value==2){
+             $getVal='In-Active';
+         }
+         return $getVal;
+     }*/
 
 
 

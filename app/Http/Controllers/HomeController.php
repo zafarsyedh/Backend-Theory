@@ -6,20 +6,23 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index(){
-        return 'home';
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
     }
 
-    //test
-    public function test(){
-
-        $array1 = [1, 2, 3];
-        $array2 = [4, 5, 6];
-
-        $mergedArray = array_merge($array1, $array2);
-
-return $mergedArray;
-
-
+    /**
+     * Show the application dashboard.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function index()
+    {
+        return view('home');
     }
 }

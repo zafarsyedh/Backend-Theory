@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Exam</title>
+    <title>How To Create Web Notifications In Laravel 9 Using Pusher - Websolutionstuff</title>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 </head>
@@ -21,10 +21,10 @@
         cluster: 'ap2'
     });
 
-    var channel = pusher.subscribe('examChannel');
-    channel.bind('App\\Events\\ExamEvent', function(data) {
-        console.log('My exam data',data.data);
-        $('#notify').text(data.data)
+    var channel = pusher.subscribe('examData');
+    channel.bind('App\\Events\\CourseEvent', function(data) {
+        console.log('My exam data',data.data.stdName);
+        $('#notify').text(data.message)
 
     });
 </script>

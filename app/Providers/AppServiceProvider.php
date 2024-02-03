@@ -32,10 +32,8 @@ class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->app->bind(LanguageInterface::class,LanguageClass::class);
         $this->app->bind(UserInterface::class,UserClass::class);
@@ -49,15 +47,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RoomInterface::class,RoomClass::class);
         $this->app->bind(SystemInterface::class,SystemRepositryClass::class);
         $this->app->bind(StudentInterface::class,StudentClass::class);
-
     }
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         //
     }
