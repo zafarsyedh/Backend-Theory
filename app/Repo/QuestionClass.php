@@ -197,9 +197,10 @@ protected $qAudioname='';
             $qTranslation->q_id = $request->q_id;
             $qTranslation->lang_id = $request['t_lang_id'][$c];
             $qTranslation->q_title = $request['q_title'][$c]['title'];
-            $qTranslation->opt_a = $request['opt_a'][$c]['title'];
-            $qTranslation->opt_b = $request['opt_b'][$c]['title'];
-            $qTranslation->opt_c = $request['opt_c'][$c]['title'];
+            $qTranslation->opt_a = $request['opt_a'][$c]['title']!=null?$request['opt_a'][$c]['title']:"";
+            $qTranslation->opt_b = $request['opt_b'][$c]['title']!=null?$request['opt_b'][$c]['title']:"";
+            $qTranslation->opt_c = $request['opt_c'][$c]['title']!=null?$request['opt_c'][$c]['title']:"";
+
                 if($request['q_audio']){
                     foreach ($request['q_audio'][$c] as $key => $audioFile) {
                         if ($audioFile != null && $key == $request['t_lang'][$c]){
