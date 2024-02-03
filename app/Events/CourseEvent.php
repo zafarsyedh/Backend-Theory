@@ -22,7 +22,6 @@ class CourseEvent implements  ShouldBroadcast
     {
 
         $this->data = $data;
-
     }
 
 

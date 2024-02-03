@@ -12,15 +12,17 @@ class PusherController extends Controller
         event(new MessageSent($text));
     }
 
-    public function pushedData(){
+    public function pushedData(Request  $request){
+         $request->all();
         $data=[
-            'stdName'=>'Salman Raza',
-            'qLang'=>'Eng',
-            'ingName'=>'Faheem',
-            'courseName'=>'LMV'
+            'stdName'=>$request->std_name,
+            'qLang'=>$request->lang,
+            'ingName'=>$request->invg_name,
+            'courseName'=>$request->course
 
         ];
         event(new CourseEvent($data));
+        dd('your data pushed succeefully');
     }
 
     public function examShow(){

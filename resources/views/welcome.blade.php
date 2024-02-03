@@ -1,32 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
+    <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>How To Create Web Notifications In Laravel 9 Using Pusher - Websolutionstuff</title>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Pusher</title>
 </head>
 <body>
-<h2>Welxome to Pusher: <span id="notify"></span></h2>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="//js.pusher.com/3.1/pusher.min.js"></script>
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<div class="container mt-5">
+<form method="post" action="{{route('exam')}}">
+    @csrf
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="inputEmail4">Student Name</label>
+            <input type="text" class="form-control" id="inputEmail4" placeholder="Student Name" required name="std_name">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="inputState">Language</label>
+            <select id="inputState" class="form-control" required name="lang">
+                <option selected>Choose...</option>
+                <option value="English">English</option>
+                <option value="Urdu">Urdu</option>
+            </select>
+        </div>
 
-<script type="text/javascript">
+    </div>
+    <div class="form-group">
+        <label for="inputAddress">Invigilator Name</label>
+        <select id="inputState" class="form-control" name="invg_name" required>
+            <option selected>Choose One</option>
+            <option value="English">Faheem</option>
+            <option value="Urdu">Khalil Anjum</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="inputAddress2">Course Name </label>
+        <select id="inputState" class="form-control" required name="course">
+            <option >Choose One</option>
+            <option value="LMV">LMV</option>
+            <option value="HTV">HTV</option>
+        </select>
+    </div>
 
-    var pusher = new Pusher('17a726fd842ba679e19b', {
-        encrypted: true,
-        cluster: 'ap2'
-    });
 
-    var channel = pusher.subscribe('trades');
-    channel.bind('App\\Events\\MessageSent', function(data) {
-        console.log('My Pusher Data',data);
-        $('#notify').text(data.message)
+    <button type="submit" class="btn btn-primary">Pushed</button>
+</form>
+</div>
 
-    });
-</script>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 </html>

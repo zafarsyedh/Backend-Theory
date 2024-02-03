@@ -10,7 +10,7 @@ Route::get('/', function () {
 });
 
 Route::get('/test-pusher/{text}', [PusherController::class, 'index'])->name('home');
-Route::get('/exam', [PusherController::class, 'pushedData']);
+Route::post('/exam', [PusherController::class, 'pushedData'])->name('exam');
 Route::get('/exam-show', [PusherController::class, 'examShow']);
 
 Route::get('test', function () {

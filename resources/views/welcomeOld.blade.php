@@ -9,10 +9,7 @@
 
 </head>
 <body>
-<h2>Name : <span id="name"></span></h2>
-<h2>Language : <span id="lang"></span></h2>
-<h2>Invigilator Name : <span id="invg"></span></h2>
-<h2>Course : <span id="course"></span></h2>
+<h2>Welxome to Pusher: <span id="notify"></span></h2>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="//js.pusher.com/3.1/pusher.min.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
@@ -24,14 +21,10 @@
         cluster: 'ap2'
     });
 
-    var channel = pusher.subscribe('examData');
-    channel.bind('App\\Events\\CourseEvent', function(data) {
-        console.log('My exam data',data.data.stdName);
-        $('#name').text(data.data.stdName);
-        $('#lang').text(data.data.qLang);
-        $('#invg').text(data.data.ingName);
-        $('#course').text(data.data.courseName);
-
+    var channel = pusher.subscribe('trades');
+    channel.bind('App\\Events\\MessageSent', function(data) {
+        console.log('My Pusher Data',data);
+        $('#notify').text(data.message)
 
     });
 </script>
