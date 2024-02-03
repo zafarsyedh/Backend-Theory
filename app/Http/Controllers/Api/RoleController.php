@@ -18,87 +18,78 @@ class RoleController extends Controller
     }
 
     public function index(){
-         $response=$this->role->getAllRoles();
-        if($response->count() > 0){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 404, $message = 'data not found', $response);
+
+        try{
+            $response=$this->role->getAllRoles();
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
     }
     public function saveRole(Request $request){
-          $res=$this->role->saveRole($request);
-        if( $res['status'] == 'success'){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
-        }else{
-            $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
-        }
-        return response()->json($response);
-    }
-    public function editRole(Request $request){
-        $res=$this->role->editRole($request->id);
-        if($res){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'Record found', $res);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 404, $message = 'data not found', $res);
 
-        }
-        return response()->json($response);
-    }
-    public function updateRole(Request $request){
-
-        try {
-            $res=$this->role->updateRole($request);
-            if( $res['status'] == 'success'){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
+        try{
+            $response=$this->role->saveRole($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
-
-
     }
+
     public function saveRolePermissions(Request $request){
 
-        try {
-            $res=$this->role->saveRolePermissions($request);
-            if( $res['status'] == 'success'){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
+        try{
+            $response=$this->role->saveRolePermissions($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
-
 
     }
 
     public function deleteRole( $request){
 
-        $res=$this->role->deleteRole($request);
-        if($res){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'Record found', $res);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 404, $message = 'data not found', $res);
-
+        try {
+            $response = $this->role->deleteRole($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
     }
 
-    //getAllPermissions
+
     public function getAllPermissions($id){
-        $response=$this->role->getAllPermissions($id);
-        if($response){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 404, $message = 'data not found', $response);
+        try{
+            $response=$this->role->getAllPermissions($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
     }
 
 

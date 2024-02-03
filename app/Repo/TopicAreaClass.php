@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Repo;
+use App\Http\Helpers\Helper;
+use App\Models\Branch;
 use App\Models\TopicArea;
 use App\Models\TopicAreaDetail;
 use App\Models\TopicAreaTranslation;
@@ -8,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class TopicAreaClass implements Interfaces\TopicAreaInterface
@@ -15,17 +18,26 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
 
     public function getAllTopicAreaForDropdown()
     {
-        $qry=TopicArea::with('topicAreaTranslation');
-        $qry=$qry->where('status',1);
-        $qry=$qry->get();
-        return $qry;
+        try {
+            $qry=TopicArea::with('topicAreaTranslation');
+            $qry=$qry->where('status',1);
+            $qry=$qry->get();
+            return  Helper::successWithData($qry,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
 
     }
     public function getAllTopics()
     {
-        $qry=TopicArea::with('topicAreaTranslation');
-        $qry=$qry->get();
-        return $qry;
+        try {
+            $qry=TopicArea::with('topicAreaTranslation');
+            $qry=$qry->get();
+            return  Helper::successWithData($qry,'Record found');
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+
     }
 
 
@@ -35,14 +47,16 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
             $id = $request->id;
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'full_name' => 'required',
+                'full_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('topic_area_translations')->whereNull('deleted_at') . $id,
+                ],
                 'status' => 'required',
             ]);
             if ($validator->fails())
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>$validator->errors()
-                ];
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
             $role = TopicArea::updateOrCreate(
                 [
@@ -71,23 +85,13 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
 
             DB::commit();
             $data = TopicArea::with("topicAreaTranslation")->find($role->id);
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => (($id)?"Topic Area Updated Successfully":"Topic Area Added Successfully")
-            ]);
+            return  Helper::successWithData($data,(($id)?"Topic Area Updated Successfully":"Topic Area Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
     }
 
@@ -103,10 +107,7 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
                 'lang' => 'required',
             ]);
             if ($validator->fails())
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>$validator->errors()
-                ];
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
 
             for ($c = 0; $c < count($request['full_name']); $c++) {
@@ -127,65 +128,34 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
             }
             DB::commit();
             $data = TopicArea::with("topicAreaTranslation")->find($id);
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => "Topic Area Translation Added Successfully"
-            ]);
+            return  Helper::successWithData($data,(($id)?"Topic Area Translation Updated Successfully":"Topic Area Translation Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
     }
-
-
-
-
 
 
     public function deleteTopics($id)
     {
 
-        $res=DB::transaction(function() use ($id) {
-                $addon =TopicArea::find($id);
-                $addon->delete();
-                });
 
-                 return 1;
+        try {
+            DB::beginTransaction();
+            $role = TopicArea::find($id);
+            $role->delete();
+            $qtr=TopicAreaTranslation::where('topic_area_id',$id)->delete();
+            DB::commit();
+            return Helper::successWithData($role, $message="Topic Area Deleted");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
 
     }
 
-    public function editTopics($id)
-    {
-        // TODO: Implement editAddon() method.
-        return $category = User::find($id);
-    }
 
-    public function updateTopics($request)
-    {
-
-
-        // TODO: Implement updateAddon() method.
-        $category=User::find($request->id);
-        $category->lang_id=$request->lang_id;
-        $category->cat_title=$request->cat_title;
-        $category->status=$request->status;
-        $category->save();
-        return 1;
-    }
-    public  function  getTopicMaxId()
-    {
-        // TODO: Implement getTopicMaxId() method.
-
-        return $maxId=TopicArea::max('id');
-    }
 }

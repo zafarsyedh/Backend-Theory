@@ -2,10 +2,15 @@
 
 namespace App\Repo;
 use App\Http\Helpers\Helper;
+use App\Models\Branch;
 use App\Models\Category;
 use App\Models\PermissionModule;
 use App\Models\RoleHasPermission;
+use App\Models\UserRoles;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -14,87 +19,48 @@ class RoleClass implements Interfaces\RoleInterface
 
     public function getAllRoles()
     {
-        $qry=Role::with('users');
-        $qry=$qry->orderBy('id','DESC');
-        $qry=$qry->get();
-        return $qry;
+        try {
+            $qry=UserRoles::with('user');
+            $qry=$qry->orderBy('id','DESC');
+            $qry=$qry->get();
+            return  Helper::successWithData($qry,'Record found');
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
 
     }
 
-    //getAllPermissions
     public function getAllPermissions($id)
     {
-         $data["permissions"]=PermissionModule::with('permissions')->get();
-        $data['roleName'] = Role::select(['id','name'])->find($id);
-        $data['rolepermissions'] = $data['roleName']->permissions;
-        return $data;
-
-//        $qry=Permission::query();
-////        $qry=$qry->with('permAllow');
-//        $qry=$qry->get();
-//        return $qry;
+        try {
+            $data["permissions"]=PermissionModule::with('permissions')->get();
+            $data['roleName'] = UserRoles::select(['id','name'])->find($id);
+            $data['rolepermissions'] = $data['roleName']->permissions;
+            return  Helper::successWithData($data,'Record found');
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
 
     }
 
     public function saveRole($request)
     {
-
-            $role = Role::updateOrCreate(
-                [
-                    'name' => $request->name
-                ],
-                [
-                    'name'=>$request->name,
-                    'guard_name'=>'web',
-                    'status'=>$request->status
-                ]);
-            if($role){
-                $data=Role::with('users')->find($role->id);
-                return $response=([
-                    "status"=>"success",
-                    "data"=>$data,
-                    "messege"=>"Role Added Successfully"
-                ]);
-            }else{
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>"Record not save due to some technical error"
-                ];
-
-            }
-
-//            $role->syncPermissions($request->permissions);
-
-
-
-    }
-
-    public function deleteRole($id)
-    {
-
-        // TODO: Implement deleteAddon() method.
-         $role =Role::find($id);
-        if($role){
-            $role->delete();
-            return  1;
-        }else{
-            return "Rec not exist";
-        }
-    }
-
-    public function editRole($id)
-    {
-
-        $data['roleName'] = Role::select(['id','name'])->find($id);
-         $data['permissions'] = $data['roleName']->permissions;
-        return $data;
-    }
-
-    public function updateRole($request)
-    {
         try {
+            $id = $request->id;
+            DB::beginTransaction();
+            $validator = Validator::make($request->all(), [
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('roles')->whereNull('deleted_at') . $id,
+                ],
+                'status' => 'required',
+            ]);
+            if ($validator->fails())
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
-            $role = Role::updateOrCreate(
+            $role = UserRoles::updateOrCreate(
                 [
                     'id' => $request->id
                 ],
@@ -103,49 +69,48 @@ class RoleClass implements Interfaces\RoleInterface
                     'guard_name'=>'web',
                     'status'=>$request->status
                 ]);
-            if($role){
-                return $response=([
-                    "status"=>"success",
-                    "data"=>$role,
-                    "messege"=>"Role Updated Successfully"
-                ]);
-            }else{
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>"Record not save due to some technical error"
-                ];
-
-            }
+            DB::commit();
+            $data=UserRoles::with('user')->find($role->id);
+            return  Helper::successWithData($data,(($id)?"Role Updated Successfully":"Role Added Successfully"));
+        } catch (ValidationException $validationException) {
+            DB::rollBack();
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
-            return $response=[
-                "status"=>"false",
-                "messege"=>$e->getMessage()
-            ];
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(), $e);
+        }
+
+    }
+
+    public function deleteRole($id)
+    {
+        try {
+            $role = UserRoles::find($id);
+            $role->delete();
+            return Helper::successWithData($role, $message="Role Deleted");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
+
+
+
+
     public function saveRolePermissions($request)
     {
         try {
-            $role= Role::find($request->roleId);
+            DB::beginTransaction();
+            $role= UserRoles::find($request->roleId);
             $role->syncPermissions($request->permissions);
-            if($role){
-                return $response=([
-                    "status"=>"success",
-                    "data"=>$role,
-                    "messege"=>"Role Permissions Updated Successfully"
-                ]);
-            }else{
-                return $response=[
-                    "status"=>"false",
-                    "messege"=>"Record not save due to some technical error"
-                ];
-
-            }
+            DB::commit();
+            return  Helper::successWithData($role,'Role Permissions Updated Successfully');
+        } catch (ValidationException $validationException) {
+            DB::rollBack();
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
-            return $response=[
-                "status"=>"false",
-                "messege"=>$e->getMessage()
-            ];
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(), $e);
         }
     }
 }

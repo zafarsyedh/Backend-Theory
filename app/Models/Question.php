@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Question extends Model
 {
-    use   SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory;
 
     protected $fillable = [
         'code', 'q_type', 'q_is_video', 'course_id', 'topic_id', 'correct_opt', 'q_image', 'q_audio', 'q_video', 'status',
@@ -24,23 +24,23 @@ class Question extends Model
         return $this->hasMany(QuestionTranslation::class, 'q_id', 'id');
     }
 
-
-    public function course()
-    {
-        return $this->belongsTo(Course::class, 'course_id', 'id')->select(['id','short_name']);
-    }
     public function topic()
     {
         return $this->belongsTo(TopicArea::class, 'topic_id', 'id')->select(['id']);
     }
-
-    public function qWithLang()
+    public function course()
     {
-      return   $this->hasOne(QuestionTranslation::class, 'q_id', 'id');
+        return $this->belongsTo(Course::class, 'course_id', 'id')->select(['id','short_name']);
     }
+
+    public function qCourses()
+    {
+        return $this->hasMany(QuestionCourse::class,  'q_id','id');
+    }
+
     public function qLangAudio()
     {
-        return   $this->hasOne(QuestionTranslation::class, 'q_id', 'id')->select(['id','q_id','q_content','q_audio','opt_a_audio','opt_b_audio','opt_c_audio']);;
+        return   $this->hasOne(QuestionTranslation::class, 'q_id', 'id')->select(['id','q_id','lang','q_title','q_audio','opt_a_audio','opt_b_audio','opt_c_audio']);
     }
 
     public function setQTypeAttribute($value)
@@ -55,6 +55,7 @@ class Question extends Model
     }
     public function getQTypeAttribute($value)
     {
+        $getVal=0;
         if($value==1){
             $getVal='common';
         }
@@ -62,11 +63,6 @@ class Question extends Model
             $getVal='specific';
         }
         return $getVal;
-    }
-
-    public function qCourses()
-    {
-        return $this->hasMany(QuestionCourse::class,  'q_id','id');
     }
 
 

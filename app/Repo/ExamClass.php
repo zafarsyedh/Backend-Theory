@@ -1,93 +1,148 @@
 <?php
 
 namespace App\Repo;
-use App\Models\Category;
-use App\Models\Exam;
+use App\Http\Helpers\Helper;
+use App\Models\ExamSchedule;
+use App\Models\QuestionSolved;
+use Dotenv\Exception\ValidationException;
+use Illuminate\Support\Facades\Validator;
+
 
 class ExamClass implements Interfaces\ExamInterface
 {
 
-    public function getAllExamList()
+    public function saveExamQuestion($request)
     {
-        $qry=Exam::with('invigilator','student','course');
-        $qry=$qry->where('deleted_at',null)->orderBy('id','DESC');
-        $qry=$qry->paginate(10);
-        return $qry;
-    }
-    public function saveExam($request)
-    {
+        try {
+            if(count($request->markedQuestions) > 0) {
+                foreach ($request->markedQuestions as $q) {
 
-        $exam=new Exam();
-        $exam->std_id=$request->std_id;
-        $exam->course_id=$request->course_id;
-        $exam->invg_id=$request->invg_id;
-        $exam->exam_date=$request->exam_date;
-        $exam->status=($request->status==1?0:1);
-        if($exam->save()){
-            return $response='success';
-        }else{
-            return $response='Record not save due to some technical error';
+                    $examQ = QuestionSolved::find($q['id']);
+                    $examQ->choosed_option = $q['selectedValue'];
+                    $examQ->is_correct_ans = ($q['correctAns'] == $q['selectedValue']) ? 1 : 0;
+                    $examQ->is_answered = 1;
+                    $examQ->save();
+
+                }
+            }
+            return Helper::successWithData([],'record save');
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+    public function savePracticeQuestion($request)
+    {
+        try {
+                $examQ= QuestionSolved::find($request->id);
+                $examQ->choosed_option=$request->selectedOpt;
+                $examQ->is_correct_ans=($request->selectedOpt==$request->correctOpt)?1:0;
+                $examQ->is_answered=1;
+                $examQ->save();
+            return Helper::successWithData([],'record save');
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+    //getScheduleExamList
+    public function  getScheduleExamList()
+    {
+        try {
+            $qry=ExamSchedule::query();
+            $qry->with('student:id,std_name,traffic_id,email','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage:id,lang,lang_short');
+            $qry->with('invigilator:id,name','system:id,title,system_ip');
+            $examSchedule=$qry->get();
+            return Helper::successWithData($examSchedule,'record found');
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
         }
     }
 
 
-    public function deleteExam($id)
-    {
-        // TODO: Implement deleteAddon() method.
-        $std =Exam::find($id);
-        if($std){
-            $std->delete();
-            return  1;
-        }else{
-            return "Rec not exist";
-        }}
 
-
-    public function editExam($id)
+    public function createExam($request,$data=null)
     {
-        // TODO: Implement editAddon() method.
-        return $category = Exam::find($id);
+
+        try {
+
+            $trans = ExamSchedule::updateOrCreate(
+                [
+                    'id' =>0
+                ],
+                [
+                    'system_id' =>$request->system_id,
+                    'std_id' =>$data['stdId'],
+                    'course_id' =>$data['courseId'],
+                    'invg_id' =>$data['invgId'],
+                    'q_lang' =>$request->q_lang,
+                    'audio_lang' =>$request->audio_lang,
+                    'exam_status' =>1,
+                    'exam_type' =>$request->exam_type,
+
+                ]
+            );
+
+            return Helper::success($trans,'Record created successfully');
+        } catch (ValidationException $validationException) {
+            throw $validationException;
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function updateExam($request)
     {
-        // TODO: Implement updateAddon() method.
+
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'exam_type' => 'required',
+                'q_lang' => 'required',
+                'audio_lang' => 'required',
+                'system_id' => 'required',
+
+            ]);
+            if ($validator->fails())
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
+
+            if($exam=ExamSchedule::find($request->id)){
+                $exam->system_id=$request->system_id;
+                $exam->q_lang=$request->q_lang;
+                $exam->audio_lang=$request->audio_lang;
+                $exam->exam_type=$request->exam_type;
+                $exam->save();
 
 
+                $qry=ExamSchedule::query();
+                $qry->with('student:id,std_name,traffic_id,email','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage:id,lang,lang_short');
+                $qry->with('invigilator:id,name','system:id,title,system_ip');
+                $examSchedule=$qry->find($request->id);
+                return  Helper::successWithData($examSchedule,'Record created successfully');
 
-        $exam=Exam::find($request->id);
-        $exam->std_id=$request->std_id;
-        $exam->course_id=$request->course_id;
-        $exam->invg_id=$request->invg_id;
-        $exam->exam_date=$request->exam_date;
-        $exam->status=$request->status;
-        $exam->save();
-        return 1;
-    }
+            }
+            else{
+                return Helper::error('Exam not exist',[]);
+            }
 
-    public function isStdExamSchedule($stdId)
-    {
-
-        // TODO: Implement isStdExamSchedule() method.
-        $exam= Exam::where('std_id',$stdId)->where('status',0)->first();
-        if($exam){
-            return 1;
-        }else{
-            return 0;
+        } catch (ValidationException $validationException) {
+            throw $validationException;
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 
-    public function getStdExamInfo($stdId,$examType=null)
+    //    public function deleteSystem($id);
+    public function deleteExam($id)
     {
-        $qry=Exam::with('config','course','student');
-        $qry=$qry->where('std_id',$stdId);
-        $qry=$qry->where('status',0);
-        ($examType==1)?$qry=$qry->where('is_attempt',0):'';
-        $qry=$qry->latest('id')->first();
-        return $qry;
 
+        try {
+            $role = ExamSchedule::find($id);
+            $role->delete();
+            return Helper::successWithData($role, $message="Exam Deleted");
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
     }
-
-
-
 }

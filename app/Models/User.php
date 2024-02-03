@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -11,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable,HasRoles,HasApiTokens;
+    use HasFactory, Notifiable,HasRoles,HasApiTokens,SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -19,7 +20,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email','phone', 'password','role_id','branch_id','status'
     ];
 
 
@@ -46,17 +47,21 @@ class User extends Authenticatable
     {
         return $this->belongsTo(\Spatie\Permission\Models\Role::class, 'role_id', 'id')->select(['id','name']);
     }
-
-   /* public function getStatusAttribute($value)
+    public function branch()
     {
-        if($value==1){
-            $getVal='Active';
-        }
-        if($value==2){
-            $getVal='In-Active';
-        }
-        return $getVal;
-    }*/
+        return $this->belongsTo(Branch::class, 'branch_id', 'id')->select(['id','title']);
+    }
+
+    /* public function getStatusAttribute($value)
+     {
+         if($value==1){
+             $getVal='Active';
+         }
+         if($value==2){
+             $getVal='In-Active';
+         }
+         return $getVal;
+     }*/
 
 
 

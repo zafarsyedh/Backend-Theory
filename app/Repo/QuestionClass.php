@@ -7,6 +7,8 @@ use App\Models\Exam;
 use App\Models\Language;
 use App\Models\Question;
 use App\Models\QuestionCourse;
+use App\Models\QuestionSection;
+use App\Models\QuestionSolved;
 use App\Models\QuestionTranslation;
 use App\Models\Role;
 use App\Models\SolvedQuestions;
@@ -15,6 +17,7 @@ use App\Models\TopicAreaTranslation;
 use App\Models\User;
 use App\Traits\HandleFiles;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -63,7 +66,7 @@ protected $qAudioname='';
             }
 
             if ($validator->fails())
-                $response =Helper::vaidationError($status = 'false', $errors = $validator->errors(), $message = $validator->errors()->first());
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
 
             if ($file = $request->file('q_image')) {
@@ -165,617 +168,245 @@ protected $qAudioname='';
 
             DB::commit();
             $data=Question::with('questionDetail','course.courseTranslation','topic.topicAreaTranslation')->find($question->id);
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => (($id)?"Question Updated Successfully":"Question Added Successfully")
-            ]);
+            return  Helper::successWithData($data,(($id)?"Question Updated Successfully":"Question Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
 
 
         }
-        public function saveQuestionTranslation($request)
+   public function saveQuestionTranslation($request)
     {
 
         try {
             $id = $request->q_id;
 
-
-
-
             DB::beginTransaction();
-
-
-            if ($file = $request->file($request['opt_a_audio'][0]['title'])){
-            $this->optAAudio = $this->handleFiles($file, $this->qAudioPath);
-        }
-            return $response = ([
-                "status" => "success",
-                "data" =>$this->optAAudio,
-                "messege" => (($id)?"Question Translation Updated Successfully":"Question Translation Added Successfully")
-            ]);
-
-
 
             for ($c = 0; $c < count($request->t_lang); $c++) {
 
-
-                if ($audio = $request->opt_a_audio) {
-                    $file = $request->file('opt_a_audio');
-                    $this->qAudioname = $this->handleFiles($file, $this->qAudioPath);
-                }
-
-//                if ($file = $request->file('opt_a_audio')) {
-//                    $this->optAAudio = $this->handleFiles($file, $this->qAudioPath);
-//                }
-//
-//                if ($file = $request->file('opt_b_audio')) {
-//                    $this->optBAudio = $this->handleFiles($file, $this->qAudioPath);
-//                }
-//                if ($file = $request->file('opt_c_audio')) {
-//                    $this->optCAudio = $this->handleFiles($file, $this->qAudioPath);
-//                }
-
-
-                $role = QuestionTranslation::updateOrCreate(
-                    [
-                        'q_id' => $request->q_id,
-                        'lang' => $request['t_lang'][$c],
-                    ],
-
-                    [
-                        'q_id' =>$request->q_id,
-                        'lang_id' =>$request['t_lang_id'][$c],
-                        'q_title' =>$request['q_title'][$c]['title'],
-                        'q_audio' => 1,
-//                        'q_audio' => 1,
-                        'opt_a' =>$request['opt_a'][$c]['title'],
-                        'opt_b' =>$request['opt_b'][$c]['title'],
-                        'opt_c' =>$request['opt_c'][$c]['title'],
-//                        'opt_a_audio' =>$request['opt_a_audio'][$c]['title'],
-//                        'opt_b_audio' =>$request['opt_b_audio'][$c]['title'],
-//                        'opt_c_audio' =>$request['opt_c_audio'][$c]['title'],
-                        'opt_a_audio' => $this->qAudioname,
-                        'opt_b_audio' =>1,
-                        'opt_c_audio' =>1,
-                        'lang' => $request['t_lang'][$c],
-                    ]
-                );
-
+            $qTranslation = new QuestionTranslation();
+            if (QuestionTranslation::where('q_id',$request->q_id)->where('lang',$request['t_lang'][$c])->first()) {
+                $qTranslation = QuestionTranslation::where('q_id', $request->q_id)->where('lang',$request['t_lang'][$c])->first();
             }
 
+            $qTranslation->q_id = $request->q_id;
+            $qTranslation->lang_id = $request['t_lang_id'][$c];
+            $qTranslation->q_title = $request['q_title'][$c]['title'];
+            $qTranslation->opt_a = $request['opt_a'][$c]['title']!=null?$request['opt_a'][$c]['title']:"";
+            $qTranslation->opt_b = $request['opt_b'][$c]['title']!=null?$request['opt_b'][$c]['title']:"";
+            $qTranslation->opt_c = $request['opt_c'][$c]['title']!=null?$request['opt_c'][$c]['title']:"";
 
+                if($request['q_audio']){
+                    foreach ($request['q_audio'][$c] as $key => $audioFile) {
+                        if ($audioFile != null && $key == $request['t_lang'][$c]){
+                            $this->qAudioname = $this->handleFiles($audioFile, $this->qAudioPath);
+                            ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : "";
+                        }
+                    }
+                }
 
+                if($request['opt_a_audio']){
+                    foreach ($request['opt_a_audio'][$c] as $key => $audioAFile) {
+                        if ($audioAFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optAAudio = $this->handleFiles($audioAFile, $this->qAudioPath);
+                            ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : '';
+                        }
+                    }
+                }
 
+                if($request['opt_b_audio']){
+                    foreach ($request['opt_b_audio'][$c] as $key => $audioBFile) {
+                        if ($audioBFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optBAudio = $this->handleFiles($audioBFile, $this->qAudioPath);
+                            ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : '';
+                        }
+                    }
+                }
 
+                if($request['opt_c_audio']){
+                    foreach ($request['opt_c_audio'][$c] as $key => $audioCFile) {
+                        if ($audioCFile != null && $key == $request['t_lang'][$c] ){
+                            $this->optCAudio = $this->handleFiles($audioCFile, $this->qAudioPath);
+                            ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : '';
+                        }
+                    }
+                }
 
-//            $qTranslation->q_id = $question->id;
-//            $qTranslation->lang_id = $request->lang_id;
-//            $qTranslation->q_title = $request->q_title;
-//            $qTranslation->opt_a = $request->opt_a;
-//            $qTranslation->opt_b = $request->opt_b;
-//            $qTranslation->opt_c = $request->opt_c;
-//            ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : '';
-//            ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : '';
-//            ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : '';
-//            ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : '';
-//            $qTranslation->lang = 'en';
-//            $qTranslation->save();
+            $qTranslation->lang = $request['t_lang'][$c];
+            $qTranslation->save();
 
-
+            }
             DB::commit();
             $data=QuestionTranslation::where('q_id',$id)->get();
-            return $response = ([
-                "status" => "success",
-                "data" => $data,
-                "messege" => (($id)?"Question Translation Updated Successfully":"Question Translation Added Successfully")
-            ]);
+            return  Helper::successWithData($data,(($id)?"Question Translation Updated Successfully":"Question Translation Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $validationException->errors()
-            ];
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
-            return $response=[
-                "status"=>"false",
-                "messege"=> $e->getMessage()
-            ];
+            return Helper::errorWithData($e->getMessage(), $e);
         }
 
 
         }
-    public function getAllQuestion()
-    {
-        $qry=Question::with('questionDetail','course','topic');
-        $qry=$qry->orderBy('id','ASC');
-        $qry=$qry->get();
-        return $qry;
-    }
-
     public function getAllQuestionForAdminSide()
     {
-        $qry=Question::with('questionDetail','course.courseTranslation','topic.topicAreaTranslation');
-        $qry=$qry->orderBy('id','ASC');
-        $qry=$qry->get();
-        return $qry;
+        try {
+            $qry=Question::with('questionDetail','topic.topicAreaTranslation','qCourses.course');
+            $qry=$qry->orderBy('id','ASC');
+            $qry=$qry->get();
+            return  Helper::successWithData($qry,'Record found');
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
     }
     public function deleteQuestion($id)
     {
         try {
+            DB::beginTransaction();
             $role = Question::find($id);
             $role->delete();
             $qtr=QuestionTranslation::where('q_id',$id)->delete();
-            return Helper::success($role, $message = "Question Deleted");
-        } catch (ValidationException $validationException) {
+            DB::commit();
+            return Helper::successWithData($role, $message="Question Deleted");
+        }catch (\Exception $e) {
             DB::rollBack();
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return Helper::errorWithData($e->getMessage(),$e);
         }
-    }
-    public function editQuestion($id,$limit)
-    {
-          $qry = Language::with(['questionTranslation' => function ($query) use ($id) {
-            $query->where('q_id',$id);
-        }]);
-        ($limit > 0)? $qry=$qry->limit(1):'';
-        $qry=$qry->where('is_deleted',0);
-        $qry=$qry->where('status',1);
-        $qry=$qry->get();
-        return $qry;
-
-
-        $qry=Question::with('questionTranslation','questionTranslation.lang');
-        $qry=$qry->where('id',$id)->first();
-        return $qry;
     }
     public function findQuestionById($id)
     {
         try {
-            $res = QuestionTranslation::with('questions.qCourses');
+            $res = QuestionTranslation::with('questions.qCourses.course.courseTranslation:id,course_id,full_name');
             $res = $res->where('q_id',$id);
             $res = $res->first();
-            return Helper::success($res, $message = __('translation.record_found'));
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+            return  Helper::successWithData($res,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
     public function getQuestionTranslationsById($id)
     {
         try {
-            $res = Question::with('questionTranslations');
+            $res = Question::with('questionTranslations','qCourses.course.courseTranslation:id,course_id,full_name');
             $res = $res->where('id',$id);
             $res = $res->first();
-            return Helper::success($res, $message = __('translation.record_found'));
-        } catch (ValidationException $validationException) {
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+
+            return  Helper::successWithData($res,'Record found');
+        } catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
-    public function updateQuestion($request)
+
+
+
+    public function createNewAttempt($request)
     {
-       $res=DB::transaction(function() use ($request) {
-             $input = $request->all();
-
-            if ($file = $request->file('q_image')) {
-                $this->qImageName = $this->handleFiles($file, $this->qImagePath);
-            }
-            if ($file = $request->file('opt_a_image')) {
-                $this->optAImage = $this->handleFiles($file, $this->qImagePath);
-            }
-            if ($file = $request->file('opt_b_image')) {
-                $this->optBImage = $this->handleFiles($file, $this->qImagePath);
-            }
-            if ($file = $request->file('opt_c_image')) {
-                $this->optCImage = $this->handleFiles($file, $this->qImagePath);
-            }
-
-
-            if ($file = $request->file('q_video')) {
-                $this->qVideo = $this->handleFiles($file, $this->qVideoPath);
-            }
-
-            $q_id=$request->q_id;
-
-             $q = Question::find($q_id);
-
-            $q->course_id =$request->course_id;
-            $q->q_type = $request->q_type;
-            $q->correct_opt = $request->correct_opt;
-            ($this->qImageName)?$q->q_image =$this->qImageName:'';
-            ($this->optAImage)?$q->opt_a_image =$this->optAImage:'';
-            ($this->optBImage)?$q->opt_b_image =$this->optBImage:'';
-            ($this->optCImage)?$q->opt_c_image =$this->optCImage:'';
-
-            ($this->qVideo)?$q->q_video =$this->qVideo:'';
-
-            $q->save();
-
-            for ($c = 0; $c < count($input['q_content']); $c++) {
-
-
-                if ( $request->hasFile('q_audio.'.$c)) {
-                    $audioFile = $request->file('q_audio.'.$c);
-                    $this->qAudioname = $this->handleFiles($audioFile, $this->qAudioPath);
+        try {
+         $attempt=Attempt::where('std_id',$request->std_id)->where('status',0)->latest('id')->first();
+                if(!$attempt){
+                    $attempt = new Attempt();
                 }
+                $attempt->std_id= $request->std_id;
+                $attempt->exam_type= $request->exam_type;
+                $attempt->save();
+                return $attempt->id;
 
-                if ($file = $request->file('opt_a_audio.'.$c)) {
-                    $this->optAAudio = $this->handleFiles($file, $this->qAudioPath);
-                }
-                if ($file = $request->file('opt_b_audio.'.$c)) {
-                    $this->optBAudio = $this->handleFiles($file, $this->qAudioPath);
-                }
-                if ($file = $request->file('opt_c_audio.'.$c)) {
-                    $this->optCAudio = $this->handleFiles($file, $this->qAudioPath);
-                }
-
-                $qTr=QuestionTranslation::find($input['id'][$c]);
-                if(!$qTr){
-                    $qTr=new QuestionTranslation();
-                }
-                $qTr->q_id = $q_id;
-                $qTr->lang_id =$input['lang_id'][$c];
-                $qTr->q_content =$input['q_content'][$c];
-                $qTr->opt_a =$input['opt_a'][$c];
-                $qTr->opt_b =$input['opt_b'][$c];
-                $qTr->opt_c =$input['opt_c'][$c];
-                ($this->qAudioname)?$qTr->q_audio =$this->qAudioname:'';
-                ($this->optAAudio)?$qTr->opt_a_audio =$this->optAAudio:'';
-                ($this->optBAudio)?$qTr->opt_b_audio =$this->optBAudio:'';
-                ($this->optCAudio)?$qTr->opt_c_audio =$this->optCAudio:'';
-                $qTr->save();
-
-
-            }
-        });
-        return $response=1;
-    }
-
-    public function savePracticeExam($request)
-    {
-
-        $request->all();
-        $this->attempt=$request->attempt;
-
-        if ($request->ans !=2) {
-            if($this->attempt ==0) {
-                $chekAttempt = Attempt::where('std_id', $request->std_id)->latest('id')->first();
-                $this->attempt=$chekAttempt->id;
-            }
-
-            if (SolvedQuestions::where('std_id', $request->std_id)->where('q_id', $request->q_id)->where('exam_type', 0)->where('attempt',$this->attempt)->first()) {
-                return $response = 'question already solved';
-            }
-
-            $solQ = new SolvedQuestions();
-            $solQ->std_id = $request->std_id;
-            $solQ->q_id = $request->q_id;
-            $solQ->ans = $request->ans;
-            $solQ->attempt = ($this->attempt > 0) ? $this->attempt : 1;
-            $solQ->q_type = ($request->q_type)?2:1;
-            $solQ->exam_type = 0;
-            $solQ->save();
-            return $response = 'success';
+        }catch (\Exception $e) {
+            throw $e;
         }
     }
-    public function saveActualExam($request)
+    public function questionMoveInSolvedQuestionTable($request)
     {
+        try {
+            DB::beginTransaction();
+            $courseId=1;
+            $qLang='en';
+            $audioLang='en';
 
+            $attemptId= $this->createNewAttempt($request);
 
-            $data = $request->all();
-            $std_id = $request->std_id;
-            $data = $data['selectedOptions'];
-            $qData = $request->qData;
-            $exam_id = $request->examId;
-            foreach ($data as $key => $val) {
-
-                if ($val['qId']) {
-                    $q = Question::find($val['qId']);
-                    $solQ = new SolvedQuestions();
-                    $solQ->std_id = $std_id;
-                    $solQ->q_id = $val['qId'];
-                    $solQ->ans = $q->correct_opt == $val['correctAns'] ? 1 : 0;
-                    $solQ->exam_type = 1;
-                    $solQ->choosedOption = $val['correctAns'];
-                    $solQ->exam_id = $exam_id;
-                    $solQ->save();
-
-                }
-            }
-            foreach ($qData as $row) {
-                if (!SolvedQuestions::where('q_id', $row['id'])->where('std_id', $std_id)->where('exam_type', 1)->first()) {
-
-                    $solQ = new SolvedQuestions();
-                    $solQ->std_id = $std_id;
-                    $solQ->q_id = $row['id'];
-                    $solQ->ans = 0;
-                    $solQ->exam_type = 1;
-                    $solQ->choosedOption = 0;
-                    $solQ->exam_id = $exam_id;
-                    $solQ->is_skipped = 1;
-                    $solQ->save();
-                }
-
+            if(QuestionSolved::where('attempt_id',$attemptId)->where('is_answered',0)->count() > 0 ){
+                return  Helper::successWithData($attemptId,'Record created');
             }
 
-        return $response = 'success';
-    }
 
-    public function  saveSolvedQuestionsForExam($request)
-    {
-        $request->all();
-        $this->attempt=$request->attempt;
-        $examInfo = Exam::where('std_id', $request->std_id)->where('status',0)->latest('id')->first();
+            $qry = Question::query();
+            $qry = $qry->select('id');
+            $qry = $qry->where(function ($query) use ($courseId) {
+                $query->whereRelation('qCourses','course_id',$courseId)
+                    ->orWhere('q_type','2');
+            });
+            $qry = $qry->where('status', 1);
+            $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
+            {
+                $query->where('lang',$qLang);
+            });
 
-            if($request->exam_type==2 && $this->attempt ==0) {
-                $chekAttempt = Attempt::where('std_id', $request->std_id)->latest('id')->first();
-                $this->attempt=$chekAttempt->id;
 
+            $qry=$qry->limit(10);
+            $qry=$qry->inRandomOrder();
+              $allQuestion = $qry->get();
+              if($allQuestion->count() ==0){
+                  return  Helper::errorWithData('Record not found',$allQuestion);
+              }
 
+            foreach($allQuestion as $row){
+                $question=QuestionSolved::updateOrCreate(
+                    [
+                        'q_id'=> $row->id,
+                        'attempt_id'=>$attemptId,
+                    ],
+                    [
+
+                        'attempt_id' =>$attemptId,
+                        'q_id'=> $row->id,
+                        'is_answered' =>0,
+                        'q_lang'=>$qLang,
+                        'audio_lang'=>$audioLang,
+                    ]
+                );
             }
+            DB::commit();
 
-            if($request->exam_type==2) {
-                if (SolvedQuestions::where('std_id', $request->std_id)->where('q_id', $request->q_id)->where('exam_type', $request->exam_type)->where('attempt', $this->attempt)->first()) {
-                    return $response = 'question already solved';
-                }
-            }
+            return  Helper::successWithData($question->attempt_id,'Record created');
 
-        if($request->exam_type==1) {
-            if (SolvedQuestions::where('std_id', $request->std_id)->where('q_id', $request->q_id)->where('exam_type', $request->exam_type)->first()) {
-                return $response = 'question already solved';
-            }
         }
-
-            $solQ = new SolvedQuestions();
-            $solQ->std_id = $request->std_id;
-            $solQ->q_id = $request->q_id;
-            $solQ->ans = $request->ans;
-            $solQ->attempt = ($this->attempt > 0) ? $this->attempt : 1;
-            $solQ->q_type = $request->q_type;
-            $solQ->exam_type =$request->exam_type;
-            $solQ->choosedOption =$request->choosedOption;
-            ($request->exam_type==1)?$solQ->exam_id =$examInfo->id:'';
-            $solQ->save();
-            return $response = 'success';
-
-    }
-
-    public function  saveSolvedQuestionsOfActualExam($request)
-    {
-
-
-    }
-
-    public function countQuestionAcordingCourseAndType($courseId,$type)
-    {
-        // TODO: Implement getotalQuestionAcordingCourse() method.
-        $qry= Question::where('course_id',$courseId);
-       ($type > 0)?$qry=$qry->where('q_type',$type):'';
-        $qry=$qry->get();
-        return $qry;
-    }
-    public function getQuestionForPractice($request)
-    {
-        $this->lang_id=$request->lang_id;
-        $this->qLangId=$request->audioLangId;
-        $std_id=$request->std_id;
-        $this->attempt=$request->attempt;
-
-        $exam=Exam::where('std_id',$std_id)->where('status',0)->first();
-        $course_id=$exam->course_id;
-
-
-        $qry = Question::Query();
-        $qry=$qry->with(['qWithLang' => function ($query) {
-            return $query->where('lang_id',$this->lang_id);
-        },'qWithLang.lang','qLangAudio'=>  function ($query) {
-            return $query->where('lang_id',$this->qLangId);
-        }]);
-
-        $qry=$qry->where('course_id',$course_id);
-
-        $qry=$qry->where('q_type',1);
-        ($this->attempt > 0)? $qry=$qry->whereNotIn('id', function ($query) {
-            $query->select('q_id')->from('solved_questions')->where('attempt',$this->attempt);
-        }):'';
-
-
-        $qry=$qry->get();
-        return $qry;
-
-
-    }
-    public function getQuestionForActualExam($request,$exam)
-    {
-
-        $this->lang_id=$request->lang_id;
-        $this->qLangId=$request->audioLangId;
-
-         $course_id=$exam->course_id;
-         $questionLimit=$exam->config->total_question;
-
-        $qry = Question::Query();
-        $qry = $qry->select('questions.*');
-        $qry=$qry->join('question_translations', 'question_translations.q_id', 'questions.id');
-        $qry=$qry->where('question_translations.lang_id',$this->lang_id);
-
-           $qry=$qry->with(['qWithLang' => function ($query) {
-            return $query->where('lang_id',$this->lang_id);
-        },'qLangAudio'=>  function ($query) {
-            return $query->where('lang_id',$this->qLangId);
-        }]);
-
-        $qry=$qry->where('q_type',1);
-        $qry=$qry->where('course_id',$course_id);
-        $qry=$qry->inRandomOrder()->take($questionLimit);
-        $qry=$qry->get();
-        return $qry;
-
-
-
-
-            //actual old  query
-//        $qry = Question::Query();
-//        $qry=$qry->with(['qWithLang' => function ($query) {
-//            return $query->where('lang_id',$this->lang_id);
-//        },'qWithLang.lang','qLangAudio'=>  function ($query) {
-//            return $query->where('lang_id',$this->qLangId);
-//        }]);
-//
-//        $qry=$qry->where('q_type',1);
-//        $qry=$qry->where('course_id',$course_id);
-//        $qry=$qry->inRandomOrder()->take($questionLimit);
-//        $qry=$qry->groupBy('q_type');
-//        $qry=$qry->get();
-//        return $qry;
-    }
-    public  function  getQuestionsForExams($request,$exam){
-
-         $request->all();
-
-        $this->lang_id=$request->lang_id;
-        $this->qLangId=$request->audioLangId;
-
-        $course_id=$exam->course_id;
-        $questionLimit=$exam->config->total_question;
-        $this->attempt=$request->attempt;
-
-        $qry = Question::Query();
-        $qry = $qry->select('questions.*');
-        $qry=$qry->join('question_translations', 'question_translations.q_id', 'questions.id');
-        ($request->q_type!=2)?$qry=$qry->where('question_translations.lang_id',$this->lang_id):'';
-
-     if($request->q_type==1){
-            $qry=$qry->with(['qWithLang' => function ($query) {
-            return $query->where('lang_id',$this->lang_id);
-        },'qLangAudio'=>  function ($query) {
-            return $query->where('lang_id',$this->qLangId);
-        }]);
-         $qry = $qry->where('q_type',$request->q_type);
+        catch (\Exception $e) {
+            DB::rollBack();
+            return  Helper::error($e->getMessage(),$e);
         }
+    }
+    public function getMovedQuestionForTheoryPractice($request,$attemptId,$purpose=1)
+    {
+        try {
+         //   $purpose 2 for result and 1 for get question for exam
 
-        ($request->q_type==2)?$qry=$qry->with('qWithLang','qLangAudio'):'';
+            $qLang=$request->q_lang;
+            $audioLang=$request->audio_lang;
 
-        $qry=$qry->where('course_id',$course_id);
+            $qry=QuestionSolved::query();
+            $qry=$qry->with(['question.questionTranslations' => function ($query) use ($qLang) {
+                $query->where('lang',$qLang);
+            },'question.qLangAudio'=>  function ($query) use ($audioLang) {
+                return $query->where('lang',$audioLang);
+            },'question']);
 
-//        exam type 2 use for practice test
-        if($request->testType==2) {
-            $qry = $qry->where('q_type',$request->q_type);
-            ($this->attempt > 0) ? $qry = $qry->whereNotIn('questions.id', function ($query) {
-                $query->select('q_id')->from('solved_questions')->where('attempt',$this->attempt);
-            }) : '';
+            $qry=$qry->select('id','q_id','attempt_id','choosed_option','is_correct_ans','is_answered');
+            $qry=$qry->where('attempt_id',$attemptId);
+            ($purpose==1)? $qry= $qry->where('is_answered',0):'';
+            return   $qry=$qry->get();
+
+            return Helper::success($qry,'record found');
+        }catch (\Exception $e) {
+            return  $e->getMessage();
+            return Helper::errorWithData($e->getMessage(), []);
         }
-
-        ($request->testType==1)?$qry=$qry->inRandomOrder()->take($questionLimit):'';
-        ($request->testType==2)?$qry=$qry->inRandomOrder():'';
-        $qry=$qry->get();
-        return $qry;
-    }
-
-    public function createVideoQuestions($request)
-    {
-        $res=DB::transaction(function() use ($request) {
-            $input = $request->all();
-
-
-            if ($file = $request->file('qVideo')) {
-                $this->qVideo = $this->handleFiles($file, $this->qVideoPath);
-            }
-
-            if ($file = $request->file('optAImage')) {
-                $this->optAImage = $this->handleFiles($file, $this->qImagePath);
-            }
-            if ($file = $request->file('optBImage')) {
-                $this->optBImage = $this->handleFiles($file, $this->qImagePath);
-            }
-            if ($file = $request->file('optCImage')) {
-                $this->optCImage = $this->handleFiles($file, $this->qImagePath);
-            }
-
-            $q = new Question();
-            $q->course_id = $request->course_id;
-            $q->q_type = 2;//$request->q_type;
-            $q->q_video = $this->qVideo;
-            $q->correct_opt = $request->correct_opt;
-            $q->q_image =$this->qImageName;
-            $q->opt_a_image =$this->optAImage;
-            $q->opt_b_image =$this->optBImage;
-            $q->opt_c_image =$this->optCImage;
-            $q->save();
-
-
-                if ($file = $request->file('optAAudio')) {
-                    $this->optAAudio = $this->handleFiles($file, $this->qAudioPath);
-                }
-                 if ($file = $request->file('optBAudio')) {
-                    $this->optBAudio = $this->handleFiles($file, $this->qAudioPath);
-                }
-                    if ($file = $request->file('optCAudio')) {
-                    $this->optCAudio = $this->handleFiles($file, $this->qAudioPath);
-                }
-
-
-                $qTr= new QuestionTranslation();
-                $qTr->q_id =$q->id;
-                $qTr->lang_id =1;
-                $qTr->q_content =$request->vidQContent;
-                $qTr->opt_a =($input['optA']!='undefined')?$input['optA']:'';
-                $qTr->opt_b =($input['optB']!='undefined')?$input['optB']:'';
-                $qTr->opt_c =($input['optB']!='undefined')?$input['optB']:'';
-                $qTr->opt_a_audio =$this->optAAudio;
-                $qTr->opt_b_audio =$this->optBAudio;
-                $qTr->opt_c_audio =$this->optCAudio;
-                $qTr->save();
-
-
-        });
-        return $response='success';
-    }
-
-    public function getVideoQuestion($request,$exam)
-    {
-
-
-          $course_id=$exam->course_id;
-          $questionLimit=$exam->config->video_question;
-          $this->attempt=$request->attempt;
-
-        $qry = Question::Query();
-       $qry=$qry->with('qWithLang','qLangAudio');
-       $qry=$qry->where('course_id',$course_id);
-       $qry=$qry->where('q_type',2);
-       $qry=$qry->inRandomOrder()->take($questionLimit);
-        $qry=$qry->get();
-        return $qry;
-    }
-
-
-
-    public function countResult()
-    {
-        return  $qry=SolvedQuestions::where('exam_type',1)->distinct()->count('exam_id');
-    }
-
-    public function getAllQuestions()
-    {
-        return  $qry=Question::get();
-    }
-
-    public function getQuestionInfo($qId)
-    {
-        // TODO: Implement getQuestionInfo() method.
-        return Question::find($qId);
     }
 
 

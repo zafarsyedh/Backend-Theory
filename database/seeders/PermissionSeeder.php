@@ -21,6 +21,10 @@ class PermissionSeeder extends Seeder
         $course_module = PermissionModule::updateOrCreate(['title' => 'Course'], ['title' =>'Course'] );
         $topic_module = PermissionModule::updateOrCreate(['title' => 'Topic Area'], ['title' =>'Topic Area'] );
         $q_module = PermissionModule::updateOrCreate(['title' => 'Question'], ['title' =>'Question'] );
+        $branch_module = PermissionModule::updateOrCreate(['title' => 'Branch'], ['title' =>'Branch'] );
+        $exam_module = PermissionModule::updateOrCreate(['title' => 'Exam'], ['title' =>'Exam'] );
+        $room_module = PermissionModule::updateOrCreate(['title' => 'Room'], ['title' =>'Room'] );
+        $system_module = PermissionModule::updateOrCreate(['title' => 'System'], ['title' =>'System'] );
         $lang_module = PermissionModule::updateOrCreate(['title' => 'Languages'], ['title' =>'Languages'] );
         $user_module = PermissionModule::updateOrCreate(['title' => 'User Management'], ['title' =>'User Management'] );
         $role_module = PermissionModule::updateOrCreate(['title' => 'Roles'], ['title' =>'Roles'] );
@@ -46,6 +50,30 @@ class PermissionSeeder extends Seeder
             ['name' => 'q-edit', 'module_id' =>$q_module->id, 'guard_name' => 'web'],
             ['name' => 'q-delete', 'module_id' =>$q_module->id, 'guard_name' => 'web'],
             ['name' => 'q-translate', 'module_id' =>$q_module->id, 'guard_name' => 'web'],
+
+            //exam
+            ['name' => 'exam-view', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-create', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-edit', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-delete', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+
+            //Branch
+            ['name' => 'branch-view', 'module_id' =>$branch_module->id, 'guard_name' => 'web'],
+            ['name' => 'branch-create', 'module_id' =>$branch_module->id, 'guard_name' => 'web'],
+            ['name' => 'branch-edit', 'module_id' =>$branch_module->id, 'guard_name' => 'web'],
+            ['name' => 'branch-delete', 'module_id' =>$branch_module->id, 'guard_name' => 'web'],
+
+            //Room
+            ['name' => 'room-view', 'module_id' =>$room_module->id, 'guard_name' => 'web'],
+            ['name' => 'room-create', 'module_id' =>$room_module->id, 'guard_name' => 'web'],
+            ['name' => 'room-edit', 'module_id' =>$room_module->id, 'guard_name' => 'web'],
+            ['name' => 'room-delete', 'module_id' =>$room_module->id, 'guard_name' => 'web'],
+
+            //System
+            ['name' => 'system-view', 'module_id' =>$system_module->id, 'guard_name' => 'web'],
+            ['name' => 'system-create', 'module_id' =>$system_module->id, 'guard_name' => 'web'],
+            ['name' => 'system-edit', 'module_id' =>$system_module->id, 'guard_name' => 'web'],
+            ['name' => 'system-delete', 'module_id' =>$system_module->id, 'guard_name' => 'web'],
 
 
             //Config

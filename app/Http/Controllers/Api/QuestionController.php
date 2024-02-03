@@ -12,9 +12,6 @@ use App\Models\Attempt;
 use App\Models\Exam;
 use App\Models\Language;
 use App\Models\Question;
-use App\Models\Result;
-use App\Models\SolvedQuestions;
-use App\Repo\Interfaces\CategoryInterface;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\LanguageInterface;
@@ -34,10 +31,9 @@ class QuestionController extends Controller
     public  $exam;
     public  $response='';
 
-    public function __construct(QuestionInterface $question,CategoryInterface $category,LanguageInterface $language,ExamInterface $exam, CourseInterface $course,TopicAreaInterface $topicArea)
+    public function __construct(QuestionInterface $question,LanguageInterface $language,ExamInterface $exam, CourseInterface $course,TopicAreaInterface $topicArea)
     {
         $this->question=$question;
-        $this->category=$category;
         $this->course=$course;
         $this->topicArea=$topicArea;
         $this->language=$language;
@@ -45,17 +41,25 @@ class QuestionController extends Controller
     }
 
     public function index(){
-        $response=$this->question->getAllQuestionForAdminSide();
-        if($response->count() > 0){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'data found', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 206, $message = 'not content', $response);
+
+        try{
+            $response=$this->question->getAllQuestionForAdminSide();
+
+            if($response['status']){
+                $response= Helper::success($response,$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
+
     }
 
     public function getDataQuestion($id)
     {
+
         try{
             if($id>0){
                 $response['editQuestion']=$this->question->findQuestionById($id);
@@ -64,15 +68,15 @@ class QuestionController extends Controller
             $response['courses']=$this->course->getAllCourseForDropdown();
             $response['topicAreas']=$this->topicArea->getAllTopicAreaForDropdown();
             if($response){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
-
+                $response= Helper::success($response,'data');
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $response);
+                $response= Helper::error($response['editQuestion']['message'],$response['editQuestion']['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
+
     }
     public function getTranslationQuestion($id)
     {
@@ -84,56 +88,68 @@ class QuestionController extends Controller
             $response['courses']=$this->course->getAllCourseForDropdown();
             $response['topicAreas']=$this->topicArea->getAllTopicAreaForDropdown();
             if($response){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
-
+                $response= Helper::success($response,'data');
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $response);
+                $response= Helper::error($response['question']['message'],$response['question']['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
     public function createQuestion(Request $request){
-        $request->all();
-         $res=$this->question->createQuestions($request);
-        if( $res['status'] == 'success'){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
-        }else{
-            $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+
+        try{
+            $response=$this->question->createQuestions($request);;
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
+
     }
     public function saveQuestionTranslation(Request $request){
-         $request->all();
-         $res=$this->question->saveQuestionTranslation($request);
-        if( $res['status'] == 'success'){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
-        }else{
-            $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+        try{
+            $response=$this->question->saveQuestionTranslation($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
-        return response()->json($response);
     }
     public function importQuestion()
     {
-        if( Excel::import(new QuestionImport,request()->file('file'))){
-            $res='Upload successfully';
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res, $res);
-        }else{
-            $res='Not uploaded';
-            $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res, $res);
-        }
-        return response()->json($response);
+        try{
+                $file =Excel::import(new QuestionImport,request()->file('file'));
+                $response= Helper::success("imported",'Upload successfully');
+                return $response;
+            } catch (\Exception $e) {
+                return Helper::error($e->getMessage(),$e);
+            }
     }
 
     public function deleteQuestion($id)
     {
         try {
-            $res = $this->question->deleteQuestion($id);
-            return Helper::ajaxSuccess($res->get('data'),$res->get('message'));
+            $response = $this->question->deleteQuestion($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
         } catch (\Exception $e) {
-            return Helper::ajaxError($e->getMessage());
+            return Helper::error($e->getMessage(),$e);
         }
+
     }
 
 

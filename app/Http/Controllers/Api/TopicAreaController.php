@@ -26,85 +26,63 @@ class TopicAreaController extends Controller
         try{
             $response['topicAreas']=$this->topic->getAllTopics();
             $response['langs']=$this->language->getAllLanguages();
-            if($response){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
-
+            if($response['topicAreas']['status']){
+                $response['langs']=$this->language->getAllLanguages();
+                $response= Helper::success($response,$response['topicAreas']['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 206, $message = 'content not available', $response);
+                $response= Helper::error($response['topicAreas']['message'],$response['topicAreas']['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
+
     }
     public function saveTopicArea(Request $request){
 
         try{
-            $res=$this->topic->createTopics($request);
-            if( $res['status'] == 'success'){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
+            $response=$this->topic->createTopics($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
+
     }
 
     public function saveTopicTranslation(Request $request){
+
         try{
-            $res=$this->topic->saveTopicTranslation($request);
-            if( $res['status'] == 'success'){
-                $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = $res['messege'], $res['data'] );
+            $response=$this->topic->saveTopicTranslation($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res['messege'], $res['status']);
+                $response= Helper::error($response['message'],$response['data']);
             }
-            return response()->json($response);
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
-
     }
-
-
-
-
 
 
     public function deleteTopic( $id){
-        try{
-            $res=$this->topic->deleteTopics($id);
-            if($res==1){
-                $response=$this->createAPIResponce($is_error=false,$code=200,$message='Record deleted successfully',$res);
-                return response()->json($response, $status = 200);
+        try {
+            $response =$this->topic->deleteTopics($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
             }else{
-                $response=$this->createAPIResponce($is_error=true,$code=401,$message=$res,$res);
-                return response()->json($response, $status = 401);
+                $response= Helper::error($response['message'],$response['data']);
             }
+            return $response;
         } catch (\Exception $e) {
-            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+            return Helper::error($e->getMessage(),$e);
         }
     }
-    public function createAPIResponce($is_error, $code, $message, $content)
-    {
-        $result = [];
-        if ($is_error) {
-            $result['success'] = false;
-            $result['code'] = $code;
-            $result['message'] = $message;
-        } else {
-            $result['success'] = true;
-            $result['code'] = $code;
-            if ($content == null) {
-                $result['message'] = $message;
-            } else {
-                $result['data'] = $content;
-            }
-        }
-        return $result;
-    }
-
 
 
 

@@ -6,91 +6,181 @@ use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
 use App\Repo\Interfaces\ExamInterface;
+use App\Repo\Interfaces\QuestionInterface;
 use Illuminate\Http\Request;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ExamController extends Controller
 {
     public  $exam;
-    public function __construct(ExamInterface $exam)
+    public  $questions;
+    public function __construct(ExamInterface $exam,QuestionInterface $questions)
     {
         $this->exam=$exam;
+        $this->questions=$questions;
     }
 
-    public function index(){
-        $response=$this->exam->getAllExamList();
-        if($response && $response->count() > 0){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 206, $message = 'Content not available', $response);
+    public function getQuestionsForExam(Request $request){
+
+        try{
+
+                $request->all();
+            $std_id=$request->std_id;
+            $lang= $request->q_lang;
+            $exam_type=$request->exam_type;
+
+               $response=$this->questions->questionMoveInSolvedQuestionTable($request);
+            if($response['status']){
+
+                  $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
+               return Helper::success($res,'Questions list');
+            }else{
+                return Helper::errorWithData($response['message'],[]);
+            }
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
-        return response()->json($response);
     }
-    public function saveExam(ExamRequest $request){
 
-         $request->all();
-        $res=$this->exam->saveExam($request);
-        if($res=='success'){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'success', $res);
-        }else{
-            $response =Helper::createAPIResponce($is_error = true, $code = 404, $message = $res, $res);
+    //saveQuestionsForExam
+    public function saveQuestionsForExam(Request $request){
+
+        try{
+            $response=$this->exam->saveExamQuestion($request);
+            if($response['status']){
+                return Helper::success($response,'Questions saved');
+            }else{
+                return Helper::errorWithData($response,'Questions not saved');
+            }
+
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
-        return response()->json($response);
     }
 
+    //savePracticeQuestions
+    public function savePracticeQuestions(Request $request){
 
-    public function editExam(Request $request){
-        $id=$request->id;
-        $res=$this->exam->editExam($id);
-        if($res){
+        try{
+            $response=$this->exam->savePracticeQuestion($request);
+            if($response['status']){
+                return Helper::success($response,'Questions saved');
+            }else{
+                return Helper::errorWithData($response,'Questions not saved');
+            }
 
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'Record found', $res);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 404, $message = 'data not found', $res);
-
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
-        return response()->json($response);
-    }
-    public function updateExam(Request $request){
-         $request->all();
-        $res=$this->exam->updateExam($request);
-        if($res==1){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'Record updated successfully', $res);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 206, $message =$res,$res);
-        }
-        return response()->json($response);
     }
 
-    public function deleteExam(Request $request){
-        $id=$request->id;
-        $response=$this->exam->deleteExam($id);
-        if($response==1){
-            $response= Helper::createAPIResponce($is_error = false, $code = 201, $message = 'Record deleted', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = false, $code = 206, $message = $response, $response);
-        }
-        return response()->json($response);
-    }
+    //getResults
+    public function getResults(Request $request){
 
-    //isExamSchedule
-    public function isExamSchedule(Request $request){
+        try{
             $request->all();
-        return $response=$this->exam->isStdExamSchedule($request->std_id);
-        if($response==1){
-            $response= Helper::createAPIResponce($is_error = false, $code = 201, $message = 'Schedlue', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = false, $code = 206, $message = 'Not Schedule', $response);
+            $response=$this->questions->getMovedQuestionForTheoryPractice($request,$request->attempt_id,2);
+            if($response->count() > 0){
+
+                $resData = collect([]);
+                $correctOpt='';
+                $choosedOpt='';
+                foreach ($response as $row){
+
+                    if($row->question->correct_opt=='a'){
+                        $correctOpt=$row->question->questionTranslations[0]->opt_a;
+                    }
+                    if($row->question->correct_opt=='b'){
+                        $correctOpt=$row->question->questionTranslations[0]->opt_b;
+                    }
+                    if($row->question->correct_opt=='c'){
+                        $correctOpt=$row->question->questionTranslations[0]->opt_c;
+                    }
+
+                    if($row->choosed_option=='a'){
+                        $choosedOpt=$row->question->questionTranslations[0]->opt_a;
+                    }
+
+                    if($row->choosed_option=='b'){
+                        $choosedOpt=$row->question->questionTranslations[0]->opt_b;
+                    }
+                    if($row->choosed_option=='c'){
+                        $choosedOpt=$row->question->questionTranslations[0]->opt_c;
+                    }
+
+                    if($row->choosed_option){
+                        if($row->choosed_option==$row->question->correct_opt){
+                        $qStatus='Correct';
+                        } else{
+                            $qStatus='Wrong';
+                        }
+                    }else{
+                        $qStatus='-';
+                    }
+
+                    $array = array(
+                        'id' =>  $row->id,
+                        'question' =>  $row->question->questionTranslations[0]->q_title,
+                        'choosed_ans' => $choosedOpt,
+                        'correct_ans' => $correctOpt,
+                        'q_status' => $qStatus,
+
+                    );
+                    $resData->push($array);
+                }
+            }
+            return Helper::success($resData,'Result list');
+
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
-        return response()->json($response);
     }
 
-    public function getStdExamInfo(Request $request){
-         $response=$this->exam->getStdExamInfo($request->std_id,1);
-        if($response){
-            $response= Helper::createAPIResponce($is_error = false, $code = 200, $message = 'data found', $response);
-        }else{
-            $response= Helper::createAPIResponce($is_error = true, $code = 404, $message = 'Not found', $response);
+    //getScheduleExamList
+    public function getScheduleExamList(Request $request){
+
+        try{
+
+            $response=$this->exam->getScheduleExamList($request);
+            if($response['status']){
+                return Helper::success($response['data'],'Questions list');
+            }else{
+                return Helper::errorWithData('Record not exist',[]);
+            }
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
-        return $response;
+    }
+
+
+    //updateScheduleExam
+    public function updateScheduleExam(Request $request){
+
+        try{
+
+            $response=$this->exam->updateExam($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],'Exam save successfully');
+            }else{
+                $response= Helper::error($response['message'],[]);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
+
+    public function deleteExam($id){
+        try {
+            $response = $this->exam->deleteExam($id);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
     }
 }

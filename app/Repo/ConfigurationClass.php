@@ -1,8 +1,12 @@
 <?php
 
 namespace App\Repo;
+use App\Http\Helpers\Helper;
 use App\Models\Configuration;
+use App\Models\TopicArea;
 use App\Traits\HandleFiles;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ConfigurationClass implements Interfaces\ConfigurationInterface
 {
@@ -10,16 +14,23 @@ class ConfigurationClass implements Interfaces\ConfigurationInterface
     use HandleFiles;
     public function getConfigInfo()
     {
-        $qry = Configuration::query();
-        $qry = $qry->where('is_deleted', 0)->orderBy('id', 'DESC');
-        $qry = $qry->first();
-        return $qry;
+
+        try {
+            $qry = Configuration::query();
+            $qry = $qry->where('is_deleted', 0)->orderBy('id', 'DESC');
+            $qry = $qry->first();
+            return  Helper::successWithData($qry,'Record found');
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
 
     }
 
     public function saveConfig($request)
     {
-
+        try {
+            $id = $request->id;
+            DB::beginTransaction();
         $logo = '';
         $admin_bg = '';
         $std_bg = '';
@@ -27,7 +38,6 @@ class ConfigurationClass implements Interfaces\ConfigurationInterface
         if ($file = $request->file('logo')) {
             $logo = $this->handleFiles($file,$path);
     }
-
 
         if(!$config=Configuration::find($request->id)){
             $config = new Configuration();
@@ -46,19 +56,15 @@ class ConfigurationClass implements Interfaces\ConfigurationInterface
         $config->email_template = $request->email_template;
         $config->enable_sms = $request->enable_sms;
         $config->sms_template = $request->sms_template;
-
-        if($config->save()){
-            return $response=([
-                "status"=>"success",
-                "data"=>$config,
-                "messege"=>"Configuration Added Successfully"
-            ]);
-        }else{
-            return $response=[
-                "status"=>"false",
-                "messege"=>"Record not save due to some technical error"
-            ];
-
+        $config->save();
+            DB::commit();
+            return  Helper::successWithData($config,(($id)?"Configuration Updated Successfully":"Configuration Added Successfully"));
+        } catch (ValidationException $validationException) {
+            DB::rollBack();
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(), $e);
         }
     }
 }
