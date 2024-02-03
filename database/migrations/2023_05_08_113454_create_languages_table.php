@@ -19,7 +19,7 @@ class CreateLanguagesTable extends Migration
             $table->string('lang_short')->nullable();
             $table->boolean('direction');
             $table->boolean('is_default');
-            $table->boolean('is_deleted');
+            $table->boolean('is_deleted')->default(0);
             $table->boolean('status');
             $table->timestamps();
         });

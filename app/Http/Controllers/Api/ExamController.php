@@ -24,18 +24,18 @@ class ExamController extends Controller
 
         try{
 
-             $request->all();
+                $request->all();
             $std_id=$request->std_id;
             $lang= $request->q_lang;
             $exam_type=$request->exam_type;
 
-             $response=$this->questions->questionMoveInSolvedQuestionTable($request);
+               $response=$this->questions->questionMoveInSolvedQuestionTable($request);
             if($response['status']){
 
-               $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
+                  $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
                return Helper::success($res,'Questions list');
             }else{
-                return Helper::errorWithData('Record not exist',[]);
+                return Helper::errorWithData($response['message'],[]);
             }
         } catch (\Exception $e) {
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
