@@ -4,6 +4,7 @@ namespace App\Repo;
 use App\Http\Helpers\Helper;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
+use App\Models\Student;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Support\Facades\Validator;
 
@@ -141,6 +142,21 @@ class ExamClass implements Interfaces\ExamInterface
             $role = ExamSchedule::find($id);
             $role->delete();
             return Helper::successWithData($role, $message="Exam Deleted");
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
+
+    public function checkExamStatus($stdData)
+    {
+        try {
+            $isContinue=1;
+           if($std= Student::where('traffic_id',$stdData['regnnumb'])->latest('id')->first()){
+               if(ExamSchedule::where('std_id',$std->id)->where('exam_status','!=',3)->count() > 0){
+                   $isContinue=0;
+               }
+           }
+            return $isContinue;
         }catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(),$e);
         }

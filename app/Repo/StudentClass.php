@@ -114,7 +114,7 @@ class StudentClass implements Interfaces\StudentInterface
 
             ];
 
-                Helper::createExamHelper($request,$paramData);
+           Helper::createExamHelper($request,$paramData);
             event(new CourseEvent($eventStdData));
 
             DB::commit();

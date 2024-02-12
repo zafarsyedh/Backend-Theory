@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\CourseEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
+use App\Models\Exam;
+use App\Models\ExamSchedule;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
 use Illuminate\Http\Request;
@@ -179,6 +182,35 @@ class ExamController extends Controller
                 $response= Helper::error($response['message'],$response['data']);
             }
             return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
+
+    //restartExam
+    public function restartExam($id){
+        try {
+
+           $exam=ExamSchedule::with('student:id,std_name,traffic_id','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage','system')->find($id);
+
+            $eventStdData = [
+                'stdId' =>$exam->std_id,
+                'stdName' =>$exam->student->std_name,
+                'trafficId' =>$exam->student->traffic_id,
+                'courseId' =>$exam->course->id,
+                'courseName' =>$exam->course->short_name,
+                'qLangShortName' =>$exam->qLanguage->lang_short,
+                'qLangFullName' =>$exam->qLanguage->lang,
+                'audioLangShortName' =>$exam->audioLanguage->lang_short,
+                'audioLangFullName' =>$exam->audioLanguage->lang,
+                'examType' =>$exam->exam_type,
+                'direction' =>($exam->qLanguage->direction == 2)? 'ltr':'rtl',
+                'systemIp' =>$exam->system->system_ip,
+
+            ];
+            event(new CourseEvent($eventStdData));
+            return   $response= Helper::success([],'Exam restart successfully');
+
         } catch (\Exception $e) {
             return Helper::error($e->getMessage(),$e);
         }
