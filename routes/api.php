@@ -87,7 +87,7 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
 
 });
 // Student Area
-Route::get('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
+Route::post('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
 Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
 Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 

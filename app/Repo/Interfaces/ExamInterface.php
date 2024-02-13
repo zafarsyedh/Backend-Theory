@@ -13,6 +13,7 @@ interface ExamInterface{
     public function updateAttemptStatus($attemptId);
     public function updateExamScheduleStatus($examScheduleId);
     public function getAttemptInfo($attemptId);
+    public function getSolvedQuestionAccordingAttempt($attemptId);
 
 
 }

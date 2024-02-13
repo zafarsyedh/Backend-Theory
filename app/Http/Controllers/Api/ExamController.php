@@ -218,19 +218,42 @@ class ExamController extends Controller
     public function getStudentResult(Request $request){
 
         try{
-            $request->all();
-            $res=$this->exam->getAttemptInfo(1);
+            $attemptId=1;//$request->attempt_id;
+             $res=$this->exam->getAttemptInfo($attemptId);
             if($res->count() > 0){
 
-            $courseInfo=Helper::fetchOnlyData($this->course->getCourseConfig($res->student->activeCourse->course_id));
+                 $courseInfo=Helper::fetchOnlyData($this->course->getCourseConfig($res->student->activeCourse->course_id));
 
                 $totalRequireQuestion=0;
-                $courseConfig=$courseInfo->courseConfig;
-                if($courseConfig->require_type==1){
-                    $totalRequireQuestion=$courseConfig->specific_require +  $courseConfig->common_require + $courseConfig->video_require;
+                $courseConfiguration=$courseInfo->courseConfig;
+
+
+                if($courseConfiguration[0]->require_type==1){
+                    $totalRequireQuestion=$courseConfiguration[0]->specific_require +  $courseConfiguration[0]->common_require + $courseConfiguration[0]->video_require;
                 }else{
-                    $totalRequireQuestion=$courseConfig;
+                    $totalRequireQuestion=$courseConfiguration[0]->total_require;
                 }
+
+                $questions= $this->exam->getSolvedQuestionAccordingAttempt($attemptId);
+
+
+                $resData = collect([]);
+
+                $totalCorrectAns=0;
+                $totalWrongAns=0;
+                foreach ($questions as $row){
+
+                    $totalCorrectAns= $totalCorrectAns + $row->solvedQuestion->where('is_correct_ans',1)->count();
+                    $totalWrongAns=$totalWrongAns +  $row->solvedQuestion->where('is_correct_ans',0)->count();
+
+                    $topicArray = array(
+                        'topic'=> $row->topicAreaTranslation[0]->full_name,
+                        'wrong_ans' =>$row->solvedQuestion->where('is_correct_ans',0)->count(),
+                    );
+                    $resData->push($topicArray);
+                }
+
+
 
                 $array = array(
                     'test_date' =>$res->created_at,
@@ -238,12 +261,14 @@ class ExamController extends Controller
                     'traffic_id' =>$res->student->traffic_id,
                     'course' =>$res->student->activeCourse->course->short_name,
                     'test_time' => $res->created_at,
-                    'total_duration' => 10,
+                    'total_duration' => $courseConfiguration[0]->total_duration,
                     'test_duration' => 10,
-                    'status' => 10,
-                    'total_question' => 10,
-                    'required_ans' => 10,
-                    'correct_ans' => 0,
+                    'status' => ($totalCorrectAns >= $totalRequireQuestion)?1:0,
+                    'total_question' =>$courseConfiguration[0]->specific_question +  $courseConfiguration[0]->common_question + $courseConfiguration[0]->video_question,
+                    'required_ans' => $totalRequireQuestion,
+                    'correct_ans' => $totalCorrectAns,
+                    'topics'=>$resData
+
 
                 );
 

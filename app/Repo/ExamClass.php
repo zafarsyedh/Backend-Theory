@@ -6,6 +6,7 @@ use App\Models\Attempt;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
 use App\Models\Student;
+use App\Models\TopicArea;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Support\Facades\Validator;
 
@@ -196,6 +197,20 @@ class ExamClass implements Interfaces\ExamInterface
             $qry=$qry->with('student.activeCourse.course');
           return $qry=$qry->find($attemptId);
 
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+
+    public function getSolvedQuestionAccordingAttempt($attemptId)
+    {
+        try {
+
+            $qry = TopicArea::with(['topicAreaTranslation', 'solvedQuestion' => function($query) use ($attemptId) {
+                $query->where('attempt_id', $attemptId);
+            }])->get();
+            return $qry;
         }catch (\Exception $e) {
             throw $e;
         }
