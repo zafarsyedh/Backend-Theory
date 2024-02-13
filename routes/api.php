@@ -83,11 +83,11 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::get('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
     Route::post('save-role-permissions',[RoleController::class,'saveRolePermissions']);
 
-
+    Route::get('get-all-results',[ExamController::class,'getAllResults']);
 
 });
 // Student Area
-Route::get('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
+Route::post('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
 Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
 Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 

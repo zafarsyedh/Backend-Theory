@@ -135,11 +135,24 @@ class ExamController extends Controller
         }
     }
 
+    public function getAllResults(){
+
+        try{
+             $response=$this->exam->getAllResultsList();
+            if($response['status']){
+                return Helper::success($response['data'],'Results list');
+            }else{
+                return Helper::errorWithData('Record not exist',[]);
+            }
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
     //getScheduleExamList
     public function getScheduleExamList(Request $request){
 
         try{
-
             $response=$this->exam->getScheduleExamList($request);
             if($response['status']){
                 return Helper::success($response['data'],'Questions list');
