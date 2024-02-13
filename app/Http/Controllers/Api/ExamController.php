@@ -8,6 +8,7 @@ use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
 use App\Models\Exam;
 use App\Models\ExamSchedule;
+use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
 use Illuminate\Http\Request;
@@ -17,26 +18,21 @@ class ExamController extends Controller
 {
     public  $exam;
     public  $questions;
-    public function __construct(ExamInterface $exam,QuestionInterface $questions)
+    public  $course;
+    public function __construct(ExamInterface $exam,QuestionInterface $questions,CourseInterface $course)
     {
         $this->exam=$exam;
         $this->questions=$questions;
+        $this->course=$course;
     }
 
     public function getQuestionsForExam(Request $request){
 
         try{
-
-                $request->all();
-            $std_id=$request->std_id;
-            $lang= $request->q_lang;
-            $exam_type=$request->exam_type;
-
-               $response=$this->questions->questionMoveInSolvedQuestionTable($request);
+            $response=$this->questions->questionMoveInSolvedQuestionTable($request);
             if($response['status']){
-
-                  $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
-               return Helper::success($res,'Questions list');
+            $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
+            return Helper::success($res,'Questions list');
             }else{
                 return Helper::errorWithData($response['message'],[]);
             }
@@ -191,9 +187,11 @@ class ExamController extends Controller
     public function restartExam($id){
         try {
 
-           $exam=ExamSchedule::with('student:id,std_name,traffic_id','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage','system')->find($id);
+           $exam=ExamSchedule::with('student:id,std_name,traffic_id','course:id,short_name','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
 
             $eventStdData = [
+
+                'examId' =>$id,
                 'stdId' =>$exam->std_id,
                 'stdName' =>$exam->student->std_name,
                 'trafficId' =>$exam->student->traffic_id,
@@ -213,6 +211,71 @@ class ExamController extends Controller
 
         } catch (\Exception $e) {
             return Helper::error($e->getMessage(),$e);
+        }
+    }
+
+    //getStudentResult
+    public function getStudentResult(Request $request){
+
+        try{
+            $request->all();
+            $res=$this->exam->getAttemptInfo(1);
+            if($res->count() > 0){
+
+            $courseInfo=Helper::fetchOnlyData($this->course->getCourseConfig($res->student->activeCourse->course_id));
+
+                $totalRequireQuestion=0;
+                $courseConfig=$courseInfo->courseConfig;
+                if($courseConfig->require_type==1){
+                    $totalRequireQuestion=$courseConfig->specific_require +  $courseConfig->common_require + $courseConfig->video_require;
+                }else{
+                    $totalRequireQuestion=$courseConfig;
+                }
+
+                $array = array(
+                    'test_date' =>$res->created_at,
+                    'std_name' =>$res->student->std_name,
+                    'traffic_id' =>$res->student->traffic_id,
+                    'course' =>$res->student->activeCourse->course->short_name,
+                    'test_time' => $res->created_at,
+                    'total_duration' => 10,
+                    'test_duration' => 10,
+                    'status' => 10,
+                    'total_question' => 10,
+                    'required_ans' => 10,
+                    'correct_ans' => 0,
+
+                );
+
+                return $array;
+
+                $resData = collect([]);
+                $correctOpt='';
+                $choosedOpt='';
+                foreach ($response as $row){
+
+
+
+                    $array = array(
+                        'test_date' =>  $row->id,
+                        'traffic_id' =>  $row->question->questionTranslations[0]->q_title,
+                        'course' => $choosedOpt,
+                        'test_time' => $correctOpt,
+                        'total_duration' => $qStatus,
+                        'test_duration' => $qStatus,
+                        'status' => $qStatus,
+                        'total_question' => $qStatus,
+                        'required_ans' => $qStatus,
+                        'correct_ans' => $qStatus,
+
+                    );
+                    $resData->push($array);
+                }
+            }
+            return Helper::success($resData,'Result list');
+
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
 }

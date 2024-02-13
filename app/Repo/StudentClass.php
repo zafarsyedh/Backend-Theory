@@ -4,6 +4,7 @@ namespace App\Repo;
 use App\Events\CourseEvent;
 use App\Http\Helpers\Helper;
 use App\Models\Branch;
+use App\Models\ExamSchedule;
 use App\Models\Language;
 use App\Models\Student;
 use App\Models\StudentCourse;
@@ -98,7 +99,12 @@ class StudentClass implements Interfaces\StudentInterface
            $audioLangInfo= Language::where('lang_short',$request->audio_lang)->latest('id')->first();
            $systemInfo= System::find($request->system_id);
 
+            Helper::createExamHelper($request,$paramData);
+
+            $exam=ExamSchedule::where('std_id',$student->id)->latest('id')->first();;
+
             $eventStdData = [
+                'examId' =>$exam->id,
                 'stdId' =>$student->id,
                 'stdName' =>$student->std_name,
                 'trafficId' =>$student->traffic_id,
@@ -114,7 +120,7 @@ class StudentClass implements Interfaces\StudentInterface
 
             ];
 
-           Helper::createExamHelper($request,$paramData);
+
             event(new CourseEvent($eventStdData));
 
             DB::commit();

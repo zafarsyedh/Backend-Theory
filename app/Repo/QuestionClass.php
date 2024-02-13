@@ -4,6 +4,7 @@ namespace App\Repo;
 use App\Http\Helpers\Helper;
 use App\Models\Attempt;
 use App\Models\Exam;
+use App\Models\ExamSchedule;
 use App\Models\Language;
 use App\Models\Question;
 use App\Models\QuestionCourse;
@@ -312,6 +313,7 @@ protected $qAudioname='';
                     $attempt = new Attempt();
                 }
                 $attempt->std_id= $request->std_id;
+                $attempt->exam_id = $request->exam_id;
                 $attempt->exam_type= $request->exam_type;
                 $attempt->save();
                 return $attempt->id;
@@ -324,9 +326,11 @@ protected $qAudioname='';
     {
         try {
             DB::beginTransaction();
-            $courseId=1;
-            $qLang='en';
-            $audioLang='en';
+
+            $courseId=$request->course_id;
+            $qLang=$request->q_lang;
+            $audioLang=$request->audio_lang;
+
 
             $attemptId= $this->createNewAttempt($request);
 
@@ -336,7 +340,7 @@ protected $qAudioname='';
 
 
             $qry = Question::query();
-            $qry = $qry->select('id');
+            $qry = $qry->select('id','topic_id');
             $qry = $qry->where(function ($query) use ($courseId) {
                 $query->whereRelation('qCourses','course_id',$courseId)
                     ->orWhere('q_type','2');
@@ -365,12 +369,16 @@ protected $qAudioname='';
 
                         'attempt_id' =>$attemptId,
                         'q_id'=> $row->id,
+                        'topic_id'=> $row->topic_id ,
                         'is_answered' =>0,
                         'q_lang'=>$qLang,
                         'audio_lang'=>$audioLang,
                     ]
                 );
             }
+            $examSchedule=ExamSchedule::find($request->exam_id);
+            $examSchedule->exam_status=2;
+            $examSchedule->save();
             DB::commit();
 
             return  Helper::successWithData($question->attempt_id,'Record created');
