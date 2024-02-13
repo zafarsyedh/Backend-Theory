@@ -103,10 +103,12 @@ Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
 
 
 Route::post('get-results',[ExamController::class,'getResults']);
+Route::get('get-student-result',[ExamController::class,'getStudentResult']);
 Route::any('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
 Route::any('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
 Route::any('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
 Route::any('delete-exam/{id}',[ExamController::class,'deleteExam']);
+Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
 
 Route::any('test-data',[StudentController::class,'testData']);
 

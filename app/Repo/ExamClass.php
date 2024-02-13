@@ -2,8 +2,10 @@
 
 namespace App\Repo;
 use App\Http\Helpers\Helper;
+use App\Models\Attempt;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
+use App\Models\Student;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Support\Facades\Validator;
 
@@ -24,7 +26,11 @@ class ExamClass implements Interfaces\ExamInterface
                     $examQ->save();
 
                 }
+
+                $this->updateAttemptStatus($examQ->attempt_id);
+                $this->updateExamScheduleStatus($request->exam_id);
             }
+
             return Helper::successWithData([],'record save');
 
         }  catch (\Exception $e) {
@@ -143,6 +149,55 @@ class ExamClass implements Interfaces\ExamInterface
             return Helper::successWithData($role, $message="Exam Deleted");
         }catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
+
+    public function checkExamStatus($stdData)
+    {
+        try {
+            $isContinue=1;
+           if($std= Student::where('traffic_id',$stdData['regnnumb'])->latest('id')->first()){
+               if(ExamSchedule::where('std_id',$std->id)->where('exam_status','!=',3)->count() > 0){
+                   $isContinue=0;
+               }
+           }
+            return $isContinue;
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
+    public function updateExamScheduleStatus($id)
+    {
+        try {
+            $exam=ExamSchedule::find($id);
+            $exam->exam_status=3;
+            $exam->save();
+
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function updateAttemptStatus($id)
+    {
+        try {
+            $attempt=Attempt::find($id);
+            $attempt->status=1;
+            $attempt->save();
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function getAttemptInfo($attemptId)
+    {
+        try {
+            $qry=Attempt::query();
+            $qry=$qry->with('student.activeCourse.course');
+          return $qry=$qry->find($attemptId);
+
+        }catch (\Exception $e) {
+            throw $e;
         }
     }
 }

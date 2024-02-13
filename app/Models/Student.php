@@ -13,5 +13,11 @@ class Student extends Model
     ];
 
 
+    public function activeCourse()
+    {
+        return $this->hasOne(StudentCourse::class,  'std_id','id')->where('is_active',1);
+    }
+
+
 
 }

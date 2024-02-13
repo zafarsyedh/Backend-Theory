@@ -29,9 +29,11 @@ class PermissionSeeder extends Seeder
         $user_module = PermissionModule::updateOrCreate(['title' => 'User Management'], ['title' =>'User Management'] );
         $role_module = PermissionModule::updateOrCreate(['title' => 'Roles'], ['title' =>'Roles'] );
         $config_module = PermissionModule::updateOrCreate(['title' => 'Configuration'], ['title' =>'Configuration'] );
+        $exam_module = PermissionModule::updateOrCreate(['title' => 'Exam'], ['title' =>'Exam'] );
 
 
         Permission::upsert([
+
             ['name' => 'course-view', 'module_id' =>$course_module->id, 'guard_name' => 'web'],
             ['name' => 'course-create', 'module_id' =>$course_module->id, 'guard_name' => 'web'],
             ['name' => 'course-edit', 'module_id' =>$course_module->id, 'guard_name' => 'web'],
@@ -98,6 +100,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'role-create', 'module_id' =>$role_module->id, 'guard_name' => 'web'],
             ['name' => 'role-edit', 'module_id' =>$role_module->id, 'guard_name' => 'web'],
             ['name' => 'role-delete', 'module_id' =>$role_module->id, 'guard_name' => 'web'],
+
+
+            //Exam
+            ['name' => 'exam-view', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-create', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-edit', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
+            ['name' => 'exam-delete', 'module_id' =>$exam_module->id, 'guard_name' => 'web'],
 
         ], ['name']);
 
