@@ -94,6 +94,12 @@ Route::post('save-practice-questions',[ExamController::class,'savePracticeQuesti
 Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
 Route::post('get-results',[ExamController::class,'getResults']);
 
+Route::get('get-student-result',[ExamController::class,'getStudentResult']);
+
+
+
+Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
+
 Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
 Route::post('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
 Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);

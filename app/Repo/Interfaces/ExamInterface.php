@@ -9,6 +9,10 @@ interface ExamInterface{
     public function createExam($request,$data);
     public function updateExam($request);
     public function deleteExam($id);
+    public function checkExamStatus($stdData);
+    public function updateAttemptStatus($attemptId);
+    public function updateExamScheduleStatus($examScheduleId);
+    public function getAttemptInfo($attemptId);
 
 
 }

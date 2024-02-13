@@ -1,10 +1,14 @@
 <?php
 
 namespace App\Repo;
+use App\Events\CourseEvent;
 use App\Http\Helpers\Helper;
 use App\Models\Branch;
+use App\Models\ExamSchedule;
+use App\Models\Language;
 use App\Models\Student;
 use App\Models\StudentCourse;
+use App\Models\System;
 use App\Models\TopicArea;
 use App\Models\TopicAreaDetail;
 use App\Models\TopicAreaTranslation;
@@ -91,8 +95,34 @@ class StudentClass implements Interfaces\StudentInterface
                 'invgId' =>1,
             ];
 
+           $qLangInfo= Language::where('lang_short',$request->q_lang)->latest('id')->first();
+           $audioLangInfo= Language::where('lang_short',$request->audio_lang)->latest('id')->first();
+           $systemInfo= System::find($request->system_id);
 
-                Helper::createExamHelper($request,$paramData);
+            Helper::createExamHelper($request,$paramData);
+
+            $exam=ExamSchedule::where('std_id',$student->id)->latest('id')->first();;
+
+            $eventStdData = [
+                'examId' =>$exam->id,
+                'stdId' =>$student->id,
+                'stdName' =>$student->std_name,
+                'trafficId' =>$student->traffic_id,
+                'courseId' =>$courseInfo->id,
+                'courseName' =>$courseInfo->short_name,
+                'qLangShortName' =>$request->q_lang,
+                'qLangFullName' =>$qLangInfo->lang,
+                'audioLangShortName' =>$request->audio_lang,
+                'audioLangFullName' =>$audioLangInfo->lang,
+                'examType' =>$request->exam_type,
+                'direction' =>($qLangInfo->direction == 2)? 'ltr':'rtl',
+                'systemIp' =>$systemInfo->system_ip,
+
+            ];
+
+
+            event(new CourseEvent($eventStdData));
+
             DB::commit();
 
             return  Helper::successWithData($student,'Record created successfully');

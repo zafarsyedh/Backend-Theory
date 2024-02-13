@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class QuestionSolved extends Model
 {
     use HasFactory;
-    protected $fillable=['attempt_id','q_id','is_answered','q_lang','audio_lang'];
+    protected $fillable=['attempt_id','q_id','is_answered','q_lang','audio_lang','topic_id'];
 
     public function question()
     {
