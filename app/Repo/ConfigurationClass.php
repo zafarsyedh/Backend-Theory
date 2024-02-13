@@ -32,11 +32,14 @@ class ConfigurationClass implements Interfaces\ConfigurationInterface
             $id = $request->id;
             DB::beginTransaction();
         $logo = '';
-        $admin_bg = '';
+        $res_logo = '';
         $std_bg = '';
         $path='config/';
         if ($file = $request->file('logo')) {
             $logo = $this->handleFiles($file,$path);
+    }
+        if ($file = $request->file('result_logo')) {
+            $res_logo = $this->handleFiles($file,$path);
     }
 
         if(!$config=Configuration::find($request->id)){
@@ -47,6 +50,7 @@ class ConfigurationClass implements Interfaces\ConfigurationInterface
 
         $config->title = $request->title;
         ($logo!='')?$config->logo = $logo:'';
+        ($res_logo!='')?$config->result_logo = $res_logo:'';
         $config->enable_email = $request->enable_email;
         $config->e_host = $request->e_host;
         $config->e_user_name = $request->e_user_name;
