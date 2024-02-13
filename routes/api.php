@@ -17,7 +17,6 @@ use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use App\Http\Controllers\Api\StudentController;
 
 
@@ -28,89 +27,86 @@ Route::get('verify_token', [LoginController::class, 'apiVerifyToken']);
 Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.reset');
 
-//
-//Route::middleware([EnsureFrontendRequestsAreStateful::class, 'auth:sanctum'])->group(function () {
+Route::group(['middleware' => ['auth:sanctum']], function(){
 
     Route::post('create-user', [UserController::class, 'saveUser']);
-    Route::any('delete-user/{id}',[UserController::class,'deleteUser']);
-    Route::any('edit-user',[UserController::class,'editUser']);
-    Route::any('get-invigilator',[UserController::class,'getInvigilator']);
+    Route::get('get-all-users', [UserController::class, 'index']);
+    Route::delete('delete-user/{id}',[UserController::class,'deleteUser']);
 
     Route::post('save-lang',[LanguagesController::class,'saveLanguage']);
-    Route::any('delete-lang/{id}',[LanguagesController::class,'deleteLanguage']);
-    Route::any('edit-lang',[LanguagesController::class,'editLanguage']);
-    Route::any('get-all-lang',[LanguagesController::class,'index']);
-    Route::any('get-all-lang-for-dropdown',[LanguagesController::class,'getAllLangForDropdown']);
+    Route::get('get-all-lang',[LanguagesController::class,'index']);
+    Route::get('get-all-lang-for-dropdown',[LanguagesController::class,'getAllLangForDropdown']);
+    Route::delete('delete-lang/{id}',[LanguagesController::class,'deleteLanguage']);
 
     Route::post('save-course',[CourseController::class,'saveCourse']);
     Route::post('save-course-translation',[CourseController::class,'saveCourseTranslation']);
-    Route::any('delete-course/{id}',[CourseController::class,'deleteCourse']);
-    Route::any('get-all-courses',[CourseController::class,'index']);
+    Route::get('get-all-courses',[CourseController::class,'index']);
+    Route::delete('delete-course/{id}',[CourseController::class,'deleteCourse']);
 
-    Route::any('get-course-config/{id}',[CourseController::class,'getCourseConfig']);
+    Route::get('get-course-config/{id}',[CourseController::class,'getCourseConfig']);
     Route::post('save-course-config',[CourseController::class,'saveCourseConfig']);
 
     Route::post('save-topic-area',[TopicAreaController::class,'saveTopicArea']);
-    Route::any('get-all-topics',[TopicAreaController::class,'index']);
-    Route::any('delete-topic/{id}',[TopicAreaController::class,'deleteTopic']);
+    Route::get('get-all-topics',[TopicAreaController::class,'index']);
     Route::any('save-topic-area-translation',[TopicAreaController::class,'saveTopicTranslation']);
+    Route::delete('delete-topic/{id}',[TopicAreaController::class,'deleteTopic']);
 
     Route::post('save-config',[ConfigurationController::class,'saveConfig']);
 
-
+    Route::post('import-question', [QuestionController::class, 'importQuestion']);
     Route::post('create-questions',[QuestionController::class,'createQuestion']);
-    Route::any('get-data-question/{id}',[QuestionController::class,'getDataQuestion']);
-    Route::any('get-all-questions',[QuestionController::class,'index']);
-    Route::any('delete-question/{id}',[QuestionController::class,'deleteQuestion']);
+    Route::get('get-data-question/{id}',[QuestionController::class,'getDataQuestion']);
+    Route::get('get-all-questions',[QuestionController::class,'index']);
+    Route::delete('delete-question/{id}',[QuestionController::class,'deleteQuestion']);
 
-    Route::any('get-translation-question/{id}',[QuestionController::class,'getTranslationQuestion']);
+    Route::get('get-translation-question/{id}',[QuestionController::class,'getTranslationQuestion']);
     Route::post('save-question-translation',[QuestionController::class,'saveQuestionTranslation']);
 
     Route::post('save-branch',[BranchController::class,'saveBranch']);
-    Route::any('get-all-branches',[BranchController::class,'index']);
-    Route::any('get-branches-list',[BranchController::class,'branchesList']);
-    Route::any('delete-branch/{id}',[BranchController::class,'deleteBranch']);
+    Route::get('get-all-branches',[BranchController::class,'index']);
+    Route::get('get-branches-list',[BranchController::class,'branchesList']);
+    Route::delete('delete-branch/{id}',[BranchController::class,'deleteBranch']);
 
     Route::post('save-room',[RoomController::class,'saveRoom']);
-    Route::any('get-all-rooms',[RoomController::class,'index']);
-    Route::any('get-rooms-list',[RoomController::class,'roomsList']);
-    Route::any('delete-room/{id}',[RoomController::class,'deleteRoom']);
-
+    Route::get('get-all-rooms',[RoomController::class,'index']);
+    Route::get('get-rooms-list',[RoomController::class,'roomsList']);
+    Route::delete('delete-room/{id}',[RoomController::class,'deleteRoom']);
 
     Route::post('system-create',[SystemController::class,'saveSystem']);
-    Route::any('delete-system/{id}',[SystemController::class,'deleteSystem']);
+    Route::delete('delete-system/{id}',[SystemController::class,'deleteSystem']);
 
     Route::post('save-role',[RoleController::class,'saveRole']);
-    Route::any('edit-role',[RoleController::class,'editRole']);
-    Route::any('delete-role/{id}',[RoleController::class,'deleteRole']);
-    Route::any('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
+    Route::get('get-all-roles',[RoleController::class,'index']);
+    Route::delete('delete-role/{id}',[RoleController::class,'deleteRole']);
+
+
+    Route::get('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
     Route::post('save-role-permissions',[RoleController::class,'saveRolePermissions']);
-    Route::post('import-question', [QuestionController::class, 'importQuestion']);
-    Route::any('get-all-users', [UserController::class, 'index']);
-    Route::any('get-all-roles',[RoleController::class,'index']);
 
-//});
 
-Route::any('system-list',[SystemController::class,'systemList']);
 
+});
 // Student Area
-Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
+Route::get('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
 Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
 Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 
-
 Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
-
-
 Route::post('get-results',[ExamController::class,'getResults']);
+
 Route::get('get-student-result',[ExamController::class,'getStudentResult']);
-Route::any('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
-Route::any('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
-Route::any('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
-Route::any('delete-exam/{id}',[ExamController::class,'deleteExam']);
+
+
+
 Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
 
-Route::any('test-data',[StudentController::class,'testData']);
+Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
+Route::post('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
+Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
+
+Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
+Route::get('system-list',[SystemController::class,'systemList']);
+Route::get('test-data',[StudentController::class,'testData']);
 
 
 

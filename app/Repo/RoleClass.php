@@ -99,10 +99,12 @@ class RoleClass implements Interfaces\RoleInterface
 
     public function saveRolePermissions($request)
     {
+
         try {
             DB::beginTransaction();
-            $role= UserRoles::find($request->roleId);
-            $role->syncPermissions($request->permissions);
+            $role= UserRoles::find($request->role_id);
+            $permissions = array_map('intval', $request->permissions);
+            $role->syncPermissions($permissions);
             DB::commit();
             return  Helper::successWithData($role,'Role Permissions Updated Successfully');
         } catch (ValidationException $validationException) {

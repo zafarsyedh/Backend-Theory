@@ -41,4 +41,8 @@ class ExamSchedule extends Model
     {
         return $this->belongsTo(System::class, 'system_id', 'id');
     }
+
+    protected $casts = [
+        'created_at' => 'datetime:d M Y h:i:s a',
+    ];
 }
