@@ -14,6 +14,8 @@ interface ExamInterface{
     public function updateExamScheduleStatus($examScheduleId);
     public function getAttemptInfo($attemptId);
     public function getSolvedQuestionAccordingAttempt($attemptId);
+    public function createResult($data);
+    public function getExamWiseResult($examId);
 
 
 }

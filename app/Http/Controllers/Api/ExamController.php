@@ -8,6 +8,7 @@ use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
 use App\Models\Exam;
 use App\Models\ExamSchedule;
+use App\Models\Question;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
@@ -29,6 +30,7 @@ class ExamController extends Controller
     public function getQuestionsForExam(Request $request){
 
         try{
+            
             $response=$this->questions->questionMoveInSolvedQuestionTable($request);
             if($response['status']){
             $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
@@ -78,6 +80,9 @@ class ExamController extends Controller
 
         try{
             $request->all();
+
+
+
             $response=$this->questions->getMovedQuestionForTheoryPractice($request,$request->attempt_id,2);
             if($response->count() > 0){
 
@@ -187,7 +192,7 @@ class ExamController extends Controller
     public function restartExam($id){
         try {
 
-           $exam=ExamSchedule::with('student:id,std_name,traffic_id','course:id,short_name','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
+           $exam=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
 
             $eventStdData = [
 
@@ -196,6 +201,7 @@ class ExamController extends Controller
                 'stdName' =>$exam->student->std_name,
                 'trafficId' =>$exam->student->traffic_id,
                 'courseId' =>$exam->course->id,
+                'examDuration' =>$exam->course->courseConfig->total_duration,
                 'courseName' =>$exam->course->short_name,
                 'qLangShortName' =>$exam->qLanguage->lang_short,
                 'qLangFullName' =>$exam->qLanguage->lang,
@@ -218,24 +224,15 @@ class ExamController extends Controller
     public function getStudentResult(Request $request){
 
         try{
-            $attemptId=1;//$request->attempt_id;
-             $res=$this->exam->getAttemptInfo($attemptId);
+
+
+            $exam_id=1;//$request->attempt_id;
+              $res=$this->exam->getExamWiseResult($exam_id);
             if($res->count() > 0){
 
-                 $courseInfo=Helper::fetchOnlyData($this->course->getCourseConfig($res->student->activeCourse->course_id));
-
-                $totalRequireQuestion=0;
-                $courseConfiguration=$courseInfo->courseConfig;
 
 
-                if($courseConfiguration[0]->require_type==1){
-                    $totalRequireQuestion=$courseConfiguration[0]->specific_require +  $courseConfiguration[0]->common_require + $courseConfiguration[0]->video_require;
-                }else{
-                    $totalRequireQuestion=$courseConfiguration[0]->total_require;
-                }
-
-                $questions= $this->exam->getSolvedQuestionAccordingAttempt($attemptId);
-
+                $questions= $this->exam->getSolvedQuestionAccordingAttempt($res->attempt->id);
 
                 $resData = collect([]);
 
@@ -253,51 +250,22 @@ class ExamController extends Controller
                     $resData->push($topicArray);
                 }
 
-
-
                 $array = array(
-                    'test_date' =>$res->created_at,
-                    'std_name' =>$res->student->std_name,
-                    'traffic_id' =>$res->student->traffic_id,
-                    'course' =>$res->student->activeCourse->course->short_name,
-                    'test_time' => $res->created_at,
-                    'total_duration' => $courseConfiguration[0]->total_duration,
-                    'test_duration' => 10,
-                    'status' => ($totalCorrectAns >= $totalRequireQuestion)?1:0,
-                    'total_question' =>$courseConfiguration[0]->specific_question +  $courseConfiguration[0]->common_question + $courseConfiguration[0]->video_question,
-                    'required_ans' => $totalRequireQuestion,
-                    'correct_ans' => $totalCorrectAns,
+                    'test_date' =>date('d M Y',strtotime($res->created_at)),
+                    'std_name' =>$res->attempt->student->std_name,
+                    'traffic_id' =>$res->attempt->student->traffic_id,
+                    'course' =>$res->attempt->student->activeCourse->course->short_name,
+                    'test_time' =>date('H:i:s',strtotime($res->created_at)),
+                    'total_duration' => $res->total_duration,
+                    'test_duration' => $res->test_duration,
+                    'status' => $res->status,
+                    'total_question' =>$res->total_question,
+                    'required_ans' => $res->correct_ans_required,
+                    'correct_ans' => $res->correct_ans,
                     'topics'=>$resData
-
-
                 );
-
-                return $array;
-
-                $resData = collect([]);
-                $correctOpt='';
-                $choosedOpt='';
-                foreach ($response as $row){
-
-
-
-                    $array = array(
-                        'test_date' =>  $row->id,
-                        'traffic_id' =>  $row->question->questionTranslations[0]->q_title,
-                        'course' => $choosedOpt,
-                        'test_time' => $correctOpt,
-                        'total_duration' => $qStatus,
-                        'test_duration' => $qStatus,
-                        'status' => $qStatus,
-                        'total_question' => $qStatus,
-                        'required_ans' => $qStatus,
-                        'correct_ans' => $qStatus,
-
-                    );
-                    $resData->push($array);
-                }
             }
-            return Helper::success($resData,'Result list');
+            return Helper::success($array,'Result list');
 
         } catch (\Exception $e) {
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);

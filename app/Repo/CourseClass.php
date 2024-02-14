@@ -219,7 +219,7 @@ class CourseClass implements CourseInterface
     public function getCourseInfoByShortName($courseShortName)
     {
         try {
-            $course= Course::with('courseTranslation')->where('short_name',$courseShortName)->first();
+            $course= Course::with('courseConfig','courseTranslation')->where('short_name',$courseShortName)->first();
             return $course;
         } catch (ValidationException $validationException) {
             return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());

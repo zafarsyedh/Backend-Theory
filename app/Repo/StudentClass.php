@@ -109,6 +109,7 @@ class StudentClass implements Interfaces\StudentInterface
                 'stdName' =>$student->std_name,
                 'trafficId' =>$student->traffic_id,
                 'courseId' =>$courseInfo->id,
+                'examDuration' =>$courseInfo->courseConfig->total_duration,
                 'courseName' =>$courseInfo->short_name,
                 'qLangShortName' =>$request->q_lang,
                 'qLangFullName' =>$qLangInfo->lang,

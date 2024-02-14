@@ -309,7 +309,7 @@ protected $qAudioname='';
     public function createNewAttempt($request)
     {
         try {
-         $attempt=Attempt::where('std_id',$request->std_id)->where('status',0)->latest('id')->first();
+         $attempt=Attempt::where('std_id',$request->std_id)->where('status',0)->where('exam_type',$request->exam_type)->latest('id')->first();
                 if(!$attempt){
                     $attempt = new Attempt();
                 }
@@ -339,26 +339,38 @@ protected $qAudioname='';
                 return  Helper::successWithData($attemptId,'Record created');
             }
 
-
-            $qry = Question::query();
-            $qry = $qry->select('id','topic_id');
-            $qry = $qry->where(function ($query) use ($courseId) {
-                $query->whereRelation('qCourses','course_id',$courseId)
-                    ->orWhere('q_type','2');
-            });
-            $qry = $qry->where('status', 1);
-            $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
-            {
-                $query->where('lang',$qLang);
-            });
+            $course=new CourseClass();
+            $courseInfo=Helper::fetchOnlyData($course->getCourseConfig($courseId));
 
 
-            $qry=$qry->limit(10);
-            $qry=$qry->inRandomOrder();
-              $allQuestion = $qry->get();
-              if($allQuestion->count() ==0){
-                  return  Helper::errorWithData('Record not found',$allQuestion);
-              }
+            //1 mean for Exam and 2 mean for practice
+            if($request->exam_type==1){
+
+                if($courseInfo->courseConfig->require_type==1){
+
+                    $specificQ=$this->getSpecificQuestion($courseId,$qLang,$courseInfo->courseConfig->specific_question);
+                    $commonQ=$this->getCommonQuestion($qLang,$courseInfo->courseConfig->common_question);
+                    $videoQ=$this->getVideoQuestion($courseId,$courseInfo->courseConfig->video_question);
+
+                    $allQuestion = $specificQ->merge($commonQ)->merge($videoQ);
+                }
+                else{
+                    $allQuestion=$this->getAllCourseWiseRandomQuestion($courseId,$qLang,$courseInfo->courseConfig->total_require);
+                }
+            }else{
+                //1 specific,2 common,3 video
+                if($request->questionType==1){
+                    $allQuestion=$this->getSpecificQuestion($courseId,$qLang,'');
+                }
+                if($request->questionType==2){
+                     $allQuestion=$this->getCommonQuestion($qLang,'');
+                }
+                if($request->questionType==3){
+                     $allQuestion=$this->getVideoQuestion($courseId,'');
+                }
+            }
+
+
 
             foreach($allQuestion as $row){
                 $question=QuestionSolved::updateOrCreate(
@@ -377,6 +389,7 @@ protected $qAudioname='';
                     ]
                 );
             }
+
             $examSchedule=ExamSchedule::find($request->exam_id);
             $examSchedule->exam_status=2;
             $examSchedule->save();
@@ -414,6 +427,95 @@ protected $qAudioname='';
         }catch (\Exception $e) {
             return  $e->getMessage();
             return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+
+    public function getAllCourseWiseRandomQuestion($courseId,$qLang,$limit=null)
+    {
+        try {
+
+            $qry = Question::query();
+            $qry = $qry->select('id','topic_id');
+            $qry = $qry->where(function ($query) use ($courseId) {
+                $query->whereRelation('qCourses','course_id',$courseId)
+                    ->orWhere('q_type',1);
+            });
+            $qry = $qry->where('status', 1);
+            $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
+            {
+                $query->where('lang',$qLang);
+            });
+
+            ($limit)?$qry=$qry->limit($limit):'';
+            $qry=$qry->inRandomOrder();
+            return $allQuestion = $qry->get();
+        }
+        catch (\Exception $e) {
+            throw $e;
+        }
+    }
+    public function getCommonQuestion($qLang,$limit=null)
+    {
+        try {
+
+            $qry = Question::query();
+            $qry = $qry->select('id','topic_id');
+            $qry = $qry->where('q_is_video', 0);
+            $qry = $qry->where('q_type', 1);
+            $qry = $qry->where('status', 1);
+            $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
+            {
+                $query->where('lang',$qLang);
+            });
+            ($limit)?$qry=$qry->limit($limit)->inRandomOrder():'';
+            return $allQuestion = $qry->get();
+        }
+        catch (\Exception $e) {
+            throw $e;
+        }
+    }
+    public function getSpecificQuestion($courseId,$qLang,$limit=null)
+    {
+        try {
+
+            $qry = Question::query();
+            $qry = $qry->select('id','topic_id');
+            $qry = $qry->where(function ($query) use ($courseId) {
+                $query->whereRelation('qCourses','course_id',$courseId);
+            });
+            $qry = $qry->where('status', 1);
+            $qry = $qry->where('q_type', 2);
+            $qry = $qry->where('q_is_video', 0);
+            $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
+            {
+                $query->where('lang',$qLang);
+            });
+
+            ($limit)?$qry=$qry->limit($limit)->inRandomOrder():'';
+            return $allQuestion = $qry->get();
+        }
+        catch (\Exception $e) {
+            throw $e;
+        }
+    }
+    public function getVideoQuestion($courseId,$limit=null)
+    {
+        try {
+
+            $qry = Question::query();
+            $qry = $qry->select('id','topic_id');
+            $qry = $qry->where(function ($query) use ($courseId) {
+                $query->whereRelation('qCourses','course_id',$courseId)
+                    ->orWhere('q_type',1);
+            });
+
+            $qry = $qry->where('q_is_video', 1);
+            $qry = $qry->where('status', 1);
+            ($limit)?$qry=$qry->limit($limit):'';
+            return $allQuestion = $qry->get();
+        }
+        catch (\Exception $e) {
+            throw $e;
         }
     }
 
