@@ -140,6 +140,8 @@ class CourseClass implements CourseInterface
                         'full_name' =>$request['full_name'][$c],
                         'course_id' => $request->course_id,
                         'lang' => $request['lang'][$c],
+                        'instructions' => $request['instructions'][$c],
+                        'video_link' => $request['video_link'][$c],
                     ]
                 );
 

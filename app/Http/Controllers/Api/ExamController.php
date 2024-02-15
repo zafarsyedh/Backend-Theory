@@ -30,7 +30,7 @@ class ExamController extends Controller
     public function getQuestionsForExam(Request $request){
 
         try{
-            
+
             $response=$this->questions->questionMoveInSolvedQuestionTable($request);
             if($response['status']){
             $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
@@ -202,6 +202,7 @@ class ExamController extends Controller
                 'trafficId' =>$exam->student->traffic_id,
                 'courseId' =>$exam->course->id,
                 'examDuration' =>$exam->course->courseConfig->total_duration,
+                'practiceDuration' =>$exam->course->courseConfig->practice_duration,
                 'courseName' =>$exam->course->short_name,
                 'qLangShortName' =>$exam->qLanguage->lang_short,
                 'qLangFullName' =>$exam->qLanguage->lang,
@@ -210,6 +211,8 @@ class ExamController extends Controller
                 'examType' =>$exam->exam_type,
                 'direction' =>($exam->qLanguage->direction == 2)? 'ltr':'rtl',
                 'systemIp' =>$exam->system->system_ip,
+                'instructions' =>$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('instructions')->first(),
+                'videoLink' =>$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('video_link')->first(),
 
             ];
             event(new CourseEvent($eventStdData));
@@ -269,6 +272,18 @@ class ExamController extends Controller
 
         } catch (\Exception $e) {
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
+    //checkPracticeType
+    public function checkPracticeType(Request $request){
+        try {
+
+           $response=$this->exam->checkPracticeType($request);
+            return Helper::success($response,'Practice information found');
+
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
         }
     }
 }

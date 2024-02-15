@@ -16,6 +16,7 @@ interface ExamInterface{
     public function getSolvedQuestionAccordingAttempt($attemptId);
     public function createResult($data);
     public function getExamWiseResult($examId);
+    public function checkPracticeType($request);
 
 
 }

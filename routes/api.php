@@ -91,22 +91,23 @@ Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
 Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
 Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 
-Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
+
+
 Route::post('get-results',[ExamController::class,'getResults']);
-
 Route::get('get-student-result',[ExamController::class,'getStudentResult']);
-
-
-
 Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
-
 Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
 Route::post('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
 Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
-
 Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
+Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
+
+
 Route::get('system-list',[SystemController::class,'systemList']);
-Route::get('test-data',[StudentController::class,'testData']);
+Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
+
+
+
 
 
 

@@ -104,12 +104,14 @@ class StudentClass implements Interfaces\StudentInterface
             $exam=ExamSchedule::where('std_id',$student->id)->latest('id')->first();;
 
             $eventStdData = [
+
                 'examId' =>$exam->id,
                 'stdId' =>$student->id,
                 'stdName' =>$student->std_name,
                 'trafficId' =>$student->traffic_id,
                 'courseId' =>$courseInfo->id,
                 'examDuration' =>$courseInfo->courseConfig->total_duration,
+                'practiceDuration' =>$courseInfo->courseConfig->practice_duration,
                 'courseName' =>$courseInfo->short_name,
                 'qLangShortName' =>$request->q_lang,
                 'qLangFullName' =>$qLangInfo->lang,
@@ -118,6 +120,8 @@ class StudentClass implements Interfaces\StudentInterface
                 'examType' =>$request->exam_type,
                 'direction' =>($qLangInfo->direction == 2)? 'ltr':'rtl',
                 'systemIp' =>$systemInfo->system_ip,
+                'instructions' =>$courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('instructions')->first(),
+                'videoLink' =>$courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('video_link')->first(),
 
             ];
 

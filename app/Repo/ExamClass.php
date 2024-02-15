@@ -241,10 +241,10 @@ class ExamClass implements Interfaces\ExamInterface
              $courseInfo= Helper::fetchOnlyData($course->getCourseConfig(1));
             $courseConfiguration=$courseInfo->courseConfig;
 
-            if($courseConfiguration[0]->require_type==1){
-                $totalRequireQuestion=$courseConfiguration[0]->specific_require +  $courseConfiguration[0]->common_require + $courseConfiguration[0]->video_require;
+            if($courseConfiguration->require_type==1){
+                $totalRequireQuestion=$courseConfiguration->specific_require +  $courseConfiguration->common_require + $courseConfiguration->video_require;
             }else{
-                $totalRequireQuestion=$courseConfiguration[0]->total_require;
+                $totalRequireQuestion=$courseConfiguration->total_require;
             }
 
             $result = Result::updateOrCreate(
@@ -254,9 +254,9 @@ class ExamClass implements Interfaces\ExamInterface
 
                 [
                     'exam_id' =>$data['exam_id'],
-                    'total_duration' =>$courseConfiguration[0]->total_duration,
-                    'test_duration' =>$courseConfiguration[0]->total_duration - $data['test_duration'],
-                    'total_question' => $courseConfiguration[0]->specific_question +  $courseConfiguration[0]->common_question + $courseConfiguration[0]->video_question,
+                    'total_duration' =>$courseConfiguration->total_duration,
+                    'test_duration' =>$courseConfiguration->total_duration - $data['test_duration'],
+                    'total_question' => $courseConfiguration->specific_question +  $courseConfiguration->common_question + $courseConfiguration->video_question,
                     'correct_ans' => $data['totalCorrectAns'],
                     'correct_ans_required'=>$totalRequireQuestion,
                     'status' =>($data['totalCorrectAns'] >=$totalRequireQuestion)?1:0,
@@ -276,6 +276,26 @@ class ExamClass implements Interfaces\ExamInterface
             $qry=$qry->latest('id')->first();
             return $qry;
             }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+
+    public function checkPracticeType($request)
+    {
+        try {
+            $attemptId=0;
+            $qry = Attempt::query();
+            $qry=$qry->where('std_id',$request->std_id);
+            $qry=$qry->where('practice_type',$request->practice_type);
+            $qry=$qry->where('status',0);
+            $qry=$qry->latest('id')->first();
+
+            if($qry){
+                $attemptId= $qry->id;
+            }
+            return $attemptId;
+        }catch (\Exception $e) {
             throw $e;
         }
     }
