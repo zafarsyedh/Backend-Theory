@@ -65,6 +65,11 @@ class Question extends Model
         return $getVal;
     }
 
+    public function questionSolved()
+    {
+        return   $this->hasOne(QuestionSolved::class, 'q_id', 'id');
+    }
+
 
 
 

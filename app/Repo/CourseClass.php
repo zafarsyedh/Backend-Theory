@@ -140,6 +140,8 @@ class CourseClass implements CourseInterface
                         'full_name' =>$request['full_name'][$c],
                         'course_id' => $request->course_id,
                         'lang' => $request['lang'][$c],
+                        'instructions' => $request['instructions'][$c],
+                        'video_link' => $request['video_link'][$c],
                     ]
                 );
 
@@ -219,7 +221,7 @@ class CourseClass implements CourseInterface
     public function getCourseInfoByShortName($courseShortName)
     {
         try {
-            $course= Course::with('courseTranslation')->where('short_name',$courseShortName)->first();
+            $course= Course::with('courseConfig','courseTranslation')->where('short_name',$courseShortName)->first();
             return $course;
         } catch (ValidationException $validationException) {
             return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());

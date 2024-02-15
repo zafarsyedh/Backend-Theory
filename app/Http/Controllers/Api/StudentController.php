@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Http\Services\ApiService;
+use App\Repo\CourseClass;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\StudentInterface;
 use Illuminate\Http\Request;
@@ -68,10 +69,8 @@ class StudentController extends Controller
 
     public function testData(Request $request){
 
-        return  $response= Helper::success($request->traffic_id,'return request');
-
+        $course=new CourseClass();
+        $courseInfo=$course->getCourseInfoByShortName('LMV');
+       return $courseInfo->courseTranslation->where('lang','en')->pluck('instructions')->first();
     }
-
-
-
 }

@@ -54,6 +54,8 @@ class RoomClass implements Interfaces\RoomInterface
                 ],
                 'branch_id' => 'required',
                 'status' => 'required',
+                'room_purpose' => 'required',
+
             ]);
             if ($validator->fails())
                 return Helper::errorWithData($validator->errors()->first(), $validator->errors());
@@ -67,6 +69,7 @@ class RoomClass implements Interfaces\RoomInterface
                     'title' =>$request->title,
                     'branch_id' =>$request->branch_id,
                     'status' =>$request->status,
+                    'room_purpose' =>$request->room_purpose,
                 ]
             );
 
