@@ -10,10 +10,12 @@ class Room extends Model
 {
     use HasFactory,SoftDeletes;
     protected $fillable = [
-        'title','status','branch_id',
+        'title','status','branch_id','room_purpose',
     ];
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id', 'id');
     }
+
+
 }

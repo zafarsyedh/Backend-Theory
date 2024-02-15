@@ -10,7 +10,7 @@ class CourseTranslation extends Model
 {
     use HasFactory,SoftDeletes;
     protected $fillable = [
-        'course_id', 'lang', 'full_name',
+        'course_id', 'lang', 'full_name','instructions','video_link'
     ];
 
     public function course()

@@ -3,10 +3,14 @@
 namespace App\Repo;
 use App\Http\Helpers\Helper;
 use App\Models\Attempt;
+use App\Models\Course;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
+use App\Models\Result;
 use App\Models\Student;
+use App\Models\TopicArea;
 use Dotenv\Exception\ValidationException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -16,8 +20,13 @@ class ExamClass implements Interfaces\ExamInterface
     public function saveExamQuestion($request)
     {
         try {
+            DB::beginTransaction();
+
             if(count($request->markedQuestions) > 0) {
+                $correctAns=0;
                 foreach ($request->markedQuestions as $q) {
+
+                    ($q['correctAns'] == $q['selectedValue'])? $correctAns++ :'';
 
                     $examQ = QuestionSolved::find($q['id']);
                     $examQ->choosed_option = $q['selectedValue'];
@@ -26,14 +35,23 @@ class ExamClass implements Interfaces\ExamInterface
                     $examQ->save();
 
                 }
+                $data=[
+                    'exam_id'=>$request->exam_id,
+                    'totalCorrectAns'=>$correctAns,
+                    'test_duration'=>intval($request->examDuration/60),
+                ];
 
+                $this->createResult($data);
                 $this->updateAttemptStatus($examQ->attempt_id);
                 $this->updateExamScheduleStatus($request->exam_id);
             }
 
+            DB::commit();
+
             return Helper::successWithData([],'record save');
 
         }  catch (\Exception $e) {
+            DB::rollBack();
             return Helper::errorWithData($e->getMessage(), []);
         }
     }
@@ -196,6 +214,87 @@ class ExamClass implements Interfaces\ExamInterface
             $qry=$qry->with('student.activeCourse.course');
           return $qry=$qry->find($attemptId);
 
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+
+    public function getSolvedQuestionAccordingAttempt($attemptId)
+    {
+        try {
+
+            $qry = TopicArea::with(['topicAreaTranslation', 'solvedQuestion' => function($query) use ($attemptId) {
+                $query->where('attempt_id', $attemptId);
+            }])->get();
+            return $qry;
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function createResult($data)
+    {
+        try {
+
+            $course=new CourseClass();
+             $courseInfo= Helper::fetchOnlyData($course->getCourseConfig(1));
+            $courseConfiguration=$courseInfo->courseConfig;
+
+            if($courseConfiguration->require_type==1){
+                $totalRequireQuestion=$courseConfiguration->specific_require +  $courseConfiguration->common_require + $courseConfiguration->video_require;
+            }else{
+                $totalRequireQuestion=$courseConfiguration->total_require;
+            }
+
+            $result = Result::updateOrCreate(
+                [
+                    'id' =>0,
+                ],
+
+                [
+                    'exam_id' =>$data['exam_id'],
+                    'total_duration' =>$courseConfiguration->total_duration,
+                    'test_duration' =>$courseConfiguration->total_duration - $data['test_duration'],
+                    'total_question' => $courseConfiguration->specific_question +  $courseConfiguration->common_question + $courseConfiguration->video_question,
+                    'correct_ans' => $data['totalCorrectAns'],
+                    'correct_ans_required'=>$totalRequireQuestion,
+                    'status' =>($data['totalCorrectAns'] >=$totalRequireQuestion)?1:0,
+                ]
+            );
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function getExamWiseResult($examId)
+    {
+        try {
+            $qry = Result::query();
+            $qry=$qry->with('attempt.student');
+            $qry=$qry->where('exam_id',$examId);
+            $qry=$qry->latest('id')->first();
+            return $qry;
+            }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+
+    public function checkPracticeType($request)
+    {
+        try {
+            $attemptId=0;
+            $qry = Attempt::query();
+            $qry=$qry->where('std_id',$request->std_id);
+            $qry=$qry->where('practice_type',$request->practice_type);
+            $qry=$qry->where('status',0);
+            $qry=$qry->latest('id')->first();
+
+            if($qry){
+                $attemptId= $qry->id;
+            }
+            return $attemptId;
         }catch (\Exception $e) {
             throw $e;
         }
