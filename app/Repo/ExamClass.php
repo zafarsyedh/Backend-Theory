@@ -43,7 +43,7 @@ class ExamClass implements Interfaces\ExamInterface
 
                 $this->createResult($data);
                 $this->updateAttemptStatus($examQ->attempt_id);
-                $this->updateExamScheduleStatus($request->exam_id);
+                $this->updateExamScheduleStatus($request->exam_id,3);
             }
 
             DB::commit();
@@ -63,7 +63,9 @@ class ExamClass implements Interfaces\ExamInterface
                 $examQ->is_correct_ans=($request->selectedOpt==$request->correctOpt)?1:0;
                 $examQ->is_answered=1;
                 $examQ->save();
-            return Helper::successWithData([],'record save');
+
+
+            return Helper::successWithData($examQ->attempt_id,'record save');
 
         }  catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(), []);
@@ -184,11 +186,11 @@ class ExamClass implements Interfaces\ExamInterface
             return Helper::errorWithData($e->getMessage(),$e);
         }
     }
-    public function updateExamScheduleStatus($id)
+    public function updateExamScheduleStatus($id,$status)
     {
         try {
             $exam=ExamSchedule::find($id);
-            $exam->exam_status=3;
+            $exam->exam_status=$status;
             $exam->save();
 
         }catch (\Exception $e) {
@@ -202,9 +204,10 @@ class ExamClass implements Interfaces\ExamInterface
             $attempt=Attempt::find($id);
             $attempt->status=1;
             $attempt->save();
-        }catch (\Exception $e) {
-            throw $e;
-        }
+
+            }catch (\Exception $e) {
+                throw $e;
+            }
     }
 
     public function getAttemptInfo($attemptId)
@@ -299,4 +302,6 @@ class ExamClass implements Interfaces\ExamInterface
             throw $e;
         }
     }
+
+
 }
