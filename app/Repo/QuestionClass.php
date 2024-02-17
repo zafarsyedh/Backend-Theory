@@ -309,13 +309,17 @@ protected $qAudioname='';
     public function createNewAttempt($request)
     {
         try {
-         $attempt=Attempt::where('std_id',$request->std_id)->where('status',0)->where('exam_type',$request->exam_type)->latest('id')->first();
-                if(!$attempt){
-                    $attempt = new Attempt();
-                }
+
+//         $attempt=Attempt::where('std_id',$request->std_id)->where('status',0)->where('exam_type',$request->exam_type)->latest('id')->first();
+//                if(!$attempt){
+//                    $attempt = new Attempt();
+//                }
+
+                $attempt = new Attempt();
                 $attempt->std_id= $request->std_id;
                 $attempt->exam_id = $request->exam_id;
                 $attempt->exam_type= $request->exam_type;
+                ($request->exam_type ==2)?$attempt->practice_type=$request->questionType:'';
                 $attempt->save();
                 return $attempt->id;
 
@@ -323,7 +327,7 @@ protected $qAudioname='';
             throw $e;
         }
     }
-    public function questionMoveInSolvedQuestionTable($request)
+    public function createAttemptAndSolveQuestion($request)
     {
         try {
             DB::beginTransaction();
@@ -332,16 +336,22 @@ protected $qAudioname='';
             $qLang=$request->q_lang;
             $audioLang=$request->audio_lang;
 
+            $attemptId =$request->attemptId;
 
-            $attemptId= $this->createNewAttempt($request);
-
-            if(QuestionSolved::where('attempt_id',$attemptId)->where('is_answered',0)->count() > 0 ){
-                return  Helper::successWithData($attemptId,'Record created');
+            if($attemptId==0){
+                $attemptId= $this->createNewAttempt($request);
             }
+
+                if($request->exam_type==2 AND $request->attemptId > 0){
+
+                    if(QuestionSolved::where('attempt_id',$attemptId)->where('is_answered',0)->count() > 0 ){
+                        return  Helper::successWithData($attemptId,'Attempt id');
+                    }
+                }
+
 
             $course=new CourseClass();
             $courseInfo=Helper::fetchOnlyData($course->getCourseConfig($courseId));
-
 
             //1 mean for Exam and 2 mean for practice
             if($request->exam_type==1){
@@ -357,7 +367,8 @@ protected $qAudioname='';
                 else{
                     $allQuestion=$this->getAllCourseWiseRandomQuestion($courseId,$qLang,$courseInfo->courseConfig->total_require);
                 }
-            }else{
+            }
+            else{
                 //1 specific,2 common,3 video
                 if($request->questionType==1){
                     $allQuestion=$this->getSpecificQuestion($courseId,$qLang,'');
@@ -390,12 +401,10 @@ protected $qAudioname='';
                 );
             }
 
-            $examSchedule=ExamSchedule::find($request->exam_id);
-            $examSchedule->exam_status=2;
-            $examSchedule->save();
+
             DB::commit();
 
-            return  Helper::successWithData($question->attempt_id,'Record created');
+            return  Helper::successWithData($question->attempt_id,'Question solved created');
 
         }
         catch (\Exception $e) {

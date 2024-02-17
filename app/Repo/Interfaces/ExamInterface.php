@@ -12,12 +12,10 @@ interface ExamInterface{
     public function deleteExam($id);
     public function checkExamStatus($stdData);
     public function updateAttemptStatus($attemptId);
-    public function updateExamScheduleStatus($examScheduleId);
+    public function updateExamScheduleStatus($examScheduleId,$status);
     public function getAttemptInfo($attemptId);
     public function getSolvedQuestionAccordingAttempt($attemptId);
     public function createResult($data);
     public function getExamWiseResult($examId);
     public function checkPracticeType($request);
-
-
 }

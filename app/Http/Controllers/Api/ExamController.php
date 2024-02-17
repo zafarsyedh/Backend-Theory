@@ -9,6 +9,7 @@ use App\Http\Requests\ExamRequest;
 use App\Models\Exam;
 use App\Models\ExamSchedule;
 use App\Models\Question;
+use App\Models\QuestionSolved;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
@@ -26,12 +27,11 @@ class ExamController extends Controller
         $this->questions=$questions;
         $this->course=$course;
     }
-
     public function getQuestionsForExam(Request $request){
 
         try{
-
-            $response=$this->questions->questionMoveInSolvedQuestionTable($request);
+                 $request->all();
+            $response=$this->questions->createAttemptAndSolveQuestion($request);
             if($response['status']){
             $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
             return Helper::success($res,'Questions list');
@@ -42,7 +42,6 @@ class ExamController extends Controller
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
-
     //saveQuestionsForExam
     public function saveQuestionsForExam(Request $request){
 
@@ -58,13 +57,17 @@ class ExamController extends Controller
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
-
     //savePracticeQuestions
     public function savePracticeQuestions(Request $request){
 
         try{
+
             $response=$this->exam->savePracticeQuestion($request);
             if($response['status']){
+
+               if(QuestionSolved::where('attempt_id',$response['data'])->where('is_answered',0)->count() == 0){
+                   $this->exam->updateAttemptStatus($response['data']);
+               }
                 return Helper::success($response,'Questions saved');
             }else{
                 return Helper::errorWithData($response,'Questions not saved');
@@ -74,7 +77,6 @@ class ExamController extends Controller
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
-
     //getResults
     public function getResults(Request $request){
 
@@ -140,6 +142,7 @@ class ExamController extends Controller
         }
     }
 
+
     public function getAllResults(){
 
         try{
@@ -153,6 +156,7 @@ class ExamController extends Controller
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
+
 
     //getScheduleExamList
     public function getScheduleExamList(Request $request){
@@ -168,8 +172,6 @@ class ExamController extends Controller
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
-
-
     //updateScheduleExam
     public function updateScheduleExam(Request $request){
 
@@ -186,7 +188,6 @@ class ExamController extends Controller
             return Helper::error($e->getMessage(),$e);
         }
     }
-
     public function deleteExam($id){
         try {
             $response = $this->exam->deleteExam($id);
@@ -200,13 +201,11 @@ class ExamController extends Controller
             return Helper::error($e->getMessage(),$e);
         }
     }
-
     //restartExam
     public function restartExam($id){
         try {
 
            $exam=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
-
             $eventStdData = [
 
                 'examId' =>$id,
@@ -235,14 +234,13 @@ class ExamController extends Controller
             return Helper::error($e->getMessage(),$e);
         }
     }
-
     //getStudentResult
     public function getStudentResult(Request $request){
 
         try{
 
 
-            $exam_id=1;//$request->attempt_id;
+            $exam_id=$request->exam_id;
               $res=$this->exam->getExamWiseResult($exam_id);
             if($res->count() > 0){
 
@@ -287,12 +285,11 @@ class ExamController extends Controller
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
-
     //checkPracticeType
     public function checkPracticeType(Request $request){
         try {
 
-           $response=$this->exam->checkPracticeType($request);
+            $response=$this->exam->checkPracticeType($request);
             return Helper::success($response,'Practice information found');
 
         } catch (\Exception $e) {
