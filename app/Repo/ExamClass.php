@@ -85,6 +85,18 @@ class ExamClass implements Interfaces\ExamInterface
             return Helper::errorWithData($e->getMessage(), []);
         }
     }
+    public function  getAllResultsList()
+    {
+        try {
+            $qry=Attempt::query();
+            $qry->with('student:id,std_name,traffic_id,email','student.activeCourse.course:id,short_name');
+            $examSchedule=$qry->get();
+            return Helper::successWithData($examSchedule,'record found');
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
 
 
 
