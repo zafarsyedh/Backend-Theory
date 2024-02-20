@@ -120,8 +120,8 @@ class StudentClass implements Interfaces\StudentInterface
                 'examType' =>$request->exam_type,
                 'direction' =>($qLangInfo->direction == 2)? 'ltr':'rtl',
                 'systemIp' =>$systemInfo->system_ip,
-                'instructions' =>$courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('instructions')->first(),
-                'videoLink' =>$courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('video_link')->first(),
+                'instructions' =>count($courseInfo->courseTranslation->where('lang',$request->q_lang))? $courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('instructions')->first():$courseInfo->courseTranslation->where('lang','en')->pluck('instructions')->first(),
+                'videoLink' =>count($courseInfo->courseTranslation->where('lang',$request->q_lang))? $courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('video_link')->first():$courseInfo->courseTranslation->where('lang','en')->pluck('video_link')->first(),
 
             ];
 

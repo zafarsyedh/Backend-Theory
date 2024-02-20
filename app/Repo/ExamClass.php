@@ -9,7 +9,9 @@ use App\Models\QuestionSolved;
 use App\Models\Result;
 use App\Models\Student;
 use App\Models\TopicArea;
+use Carbon\Carbon;
 use Dotenv\Exception\ValidationException;
+use Faker\Provider\DateTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,6 +28,8 @@ class ExamClass implements Interfaces\ExamInterface
                 $correctAns=0;
                 foreach ($request->markedQuestions as $q) {
 
+                    if($q['selectedValue']){
+
                     ($q['correctAns'] == $q['selectedValue'])? $correctAns++ :'';
 
                     $examQ = QuestionSolved::find($q['id']);
@@ -34,15 +38,24 @@ class ExamClass implements Interfaces\ExamInterface
                     $examQ->is_answered = 1;
                     $examQ->save();
 
+                    }
+
                 }
+
+
+                $startDate = Carbon::parse($request->createdAt);
+                 $endDate = Carbon::now();
+
+
+
                 $data=[
                     'exam_id'=>$request->exam_id,
                     'totalCorrectAns'=>$correctAns,
-                    'test_duration'=>intval($request->examDuration/60),
+                    'test_duration'=> $startDate->diffInMinutes($endDate),
                 ];
 
                 $this->createResult($data);
-                $this->updateAttemptStatus($examQ->attempt_id);
+               $this->updateAttemptStatus($request->examAttemptId);
                 $this->updateExamScheduleStatus($request->exam_id,3);
             }
 
