@@ -34,6 +34,8 @@ class ExamController extends Controller
             $response=$this->questions->createAttemptAndSolveQuestion($request);
             if($response['status']){
             $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
+            $this->exam->updateExamScheduleStatus($request->exam_id,2);
+
             return Helper::success($res,'Questions list');
             }else{
                 return Helper::errorWithData($response['message'],[]);
@@ -190,6 +192,15 @@ class ExamController extends Controller
         try {
 
            $exam=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
+
+           if($exam->exam_type==1){
+               $examDuration=$exam->course->courseConfig->total_duration;;
+           }else{
+               $examDuration=$exam->course->courseConfig->practice_duration;
+            }
+
+
+
             $eventStdData = [
 
                 'examId' =>$id,
@@ -197,8 +208,8 @@ class ExamController extends Controller
                 'stdName' =>$exam->student->std_name,
                 'trafficId' =>$exam->student->traffic_id,
                 'courseId' =>$exam->course->id,
-                'examDuration' =>$exam->course->courseConfig->total_duration,
-                'practiceDuration' =>$exam->course->courseConfig->practice_duration,
+                'examDuration' =>$examDuration,
+
                 'courseName' =>$exam->course->short_name,
                 'qLangShortName' =>$exam->qLanguage->lang_short,
                 'qLangFullName' =>$exam->qLanguage->lang,
@@ -207,8 +218,10 @@ class ExamController extends Controller
                 'examType' =>$exam->exam_type,
                 'direction' =>($exam->qLanguage->direction == 2)? 'ltr':'rtl',
                 'systemIp' =>$exam->system->system_ip,
-                'instructions' =>$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('instructions')->first(),
-                'videoLink' =>$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('video_link')->first(),
+                'instructions' =>count($exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short))?$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('instructions')->first():$exam->course->courseTranslation->where('lang','en')->pluck('instructions')->first(),
+                'videoLink' =>count($exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short))?$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('video_link')->first():$exam->course->courseTranslation->where('lang','en')->pluck('video_link')->first(),
+
+
 
             ];
             event(new CourseEvent($eventStdData));

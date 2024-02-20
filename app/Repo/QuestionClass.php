@@ -338,9 +338,6 @@ protected $qAudioname='';
 
             $attemptId =$request->attemptId;
 
-            if($attemptId==0){
-                $attemptId= $this->createNewAttempt($request);
-            }
 
                 if($request->exam_type==2 AND $request->attemptId > 0){
 
@@ -365,7 +362,8 @@ protected $qAudioname='';
                     $allQuestion = $specificQ->merge($commonQ)->merge($videoQ);
                 }
                 else{
-                    $allQuestion=$this->getAllCourseWiseRandomQuestion($courseId,$qLang,$courseInfo->courseConfig->total_require);
+                    $totalQuestion=$courseInfo->courseConfig->specific_question + $courseInfo->courseConfig->common_question + $courseInfo->courseConfig->video_question;
+                    $allQuestion=$this->getAllCourseWiseRandomQuestion($courseId,$qLang,$totalQuestion);
                 }
             }
             else{
@@ -381,6 +379,13 @@ protected $qAudioname='';
                 }
             }
 
+            if($allQuestion->count()==0){
+                return  Helper::error('question not exist of given criteria',[]);
+            }
+
+            if($attemptId==0){
+                $attemptId= $this->createNewAttempt($request);
+            }
 
 
             foreach($allQuestion as $row){
@@ -403,7 +408,6 @@ protected $qAudioname='';
 
 
             DB::commit();
-
             return  Helper::successWithData($question->attempt_id,'Question solved created');
 
         }
@@ -427,7 +431,7 @@ protected $qAudioname='';
                 return $query->where('lang',$audioLang);
             },'question']);
 
-            $qry=$qry->select('id','q_id','attempt_id','choosed_option','is_correct_ans','is_answered');
+            $qry=$qry->select('id','q_id','attempt_id','choosed_option','is_correct_ans','is_answered','created_at');
             $qry=$qry->where('attempt_id',$attemptId);
             ($purpose==1)? $qry= $qry->where('is_answered',0):'';
             return   $qry=$qry->get();
