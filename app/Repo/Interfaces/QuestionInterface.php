@@ -16,5 +16,6 @@ interface QuestionInterface{
     public function getCommonQuestion($qLang,$limit);
     public function getSpecificQuestion($courseId,$qLang,$limit);
     public function getVideoQuestion($courseId,$limit);
+    public function getTypeWiseAllQuestion($type,$isVideo);
 
 }

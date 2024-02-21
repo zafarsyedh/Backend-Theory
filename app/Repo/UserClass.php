@@ -25,6 +25,7 @@ protected $path='user-images/';
     {
         try {
             $qry=User::with('role','branch');
+            $qry=$qry->with('room');
             $qry=$qry->get();
             return  Helper::successWithData($qry,'Record found');
         } catch (\Exception $e) {
@@ -65,6 +66,7 @@ protected $path='user-images/';
                     'password' =>Hash::make($request->password),
                     'phone' =>$request->phone,
                     'role_id' =>$request->role_id,
+                    'room_id' =>$request->room_id,
                     'branch_id' =>$request->branch_id,
                     'status' =>$request->status,
                 ]
@@ -78,7 +80,7 @@ protected $path='user-images/';
             }
 
             DB::commit();
-            $data = User::with("role",'branch')->find($user->id);
+            $data = User::with("role",'branch','room')->find($user->id);
             return  Helper::successWithData($data,(($id)?"User Updated Successfully":"User Added Successfully"));
         } catch (ValidationException $validationException) {
             DB::rollBack();

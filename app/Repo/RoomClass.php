@@ -98,6 +98,18 @@ class RoomClass implements Interfaces\RoomInterface
             return Helper::errorWithData($e->getMessage(),$e);
         }
     }
+    public function getBranchWiseRooms($branchId)
+    {
+        try {
+            $qry = Room::query();
+            $qry=$qry->where('branch_id',$branchId);
+            return $qry=$qry->get();
+            return Helper::success($qry, $message="Rooms List");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
 
 
 }

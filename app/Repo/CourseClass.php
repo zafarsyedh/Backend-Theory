@@ -19,8 +19,35 @@ class CourseClass implements CourseInterface
     public function getAllCourses()
     {
         try {
-            $qry = Course::with("courseTranslation");
-            $qry=$qry->get();
+
+            $qry = Course::with('courseTranslation');
+
+               $qry=$qry->with(['courseQuestions' => function ($query) {
+                    $query->whereHas('question', function ($q) {
+                        $q->where('q_is_video', 0);
+                    });
+                }, 'courseQuestions.question' => function ($query) {
+                    $query->where('q_is_video', 0);
+                }]);
+              $qry=$qry->withCount(['courseQuestions as nonVideoQuestion' => function ($query) {
+                    $query->whereHas('question', function ($q) {
+                        $q->where('q_is_video', 0);
+                    });
+                }]);
+              $qry=$qry->with(['courseQuestions' => function ($query) {
+                  $query->whereHas('question', function ($q) {
+                      $q->where('q_is_video', 1);
+                  });
+              }, 'courseQuestions.question' => function ($query) {
+                  $query->where('q_is_video', 1);
+              }]);
+              $qry=$qry->withCount(['courseQuestions as videoQuestion' => function ($query) {
+                  $query->whereHas('question', function ($q) {
+                      $q->where('q_is_video', 1);
+                  });
+              }]);
+              $qry=$qry->get();
+
             return  Helper::successWithData($qry,'Record found');
         }catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(),$e);
@@ -58,7 +85,6 @@ class CourseClass implements CourseInterface
             return Helper::errorWithData($e->getMessage(),$e);
         }
     }
-
     public function saveCourse($request)
     {
         try {
@@ -156,8 +182,6 @@ class CourseClass implements CourseInterface
             return Helper::errorWithData($e->getMessage(), $e);
         }
     }
-
-
     public function saveCourseConfig($request)
     {
         try {
@@ -201,8 +225,6 @@ class CourseClass implements CourseInterface
             return Helper::errorWithData($e->getMessage(), $e);
         }
     }
-
-
     public function deleteCourse($id)
     {
         try {
@@ -217,7 +239,6 @@ class CourseClass implements CourseInterface
             return Helper::errorWithData($e->getMessage(),$e);
         }
     }
-
     public function getCourseInfoByShortName($courseShortName)
     {
         try {

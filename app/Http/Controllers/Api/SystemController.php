@@ -59,4 +59,19 @@ class SystemController extends Controller
             return Helper::error($e->getMessage(),$e);
         }
     }
+
+    //getRoomWiseSystems
+    public function getRoomWiseSystems($roomId){
+        try {
+            $response =$this->system->getRoomWiseSystems($roomId);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
 }

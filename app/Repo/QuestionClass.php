@@ -531,6 +531,18 @@ protected $qAudioname='';
             throw $e;
         }
     }
+    public function getTypeWiseAllQuestion($type,$isVideo)
+    {
+        try {
 
-
+            $qry = Question::query();
+            $qry = $qry->where('q_type',$type);
+            $qry = $qry->where('q_is_video',$isVideo);
+            $qry = $qry->where('status', 1);
+            return $allQuestion = $qry->get();
+        }
+        catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

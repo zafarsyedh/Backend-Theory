@@ -8,5 +8,8 @@ interface SystemInterface{
     public function deleteSystem($id);
     public function getAllRoomForDropdown();
 
+    public function getRoomWiseSystems($roomId);
+    public function updateSystemStatus($systemId,$status);
+
 
 }

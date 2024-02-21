@@ -13,6 +13,7 @@ use App\Models\QuestionSolved;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
+use App\Repo\Interfaces\SystemInterface;
 use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -21,11 +22,13 @@ class ExamController extends Controller
     public  $exam;
     public  $questions;
     public  $course;
-    public function __construct(ExamInterface $exam,QuestionInterface $questions,CourseInterface $course)
+    public  $system;
+    public function __construct(ExamInterface $exam,QuestionInterface $questions,CourseInterface $course,SystemInterface $system)
     {
         $this->exam=$exam;
         $this->questions=$questions;
         $this->course=$course;
+        $this->system=$system;
     }
     public function getQuestionsForExam(Request $request){
 
@@ -210,12 +213,13 @@ class ExamController extends Controller
            $exam=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
 
            if($exam->exam_type==1){
+
                $examDuration=$exam->course->courseConfig->total_duration;;
            }else{
                $examDuration=$exam->course->courseConfig->practice_duration;
             }
 
-
+             $this->system->updateSystemStatus($exam->system_id,3);
 
             $eventStdData = [
 
@@ -247,6 +251,8 @@ class ExamController extends Controller
             return Helper::error($e->getMessage(),$e);
         }
     }
+
+
     //getStudentResult
     public function getStudentResult(Request $request){
 
@@ -304,6 +310,19 @@ class ExamController extends Controller
 
             $response=$this->exam->checkPracticeType($request);
             return Helper::success($response,'Practice information found');
+
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
+
+    //exitExam
+    public function exitExam($id){
+        try {
+
+           $examUpdate= $this->exam->updateExamScheduleStatus($id,4);
+            $this->system->updateSystemStatus($examUpdate->system_id,1);
+            return   $response= Helper::success([],'Exam exit successfully');
 
         } catch (\Exception $e) {
             return Helper::error($e->getMessage(),$e);
