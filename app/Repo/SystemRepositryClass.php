@@ -105,5 +105,35 @@ class SystemRepositryClass implements Interfaces\SystemInterface
         }
     }
 
+    //getRoomWiseSystems
+    public function getRoomWiseSystems($roomId)
+    {
+
+        try {
+            $query = System::query();
+            $query=$query->where('room_id',$roomId);
+            $query=$query->where('status',1);
+            $query=$query->get();
+            return Helper::successWithData($query,'Room wise systems list');
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
+
+    public function updateSystemStatus($systemId,$status)
+    {
+
+        try {
+            $system = System::find($systemId);
+            $system->status=$status;
+            $system->save();
+            return Helper::successWithData($system, $message="System status updated");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
+
 
 }

@@ -92,7 +92,7 @@ class StudentClass implements Interfaces\StudentInterface
             $paramData = [
                 'stdId' =>$student->id,
                 'courseId' =>$courseInfo->id,
-                'invgId' =>1,
+                'invgId' =>$request->invgId,
             ];
 
            $qLangInfo= Language::where('lang_short',$request->q_lang)->latest('id')->first();
@@ -124,10 +124,7 @@ class StudentClass implements Interfaces\StudentInterface
                 'videoLink' =>count($courseInfo->courseTranslation->where('lang',$request->q_lang))? $courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('video_link')->first():$courseInfo->courseTranslation->where('lang','en')->pluck('video_link')->first(),
 
             ];
-
-
             event(new CourseEvent($eventStdData));
-
             DB::commit();
 
             return  Helper::successWithData($student,'Record created successfully');

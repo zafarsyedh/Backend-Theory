@@ -12,4 +12,11 @@ class Branch extends Model
     protected $fillable = [
         'title','status',
     ];
+
+
+    public function rooms()
+    {
+        return $this->hasMany(Room::class, 'branch_id', 'id')->select(['id','title','branch_id']);
+    }
+
 }

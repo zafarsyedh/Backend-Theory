@@ -15,4 +15,9 @@ class QuestionCourse extends Model
     {
         return $this->belongsTo(Course::class, 'course_id', 'id');
     }
+
+    public function question()
+    {
+        return $this->belongsTo(Question::class, 'q_id', 'id');
+    }
 }

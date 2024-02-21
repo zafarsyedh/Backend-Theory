@@ -6,22 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\LanguageInterface;
+use App\Repo\Interfaces\QuestionInterface;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
     public  $course;
     public  $language;
-    public function __construct(CourseInterface $course,LanguageInterface $language)
+    public  $question;
+    public function __construct(CourseInterface $course,LanguageInterface $language,QuestionInterface $question)
     {
         $this->course=$course;
         $this->language=$language;
+        $this->question=$question;
     }
     public function index(){
         try{
             $response['courses']=$this->course->getAllCourses();
             if($response['courses']['status']){
                 $response['langs']=$this->language->getAllLanguages();
+                $response['nonVidCommonQ']=count($this->question->getTypeWiseAllQuestion(1,0));
+                $response['vidCommonQ']=count($this->question->getTypeWiseAllQuestion(1,1));
                 $response= Helper::success($response,$response['courses']['message']);
             }else{
                 $response= Helper::error($response['courses']['message'],$response['courses']['data']);

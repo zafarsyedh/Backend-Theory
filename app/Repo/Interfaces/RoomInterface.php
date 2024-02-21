@@ -7,6 +7,7 @@ interface RoomInterface{
     public function createRoom($request);
     public function deleteRoom($id);
     public function getAllRoomForDropdown();
+    public function getBranchWiseRooms($branchId);
 
 
 }

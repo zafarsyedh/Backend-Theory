@@ -217,6 +217,7 @@ class ExamClass implements Interfaces\ExamInterface
             $exam=ExamSchedule::find($id);
             $exam->exam_status=$status;
             $exam->save();
+            return $exam;
 
         }catch (\Exception $e) {
             throw $e;

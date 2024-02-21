@@ -32,6 +32,7 @@ class TopicAreaClass implements Interfaces\TopicAreaInterface
     {
         try {
             $qry=TopicArea::with('topicAreaTranslation');
+            $qry=$qry->withCount('questions');
             $qry=$qry->get();
             return  Helper::successWithData($qry,'Record found');
         }catch (\Exception $e) {
