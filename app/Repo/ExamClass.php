@@ -103,9 +103,10 @@ class ExamClass implements Interfaces\ExamInterface
     public function  getAllResultsList()
     {
         try {
-            $qry=Attempt::query();
-            $qry->with('student:id,std_name,traffic_id,email','student.activeCourse.course:id,short_name');
-            $examSchedule=$qry->get();
+            $qry=Result::query();
+            $qry=$qry->with('exam.attempt:id,exam_id','exam.course:id,short_name','exam.student:id,traffic_id,std_name');
+
+            $examSchedule=$qry->orderBy('id','DESC')->get();
             return Helper::successWithData($examSchedule,'record found');
 
         }  catch (\Exception $e) {
