@@ -10,6 +10,7 @@ use App\Models\Exam;
 use App\Models\ExamSchedule;
 use App\Models\Question;
 use App\Models\QuestionSolved;
+use App\Models\System;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
@@ -53,6 +54,8 @@ class ExamController extends Controller
         try{
             $response=$this->exam->saveExamQuestion($request);
             if($response['status']){
+            $exam=ExamSchedule::find($request->exam_id);
+                $this->system->updateSystemStatus($exam->system_id ,1);
                 return Helper::success($response,'Questions saved');
             }else{
                 return Helper::errorWithData($response,'Questions not saved');
@@ -87,9 +90,6 @@ class ExamController extends Controller
 
         try{
             $request->all();
-
-
-
             $response=$this->questions->getMovedQuestionForTheoryPractice($request,$request->attempt_id,2);
             if($response->count() > 0){
 
@@ -324,6 +324,25 @@ class ExamController extends Controller
            $examUpdate= $this->exam->updateExamScheduleStatus($id,4);
             $this->system->updateSystemStatus($examUpdate->system_id,1);
             return   $response= Helper::success([],'Exam exit successfully');
+
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
+
+    //examSystemStatusUpdate
+    public function examSystemStatusUpdate(Request $request){
+        try {
+                if($request->exam_id){
+                    $examUpdate= $this->exam->updateExamScheduleStatus($request->exam_id,3);
+                }
+                 if($request->system_ip){
+                   $system=  System::where('system_ip',$request->system_ip)->first();
+                $this->system->updateSystemStatus($system->id,1);
+                 }
+
+
+            return   $response= Helper::success([],'Exam and system updated successfully');
 
         } catch (\Exception $e) {
             return Helper::error($e->getMessage(),$e);
