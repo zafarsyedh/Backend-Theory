@@ -85,12 +85,14 @@ class ExamClass implements Interfaces\ExamInterface
         }
     }
     //getScheduleExamList
-    public function  getScheduleExamList()
+    public function  getScheduleExamList($request)
     {
         try {
             $qry=ExamSchedule::query();
             $qry->with('student:id,std_name,traffic_id,email','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage:id,lang,lang_short');
             $qry->with('invigilator:id,name','system:id,title,system_ip');
+            $qry=$qry->where('invg_id',$request->invgId);
+            ($request->date)?$qry=$qry->whereDate('created_at',$request->date):'';
             $examSchedule=$qry->get();
             return Helper::successWithData($examSchedule,'record found');
 
@@ -202,7 +204,7 @@ class ExamClass implements Interfaces\ExamInterface
         try {
             $isContinue=1;
            if($std= Student::where('traffic_id',$stdData['regnnumb'])->latest('id')->first()){
-               if(ExamSchedule::where('std_id',$std->id)->where('exam_status','!=',3)->count() > 0){
+               if(ExamSchedule::where('std_id',$std->id)->where('exam_status',1)->orWhere('exam_status',2)->count() > 0){
                    $isContinue=0;
                }
            }

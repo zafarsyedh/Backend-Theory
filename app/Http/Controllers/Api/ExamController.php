@@ -167,9 +167,10 @@ class ExamController extends Controller
     public function getScheduleExamList(Request $request){
 
         try{
+             $request->all();
             $response=$this->exam->getScheduleExamList($request);
             if($response['status']){
-                return Helper::success($response['data'],'Questions list');
+                return Helper::success($response['data'],'Schedule exam list');
             }else{
                 return Helper::errorWithData('Record not exist',[]);
             }
