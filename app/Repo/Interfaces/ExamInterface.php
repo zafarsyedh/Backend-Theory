@@ -5,14 +5,17 @@ interface ExamInterface{
 
     public function saveExamQuestion($request);
     public function savePracticeQuestion($request);
-    public function getScheduleExamList();
+    public function getScheduleExamList($request);
+    public function getAllResultsList();
     public function createExam($request,$data);
     public function updateExam($request);
     public function deleteExam($id);
     public function checkExamStatus($stdData);
     public function updateAttemptStatus($attemptId);
-    public function updateExamScheduleStatus($examScheduleId);
+    public function updateExamScheduleStatus($examScheduleId,$status);
     public function getAttemptInfo($attemptId);
-
-
+    public function getSolvedQuestionAccordingAttempt($attemptId);
+    public function createResult($data);
+    public function getExamWiseResult($examId);
+    public function checkPracticeType($request);
 }

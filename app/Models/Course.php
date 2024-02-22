@@ -19,7 +19,12 @@ class Course extends Model
     }
     public function courseConfig()
     {
-        return $this->hasMany(CourseConfigration::class, 'course_id', 'id');
+        return $this->hasOne(CourseConfigration::class, 'course_id', 'id');
+    }
+
+    public function courseQuestions()
+    {
+        return $this->hasMany(QuestionCourse::class, 'course_id', 'id');
     }
 
 

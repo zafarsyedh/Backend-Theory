@@ -13,4 +13,7 @@ class Attempt extends Model
     {
         return $this->belongsTo(Student::class,  'std_id','id');
     }
+    protected $casts = [
+        'created_at' => 'datetime:d M Y h:i:s a',
+    ];
 }

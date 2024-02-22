@@ -16,4 +16,15 @@ class TopicArea extends Model
     {
         return $this->hasMany(TopicAreaTranslation::class, 'topic_area_id', 'id');
     }
+
+    public function solvedQuestion()
+    {
+        return $this->hasMany(QuestionSolved::class, 'topic_id', 'id');
+    }
+
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class, 'topic_id', 'id');
+    }
 }

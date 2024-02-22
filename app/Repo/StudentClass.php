@@ -92,7 +92,7 @@ class StudentClass implements Interfaces\StudentInterface
             $paramData = [
                 'stdId' =>$student->id,
                 'courseId' =>$courseInfo->id,
-                'invgId' =>1,
+                'invgId' =>$request->invgId,
             ];
 
            $qLangInfo= Language::where('lang_short',$request->q_lang)->latest('id')->first();
@@ -104,11 +104,14 @@ class StudentClass implements Interfaces\StudentInterface
             $exam=ExamSchedule::where('std_id',$student->id)->latest('id')->first();;
 
             $eventStdData = [
+
                 'examId' =>$exam->id,
                 'stdId' =>$student->id,
                 'stdName' =>$student->std_name,
                 'trafficId' =>$student->traffic_id,
                 'courseId' =>$courseInfo->id,
+                'examDuration' =>$courseInfo->courseConfig->total_duration,
+                'practiceDuration' =>$courseInfo->courseConfig->practice_duration,
                 'courseName' =>$courseInfo->short_name,
                 'qLangShortName' =>$request->q_lang,
                 'qLangFullName' =>$qLangInfo->lang,
@@ -117,12 +120,11 @@ class StudentClass implements Interfaces\StudentInterface
                 'examType' =>$request->exam_type,
                 'direction' =>($qLangInfo->direction == 2)? 'ltr':'rtl',
                 'systemIp' =>$systemInfo->system_ip,
+                'instructions' =>count($courseInfo->courseTranslation->where('lang',$request->q_lang))? $courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('instructions')->first():$courseInfo->courseTranslation->where('lang','en')->pluck('instructions')->first(),
+                'videoLink' =>count($courseInfo->courseTranslation->where('lang',$request->q_lang))? $courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('video_link')->first():$courseInfo->courseTranslation->where('lang','en')->pluck('video_link')->first(),
 
             ];
-
-
             event(new CourseEvent($eventStdData));
-
             DB::commit();
 
             return  Helper::successWithData($student,'Record created successfully');

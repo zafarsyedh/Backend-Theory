@@ -45,4 +45,7 @@ class ExamSchedule extends Model
     protected $casts = [
         'created_at' => 'datetime:d M Y h:i:s a',
     ];
+
+
+
 }

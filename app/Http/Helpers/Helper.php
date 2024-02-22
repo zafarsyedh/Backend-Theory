@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Helpers;
 use App\Repo\ExamClass;
+use App\Repo\SystemRepositryClass;
 use App\Repositries\leadgers\LeadgerRepositry;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Log;
@@ -154,6 +155,12 @@ class Helper{
 
         $exam=new ExamClass();
         $exam->createExam($request,$paramData);
+    }
+
+    public static function updateSystemStatusHelper($request,$status){
+
+        $system=new SystemRepositryClass();
+        $system->updateSystemStatus($request,$status);
     }
 
 

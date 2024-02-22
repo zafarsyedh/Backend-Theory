@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Http\Services\ApiService;
+use App\Repo\CourseClass;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\StudentInterface;
+use App\Repo\Interfaces\SystemInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,12 +17,14 @@ class StudentController extends Controller
     public $apiService;
     public $student;
     public $exam;
+    public $system;
 
-    public function __construct(ApiService $apiService,StudentInterface $student,ExamInterface $exam)
+    public function __construct(ApiService $apiService,StudentInterface $student,ExamInterface $exam,SystemInterface $system)
     {
         $this->apiService = $apiService;
         $this->student = $student;
         $this->exam = $exam;
+        $this->system = $system;
     }
 
     public function getBdcStd(Request $request)
@@ -54,6 +58,8 @@ class StudentController extends Controller
 
             $response=$this->student->saveStudent($request);
             if($response['status']){
+                //updateSystemStatus
+                $this->system->updateSystemStatus($request->system_id,3);
                 $response= Helper::success($response['data'],'Exam save successfully');
             }else{
                 $response= Helper::error($response['message'],[]);
@@ -68,10 +74,8 @@ class StudentController extends Controller
 
     public function testData(Request $request){
 
-        return  $response= Helper::success($request->traffic_id,'return request');
-
+        $course=new CourseClass();
+        $courseInfo=$course->getCourseInfoByShortName('LMV');
+       return $courseInfo->courseTranslation->where('lang','en')->pluck('instructions')->first();
     }
-
-
-
 }

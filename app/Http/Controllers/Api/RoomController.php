@@ -78,4 +78,24 @@ class RoomController extends Controller
         }
     }
 
+    //getBranchRooms
+    public function getBranchRooms($branchId){
+
+        try{
+
+        $response=$this->room->getBranchWiseRooms($branchId);
+            if($response->count() > 0){
+                $response= Helper::success($response,'Branch wise rooms list');
+            }else{
+                $response= Helper::error('Branch wise rooms not exist',[]);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+
+    }
+
+
+
 }

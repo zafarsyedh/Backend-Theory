@@ -54,6 +54,8 @@ class RoomClass implements Interfaces\RoomInterface
                 ],
                 'branch_id' => 'required',
                 'status' => 'required',
+                'room_purpose' => 'required',
+
             ]);
             if ($validator->fails())
                 return Helper::errorWithData($validator->errors()->first(), $validator->errors());
@@ -67,6 +69,7 @@ class RoomClass implements Interfaces\RoomInterface
                     'title' =>$request->title,
                     'branch_id' =>$request->branch_id,
                     'status' =>$request->status,
+                    'room_purpose' =>$request->room_purpose,
                 ]
             );
 
@@ -90,6 +93,18 @@ class RoomClass implements Interfaces\RoomInterface
             $role = Room::find($id);
             $role->delete();
             return Helper::successWithData($role, $message="Room Deleted");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
+    public function getBranchWiseRooms($branchId)
+    {
+        try {
+            $qry = Room::query();
+            $qry=$qry->where('branch_id',$branchId);
+            return $qry=$qry->get();
+            return Helper::success($qry, $message="Rooms List");
         }catch (\Exception $e) {
             DB::rollBack();
             return Helper::errorWithData($e->getMessage(),$e);

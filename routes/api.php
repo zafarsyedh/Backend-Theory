@@ -27,7 +27,7 @@ Route::get('verify_token', [LoginController::class, 'apiVerifyToken']);
 Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.reset');
 
-Route::group(['middleware' => ['auth:sanctum']], function(){
+//Route::group(['middleware' => ['auth:sanctum']], function(){
 
     Route::post('create-user', [UserController::class, 'saveUser']);
     Route::get('get-all-users', [UserController::class, 'index']);
@@ -71,9 +71,11 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::get('get-all-rooms',[RoomController::class,'index']);
     Route::get('get-rooms-list',[RoomController::class,'roomsList']);
     Route::delete('delete-room/{id}',[RoomController::class,'deleteRoom']);
+    Route::get('get-branch-rooms/{branchId}',[RoomController::class,'getBranchRooms']);
 
     Route::post('system-create',[SystemController::class,'saveSystem']);
     Route::delete('delete-system/{id}',[SystemController::class,'deleteSystem']);
+    Route::get('get-room-systems/{id}',[SystemController::class,'getRoomWiseSystems']);
 
     Route::post('save-role',[RoleController::class,'saveRole']);
     Route::get('get-all-roles',[RoleController::class,'index']);
@@ -83,30 +85,33 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::get('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
     Route::post('save-role-permissions',[RoleController::class,'saveRolePermissions']);
 
+    Route::get('get-all-results',[ExamController::class,'getAllResults']);
 
+//});
+        // Student Area
 
-});
-// Student Area
-Route::get('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
-Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
-Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
-
-Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
-Route::post('get-results',[ExamController::class,'getResults']);
-
-Route::get('get-student-result',[ExamController::class,'getStudentResult']);
+        Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
+        Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
+        Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
 
 
 
-Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
+        Route::post('get-results',[ExamController::class,'getResults']);
+        Route::get('get-student-result',[ExamController::class,'getStudentResult']);
+        Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
+        Route::any('exit-exam/{id}',[ExamController::class,'exitExam']);
+        Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
+        Route::post('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
+        Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
+        Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
+        Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
 
-Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
-Route::post('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
-Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
 
-Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
-Route::get('system-list',[SystemController::class,'systemList']);
-Route::get('test-data',[StudentController::class,'testData']);
+        Route::get('system-list',[SystemController::class,'systemList']);
+        Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
+
+
+
 
 
 

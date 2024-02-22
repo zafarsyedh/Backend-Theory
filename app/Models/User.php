@@ -20,7 +20,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email','phone', 'password','role_id','branch_id','status'
+        'name', 'email','phone', 'password','role_id','branch_id','status','room_id'
     ];
 
 
@@ -50,6 +50,11 @@ class User extends Authenticatable
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id', 'id')->select(['id','title']);
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class, 'room_id', 'id')->select(['id','title','branch_id','room_purpose']);
     }
 
     /* public function getStatusAttribute($value)
