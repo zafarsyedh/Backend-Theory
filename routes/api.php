@@ -105,6 +105,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
         Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
         Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
         Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
+        Route::post('exam-system-status-update',[ExamController::class,'examSystemStatusUpdate']);
 
 
         Route::get('system-list',[SystemController::class,'systemList']);

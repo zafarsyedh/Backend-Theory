@@ -41,6 +41,10 @@ class ExamSchedule extends Model
     {
         return $this->belongsTo(System::class, 'system_id', 'id');
     }
+    public function attempt()
+    {
+        return $this->hasOne(Attempt::class, 'exam_id', 'id');
+    }
 
     protected $casts = [
         'created_at' => 'datetime:d M Y h:i:s a',
