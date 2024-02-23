@@ -51,7 +51,7 @@ class StudentController extends Controller
 
         try{
 
-           $isContinue= $this->exam->checkExamStatus($request->stdData);
+           $isContinue= $this->exam->checkExamStatus($request->stdData,$request->exam_type);
            if($isContinue==0){
              return  $response= Helper::error('Exam of this student is already in progress',[]);
            }

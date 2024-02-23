@@ -211,6 +211,12 @@ class ExamController extends Controller
     public function restartExam($id){
         try {
 
+            $isContinue= $this->exam->checkExamStartOrNot($id);
+            if($isContinue!==1){
+                return  $response= Helper::error('student has been started exam',[]);
+            }
+
+
            $exam=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
 
            if($exam->exam_type==1){

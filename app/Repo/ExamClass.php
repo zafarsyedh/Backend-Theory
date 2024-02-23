@@ -200,15 +200,36 @@ class ExamClass implements Interfaces\ExamInterface
         }
     }
 
-    public function checkExamStatus($stdData)
+    public function checkExamStatus($stdData,$examType)
     {
         try {
             $isContinue=1;
            if($std= Student::where('traffic_id',$stdData['regnnumb'])->latest('id')->first()){
-               if(ExamSchedule::where('std_id',$std->id)->where('exam_status',1)->orWhere('exam_status',2)->count() > 0){
-                   $isContinue=0;
+
+               if (ExamSchedule::where('std_id', $std->id)
+                       ->where(function ($query) {
+                           $query->where('exam_status', 1)
+                               ->orWhere('exam_status', 2);
+                       })
+                       ->whereDate('created_at', date('Y-m-d'))
+//                       ->where('exam_type',$examType)
+                       ->count() > 0) {
+                   $isContinue = 0;
                }
            }
+            return $isContinue;
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
+    public function checkExamStartOrNot($id)
+    {
+        try {
+            $isContinue=0;
+            $exam=ExamSchedule::find($id);
+            if($exam->exam_status==1){
+                $isContinue=1;
+            }
             return $isContinue;
         }catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(),$e);
