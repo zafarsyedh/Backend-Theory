@@ -499,6 +499,7 @@ protected $qAudioname='';
             $qry = $qry->where('status', 1);
             $qry = $qry->where('q_type', 2);
             $qry = $qry->where('q_is_video', 0);
+
             $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
             {
                 $query->where('lang',$qLang);
@@ -520,6 +521,11 @@ protected $qAudioname='';
             $qry = $qry->where(function ($query) use ($courseId) {
                 $query->whereRelation('qCourses','course_id',$courseId)
                     ->orWhere('q_type',1);
+            });
+
+            $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
+            {
+                $query->where('lang',$qLang);
             });
 
             $qry = $qry->where('q_is_video', 1);
