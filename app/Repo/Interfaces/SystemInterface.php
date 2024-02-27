@@ -10,6 +10,7 @@ interface SystemInterface{
 
     public function getRoomWiseSystems($roomId);
     public function updateSystemStatus($systemId,$status);
+    public function checkSystemIp($request);
 
 
 
