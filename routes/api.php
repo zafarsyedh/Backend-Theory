@@ -76,6 +76,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
     Route::post('system-create',[SystemController::class,'saveSystem']);
     Route::delete('delete-system/{id}',[SystemController::class,'deleteSystem']);
     Route::get('get-room-systems/{id}',[SystemController::class,'getRoomWiseSystems']);
+    Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
 
     Route::post('save-role',[RoleController::class,'saveRole']);
     Route::get('get-all-roles',[RoleController::class,'index']);

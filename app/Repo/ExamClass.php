@@ -324,7 +324,7 @@ class ExamClass implements Interfaces\ExamInterface
     {
         try {
             $qry = Result::query();
-            $qry=$qry->with('attempt.student');
+            $qry=$qry->with('attempt.student','exam.qLanguage');
             $qry=$qry->where('exam_id',$examId);
             $qry=$qry->latest('id')->first();
             return $qry;

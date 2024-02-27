@@ -268,9 +268,8 @@ class ExamController extends Controller
 
             $exam_id=$request->exam_id;
               $res=$this->exam->getExamWiseResult($exam_id);
-            if($res->count() > 0){
 
-
+            if($res){
 
                 $questions= $this->exam->getSolvedQuestionAccordingAttempt($res->attempt->id);
 
@@ -302,10 +301,15 @@ class ExamController extends Controller
                     'total_question' =>$res->total_question,
                     'required_ans' => $res->correct_ans_required,
                     'correct_ans' => $res->correct_ans,
-                    'topics'=>$resData
+                    'topics'=>$resData,
+                    'examLang'=>$res->exam->qLanguage->lang,
+                    'langShort'=> $res->exam->qLanguage->lang_short,
                 );
+
+                return Helper::success($array,'Result list');
+            }else{
+                return Helper::error('Exam not found',[]);
             }
-            return Helper::success($array,'Result list');
 
         } catch (\Exception $e) {
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);

@@ -74,4 +74,20 @@ class SystemController extends Controller
             return Helper::error($e->getMessage(),$e);
         }
     }
+
+    //checkSystemIp
+    public function checkSystemIp($systemIp){
+        try {
+
+            $response =$this->system->checkSystemIp($systemIp);
+            if($response){
+                $response= Helper::success($response,'Ip found');
+            }else{
+                $response= Helper::error('Ip not found',[]);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
 }
