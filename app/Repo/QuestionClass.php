@@ -111,6 +111,7 @@ protected $qAudioname='';
 
             $question = new Question();
             if (Question::find($id)) {
+
                 $question = Question::find($id);
             }
 
@@ -145,6 +146,10 @@ protected $qAudioname='';
                         ]
                     );
                 }
+            }
+
+            if($request->question_edit_id > 0 AND $request->q_type == 'common'){
+                QuestionCourse::where('q_id',$question->id)->delete();
             }
 
             $qTranslation = new QuestionTranslation();
@@ -515,7 +520,7 @@ protected $qAudioname='';
     public function getVideoQuestion($courseId,$limit=null)
     {
         try {
-
+            $qLang='en';
             $qry = Question::query();
             $qry = $qry->select('id','topic_id');
             $qry = $qry->where(function ($query) use ($courseId) {
