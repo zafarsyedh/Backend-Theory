@@ -27,7 +27,7 @@ Route::get('verify_token', [LoginController::class, 'apiVerifyToken']);
 Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.reset');
 
-//Route::group(['middleware' => ['auth:sanctum']], function(){
+Route::group(['middleware' => ['auth:sanctum']], function(){
 
     Route::post('create-user', [UserController::class, 'saveUser']);
     Route::get('get-all-users', [UserController::class, 'index']);
@@ -76,7 +76,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
     Route::post('system-create',[SystemController::class,'saveSystem']);
     Route::delete('delete-system/{id}',[SystemController::class,'deleteSystem']);
     Route::get('get-room-systems/{id}',[SystemController::class,'getRoomWiseSystems']);
-    Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
+
 
     Route::post('save-role',[RoleController::class,'saveRole']);
     Route::get('get-all-roles',[RoleController::class,'index']);
@@ -88,7 +88,9 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
     Route::get('get-all-results',[ExamController::class,'getAllResults']);
 
-//});
+});
+
+            Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
         // Student Area
 
         Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);

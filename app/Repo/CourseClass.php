@@ -209,6 +209,7 @@ class CourseClass implements CourseInterface
                         'video_require' => $request->video_require,
                         'total_require' => $request->total_require,
                         'total_duration' => $request->total_duration,
+                        'practice_duration' => $request->practice_duration,
                         'video_duration' => $request->video_duration,
                     ]
                 );

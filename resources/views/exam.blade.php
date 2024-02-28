@@ -19,7 +19,7 @@
 
 <script type="text/javascript">
 
-    var pusher = new Pusher('17a726fd842ba679e19b', {
+    var pusher = new Pusher('797c52fa232a2f6149b8', {
         encrypted: true,
         cluster: 'ap2'
     });

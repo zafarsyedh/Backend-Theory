@@ -9,6 +9,7 @@ use App\Models\QuestionSolved;
 use App\Models\Result;
 use App\Models\Student;
 use App\Models\TopicArea;
+use App\Models\User;
 use Carbon\Carbon;
 use Dotenv\Exception\ValidationException;
 use Faker\Provider\DateTime;
@@ -88,11 +89,14 @@ class ExamClass implements Interfaces\ExamInterface
     public function  getScheduleExamList($request)
     {
         try {
+               $user= User::find($request->invgId);
+
             $qry=ExamSchedule::query();
             $qry->with('student:id,std_name,traffic_id,email','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage:id,lang,lang_short');
             $qry->with('invigilator:id,name','system:id,title,system_ip');
-            $qry=$qry->where('invg_id',$request->invgId);
-            ($request->date)?$qry=$qry->whereDate('created_at',$request->date):'';
+            ($user AND $user->role_id!==1)?$qry=$qry->where('invg_id',$request->invgId):'';
+            $qry=$qry->whereDate('created_at', '>=',$request->start_date);
+            $qry=$qry->whereDate('created_at', '<=',$request->end_date);
             $examSchedule=$qry->get();
             return Helper::successWithData($examSchedule,'record found');
 
