@@ -162,6 +162,33 @@ class ExamController extends Controller
         }
     }
 
+    //getPracticeResult
+    public function getPracticeResult(){
+
+        try{
+            $response=$this->exam->getPracticeResult();
+            if($response['status']) {
+                $resData = collect([]);
+                foreach ($response['data'] as $row) {
+                    $array = array(
+                        'attempt_id' => $row->id,
+                        'test_date' => date('d M Y', strtotime($row->created_at)),
+                        'std_name' => $row->student->std_name,
+                        'traffic_id' => $row->student->traffic_id,
+                        'course' => $row->student->activeCourse->course->short_name,
+                        'totalQ' =>$row->solvedQuestion->count(),
+                        'correctAns' =>$row->solvedQuestion->where('is_correct_ans',1)->count(),
+                        'wrongAns' =>$row->solvedQuestion->where('is_correct_ans',0)->count(),
+                        'skipAns' => $row->solvedQuestion->where('is_answered',0)->count(),
+                    );
+                    $resData->push($array);
+                }
+                return Helper::success($resData, 'Result list');
+            }
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
 
     //getScheduleExamList
     public function getScheduleExamList(Request $request){

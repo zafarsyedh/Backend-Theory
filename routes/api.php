@@ -27,7 +27,7 @@ Route::get('verify_token', [LoginController::class, 'apiVerifyToken']);
 Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.reset');
 
-Route::group(['middleware' => ['auth:sanctum']], function(){
+//Route::group(['middleware' => ['auth:sanctum']], function(){
 
     Route::post('create-user', [UserController::class, 'saveUser']);
     Route::get('get-all-users', [UserController::class, 'index']);
@@ -87,8 +87,9 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('save-role-permissions',[RoleController::class,'saveRolePermissions']);
 
     Route::get('get-all-results',[ExamController::class,'getAllResults']);
+    Route::get('get-practice-result',[ExamController::class,'getPracticeResult']);
 
-});
+//});
 
             Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
         // Student Area

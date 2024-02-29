@@ -83,13 +83,16 @@ class RoomController extends Controller
 
         try{
 
-        $response=$this->room->getBranchWiseRooms($branchId);
+
+
+            $response=$this->room->getBranchWiseRooms($branchId);
             if($response->count() > 0){
                 $response= Helper::success($response,'Branch wise rooms list');
             }else{
-                $response= Helper::error('Branch wise rooms not exist',[]);
+                $response= Helper::error('This branch have no rooms',[]);
             }
             return $response;
+
         } catch (\Exception $e) {
             return Helper::error($e->getMessage(),$e);
         }
