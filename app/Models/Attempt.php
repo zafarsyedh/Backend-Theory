@@ -16,4 +16,9 @@ class Attempt extends Model
     protected $casts = [
         'created_at' => 'datetime:d M Y h:i:s a',
     ];
+
+    public function solvedQuestion()
+    {
+        return $this->hasMany(QuestionSolved::class,  'attempt_id','id');
+    }
 }
