@@ -89,6 +89,18 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
     Route::get('get-all-results',[ExamController::class,'getAllResults']);
     Route::get('get-practice-result',[ExamController::class,'getPracticeResult']);
 
+    // Exam
+    Route::post('get-result-detail',[ExamController::class,'getResults']);
+    Route::get('get-student-result',[ExamController::class,'getStudentResult']);
+    Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
+    Route::any('exit-exam/{id}',[ExamController::class,'exitExam']);
+    Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
+    Route::get('get-running-exam',[ExamController::class,'getRunningExam']);
+    Route::post('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
+    Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
+    Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
+    Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
+
 //});
 
             Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
@@ -100,15 +112,8 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
 
 
-        Route::post('get-results',[ExamController::class,'getResults']);
-        Route::get('get-student-result',[ExamController::class,'getStudentResult']);
-        Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
-        Route::any('exit-exam/{id}',[ExamController::class,'exitExam']);
-        Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
-        Route::post('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
-        Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
-        Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
-        Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
+
+
         Route::post('exam-system-status-update',[ExamController::class,'examSystemStatusUpdate']);
 
 

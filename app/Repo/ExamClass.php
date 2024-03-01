@@ -104,12 +104,13 @@ class ExamClass implements Interfaces\ExamInterface
             return Helper::errorWithData($e->getMessage(), []);
         }
     }
+
     public function  getAllResultsList()
     {
         try {
             $qry=Result::query();
             $qry=$qry->with('exam.attempt:id,exam_id','exam.course:id,short_name','exam.student:id,traffic_id,std_name');
-            $examSchedule=$qry->orderBy('id','DESC')->get();
+            $examSchedule=$qry->get();
 
             return Helper::successWithData($examSchedule,'record found');
 
@@ -125,7 +126,7 @@ class ExamClass implements Interfaces\ExamInterface
             $qry=Attempt::query();
             $qry=$qry->with('student.activeCourse.course','solvedQuestion');
             $qry=$qry->where('exam_type',2);
-            $examSchedule=$qry->orderBy('id','DESC')->get();
+            $examSchedule=$qry->get();
             return Helper::successWithData($examSchedule,'record found');
 
         }  catch (\Exception $e) {
