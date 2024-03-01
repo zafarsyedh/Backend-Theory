@@ -6,9 +6,7 @@ use App\Events\CourseEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
-use App\Models\Exam;
 use App\Models\ExamSchedule;
-use App\Models\Question;
 use App\Models\QuestionSolved;
 use App\Models\System;
 use App\Repo\Interfaces\CourseInterface;
@@ -17,6 +15,7 @@ use App\Repo\Interfaces\QuestionInterface;
 use App\Repo\Interfaces\SystemInterface;
 use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Carbon\Carbon;
 
 class ExamController extends Controller
 {
@@ -90,7 +89,7 @@ class ExamController extends Controller
 
         try{
             $request->all();
-            $response=$this->questions->getMovedQuestionForTheoryPractice($request,$request->attempt_id,2);
+               $response=$this->questions->getMovedQuestionForTheoryPractice($request,$request->attempt_id,2);
             if($response->count() > 0){
 
                 $resData = collect([]);
@@ -119,15 +118,18 @@ class ExamController extends Controller
                         $choosedOpt=$row->question->questionTranslations[0]->opt_c;
                     }
 
-                    if($row->choosed_option){
-                        if($row->choosed_option==$row->question->correct_opt){
-                        $qStatus='Correct';
-                        } else{
+                    if($row->is_answered==1){
+                        if($row->is_correct_ans==1){
+                            $qStatus='Correct';
+                        }else{
                             $qStatus='Wrong';
                         }
+
                     }else{
                         $qStatus='-';
                     }
+
+
 
                     $array = array(
                         'id' =>  $row->id,
@@ -138,6 +140,7 @@ class ExamController extends Controller
 
                     );
                     $resData->push($array);
+                    $choosedOpt='';
                 }
             }
             return Helper::success($resData,'Result list');
@@ -170,7 +173,14 @@ class ExamController extends Controller
             if($response['status']) {
                 $resData = collect([]);
                 foreach ($response['data'] as $row) {
+
+                    $row->solvedQuestion->where('is_correct_ans',1)->count();
+
+                   $totalAnsweredQ=$row->solvedQuestion->where('is_answered',1)->count();
+                   $correctQ=$row->solvedQuestion->where('is_correct_ans',1)->count();
+                    $wrongQ=$totalAnsweredQ - $correctQ;
                     $array = array(
+                        'id' => $row->id,
                         'attempt_id' => $row->id,
                         'test_date' => date('d M Y', strtotime($row->created_at)),
                         'std_name' => $row->student->std_name,
@@ -178,7 +188,7 @@ class ExamController extends Controller
                         'course' => $row->student->activeCourse->course->short_name,
                         'totalQ' =>$row->solvedQuestion->count(),
                         'correctAns' =>$row->solvedQuestion->where('is_correct_ans',1)->count(),
-                        'wrongAns' =>$row->solvedQuestion->where('is_correct_ans',0)->count(),
+                        'wrongAns' =>$wrongQ,
                         'skipAns' => $row->solvedQuestion->where('is_answered',0)->count(),
                     );
                     $resData->push($array);
@@ -198,6 +208,48 @@ class ExamController extends Controller
             $response=$this->exam->getScheduleExamList($request);
             if($response['status']){
                 return Helper::success($response['data'],'Schedule exam list');
+            }else{
+                return Helper::errorWithData('Record not exist',[]);
+            }
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
+    //getRunningExam
+    public function getRunningExam(Request $request){
+
+        try{
+            $request->all();
+            $response=$this->exam->getScheduleExamList($request);
+            if($response['status']){
+                $resData = collect([]);
+
+                foreach ($response['data'] as $row){
+                    $examStartFrom='-';
+                  $courseInfo=Helper::fetchOnlyData($this->course->getCourseConfig($row->course_id));
+                    $row->exam_type ==1 ? $examDuration=$courseInfo->courseConfig->total_duration:$examDuration=$courseInfo->courseConfig->practice_duration;
+                    if($row->exam_status==2){
+                        $examStartFrom = Carbon::parse($row->updated_at)->addMinutes($examDuration);
+                        $examStartFrom=date('d-M-Y H:i:s',strtotime($examStartFrom));
+                    }
+
+
+                    $topicArray = array(
+                        'id'=> $row->id,
+                        'traffic_id'=> $row->student->traffic_id,
+                        'std_name' =>$row->student->std_name,
+                        'course' =>$row->course->short_name,
+                        'invigilator' =>$row->invigilator->name,
+                        'exam_type' =>$row->exam_type==1?'Exam':'Practice',
+                        'system' =>$row->system->title,
+                        'exam_start_from' =>$examStartFrom,
+                        'created_at' =>$row->created_at,
+                        'exam_status' =>$row->exam_status,
+                    );
+                    $resData->push($topicArray);
+                }
+                return Helper::success($resData,'Schedule exam list');
             }else{
                 return Helper::errorWithData('Record not exist',[]);
             }
