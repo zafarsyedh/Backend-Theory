@@ -9,6 +9,7 @@ use App\Http\Requests\ExamRequest;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
 use App\Models\System;
+use App\Models\User;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
@@ -33,13 +34,13 @@ class ExamController extends Controller
     public function getQuestionsForExam(Request $request){
 
         try{
-                 $request->all();
+            $request->all();
             $response=$this->questions->createAttemptAndSolveQuestion($request);
             if($response['status']){
-            $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
-            $this->exam->updateExamScheduleStatus($request->exam_id,2);
+                $res=$this->questions->getMovedQuestionForTheoryPractice($request,$response['data']);
+                $this->exam->updateExamScheduleStatus($request->exam_id,2);
 
-            return Helper::success($res,'Questions list');
+                return Helper::success($res,'Questions list');
             }else{
                 return Helper::errorWithData($response['message'],[]);
             }
@@ -53,7 +54,7 @@ class ExamController extends Controller
         try{
             $response=$this->exam->saveExamQuestion($request);
             if($response['status']){
-            $exam=ExamSchedule::find($request->exam_id);
+                $exam=ExamSchedule::find($request->exam_id);
                 $this->system->updateSystemStatus($exam->system_id ,1);
                 return Helper::success($response,'Questions saved');
             }else{
@@ -72,9 +73,9 @@ class ExamController extends Controller
             $response=$this->exam->savePracticeQuestion($request);
             if($response['status']){
 
-               if(QuestionSolved::where('attempt_id',$response['data'])->where('is_answered',0)->count() == 0){
-                   $this->exam->updateAttemptStatus($response['data']);
-               }
+                if(QuestionSolved::where('attempt_id',$response['data'])->where('is_answered',0)->count() == 0){
+                    $this->exam->updateAttemptStatus($response['data']);
+                }
                 return Helper::success($response,'Questions saved');
             }else{
                 return Helper::errorWithData($response,'Questions not saved');
@@ -89,7 +90,7 @@ class ExamController extends Controller
 
         try{
             $request->all();
-               $response=$this->questions->getMovedQuestionForTheoryPractice($request,$request->attempt_id,2);
+            $response=$this->questions->getMovedQuestionForTheoryPractice($request,$request->attempt_id,2);
             if($response->count() > 0){
 
                 $resData = collect([]);
@@ -154,7 +155,7 @@ class ExamController extends Controller
     public function getAllResults(){
 
         try{
-             $response=$this->exam->getAllResultsList();
+            $response=$this->exam->getAllResultsList();
             if($response['status']){
                 return Helper::success($response['data'],'Results list');
             }else{
@@ -176,8 +177,8 @@ class ExamController extends Controller
 
                     $row->solvedQuestion->where('is_correct_ans',1)->count();
 
-                   $totalAnsweredQ=$row->solvedQuestion->where('is_answered',1)->count();
-                   $correctQ=$row->solvedQuestion->where('is_correct_ans',1)->count();
+                    $totalAnsweredQ=$row->solvedQuestion->where('is_answered',1)->count();
+                    $correctQ=$row->solvedQuestion->where('is_correct_ans',1)->count();
                     $wrongQ=$totalAnsweredQ - $correctQ;
                     $array = array(
                         'id' => $row->id,
@@ -204,7 +205,7 @@ class ExamController extends Controller
     public function getScheduleExamList(Request $request){
 
         try{
-             $request->all();
+            $request->all();
             $response=$this->exam->getScheduleExamList($request);
             if($response['status']){
                 return Helper::success($response['data'],'Schedule exam list');
@@ -227,7 +228,7 @@ class ExamController extends Controller
 
                 foreach ($response['data'] as $row){
                     $examStartFrom='-';
-                  $courseInfo=Helper::fetchOnlyData($this->course->getCourseConfig($row->course_id));
+                    $courseInfo=Helper::fetchOnlyData($this->course->getCourseConfig($row->course_id));
                     $row->exam_type ==1 ? $examDuration=$courseInfo->courseConfig->total_duration:$examDuration=$courseInfo->courseConfig->practice_duration;
                     if($row->exam_status==2){
                         $examStartFrom = Carbon::parse($row->updated_at)->addMinutes($examDuration);
@@ -290,23 +291,19 @@ class ExamController extends Controller
     public function restartExam($id){
         try {
 
-            $isContinue= $this->exam->checkExamStartOrNot($id);
+              $isContinue= $this->exam->checkExamStartOrNot($id);
             if($isContinue!==1){
                 return  $response= Helper::error('student has been started exam',[]);
             }
-
-
-           $exam=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
-
-           if($exam->exam_type==1){
-
-               $examDuration=$exam->course->courseConfig->total_duration;;
-           }else{
-               $examDuration=$exam->course->courseConfig->practice_duration;
+            $exam=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
+            if($exam->exam_type==1){
+                $examDuration=$exam->course->courseConfig->total_duration;;
+            }else{
+                $examDuration=$exam->course->courseConfig->practice_duration;
             }
 
-             $this->system->updateSystemStatus($exam->system_id,3);
-
+            $this->system->updateSystemStatus($exam->system_id,3);
+            $userInfo= User::with('branch')->find($exam->invg_id);
             $eventStdData = [
 
                 'examId' =>$id,
@@ -326,6 +323,7 @@ class ExamController extends Controller
                 'systemIp' =>$exam->system->system_ip,
                 'instructions' =>count($exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short))?$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('instructions')->first():$exam->course->courseTranslation->where('lang','en')->pluck('instructions')->first(),
                 'videoLink' =>count($exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short))?$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('video_link')->first():$exam->course->courseTranslation->where('lang','en')->pluck('video_link')->first(),
+                'examTemplate' =>$userInfo?$userInfo->branch->exam_template:1,
 
 
 
@@ -346,7 +344,7 @@ class ExamController extends Controller
 
 
             $exam_id=$request->exam_id;
-              $res=$this->exam->getExamWiseResult($exam_id);
+            $res=$this->exam->getExamWiseResult($exam_id);
 
             if($res){
 
@@ -410,7 +408,7 @@ class ExamController extends Controller
     public function exitExam($id){
         try {
 
-           $examUpdate= $this->exam->updateExamScheduleStatus($id,4);
+            $examUpdate= $this->exam->updateExamScheduleStatus($id,4);
             $this->system->updateSystemStatus($examUpdate->system_id,1);
             return   $response= Helper::success([],'Exam exit successfully');
 
@@ -422,13 +420,13 @@ class ExamController extends Controller
     //examSystemStatusUpdate
     public function examSystemStatusUpdate(Request $request){
         try {
-                if($request->exam_id){
-                    $examUpdate= $this->exam->updateExamScheduleStatus($request->exam_id,3);
-                }
-                 if($request->system_ip){
-                   $system=  System::where('system_ip',$request->system_ip)->first();
+            if($request->exam_id){
+                $examUpdate= $this->exam->updateExamScheduleStatus($request->exam_id,3);
+            }
+            if($request->system_ip){
+                $system=  System::where('system_ip',$request->system_ip)->first();
                 $this->system->updateSystemStatus($system->id,1);
-                 }
+            }
 
 
             return   $response= Helper::success([],'Exam and system updated successfully');
