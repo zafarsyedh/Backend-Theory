@@ -61,6 +61,7 @@ class BranchClass implements Interfaces\BranchInterface
                 ],
                 [
                     'title' =>$request->title,
+                    'exam_template' =>$request->exam_template,
                     'status' =>$request->status,
                 ]
             );
