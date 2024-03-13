@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Channels\SmsChannel;
 use App\Repo\BranchClass;
 use App\Repo\ConfigurationClass;
 use App\Repo\CourseClass;
@@ -26,6 +27,7 @@ use App\Repo\StudentClass;
 use App\Repo\SystemRepositryClass;
 use App\Repo\TopicAreaClass;
 use App\Repo\UserClass;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -47,6 +49,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RoomInterface::class,RoomClass::class);
         $this->app->bind(SystemInterface::class,SystemRepositryClass::class);
         $this->app->bind(StudentInterface::class,StudentClass::class);
+
+        Notification::extend('sms', function ($app) {
+            return new SmsChannel();
+        });
     }
 
     /**

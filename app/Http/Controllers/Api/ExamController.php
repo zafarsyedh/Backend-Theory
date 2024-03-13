@@ -8,13 +8,16 @@ use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
+use App\Models\Result;
 use App\Models\System;
 use App\Models\User;
+use App\Notifications\SendMailandSmsNotification;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
 use App\Repo\Interfaces\SystemInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Carbon\Carbon;
 
@@ -435,4 +438,57 @@ class ExamController extends Controller
             return Helper::error($e->getMessage(),$e);
         }
     }
+
+    //sendResultEmailAndSms
+    public function sendResultEmailAndSms(Request $request){
+        try {
+
+            $user = User::find(3);
+
+            $mailText='Dear Salman Raa'.
+                'You have passed your exam.For more info visit www.bdc.ae or contact us on 8002354272';
+
+            $mailData = [
+                'title' => 'Exam Result',
+                'link' => 'https://www.bdc.ae',
+                'body'=>$mailText,
+                'trafficId'=>16109070,
+
+
+            ];
+            $user->notify(new SendMailandSmsNotification($mailData));
+
+            dd('Done');
+
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
+
+
+    //storeResultPdf
+    public function storeResultPdf(Request $request){
+        try {
+
+            $path='results/';
+            $trafficId=$request->trafficId;
+            if ($request->hasFile('pdf')) {
+                $pdf = $request->file('pdf');
+                $fileName =$path.$trafficId.'-Result'. '.pdf'; // Append .pdf extension
+                $pdf->move(public_path('storage/uploads/'.$path), $fileName);
+
+               if($result= Result::where('exam_id',$request->examid)->latest('id')->first()){
+                   $result->pdf_file=$fileName;
+                   $result->save();
+               }
+
+                return response()->json(['message' => 'PDF uploaded successfully']);
+            }
+            return response()->json(['message' => 'No PDF file uploaded'], 400);
+
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
+
 }

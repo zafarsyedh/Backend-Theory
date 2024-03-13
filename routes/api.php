@@ -101,6 +101,10 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
     Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
     Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
 
+
+    Route::any('send-sms',[ExamController::class,'sendResultEmailAndSms']);
+    Route::any('store-result-pdf',[ExamController::class,'storeResultPdf']);
+
 //});
 
             Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
