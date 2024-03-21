@@ -152,6 +152,21 @@ class QuestionController extends Controller
 
     }
 
+    public function removeQAsset(Request $request)
+    {
+        try {
+            $response = $this->question->removeQAsset($request);
+            if($response['status']){
+                $response= Helper::success($response['data'],$response['message']);
+            }else{
+                $response= Helper::error($response['message'],$response['data']);
+            }
+            return $response;
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(),$e);
+        }
+    }
+
 
     }
 

@@ -285,6 +285,61 @@ protected $qAudioname='';
             return Helper::errorWithData($e->getMessage(),$e);
         }
     }
+
+    public function removeQAsset($request)
+    {
+        try {
+            if($request->assetType=='q-image' OR $request->assetType=='opt-a-image' OR $request->assetType=='opt-b-image' OR $request->assetType=='opt-c-image'){
+                $question=Question::find($request->id);
+
+                if($request->assetType=='q-image'){
+                    $question->q_image=null;
+                }
+                if($request->assetType=='opt-a-image'){
+                    $question->opt_a_image=null;
+                }
+                if($request->assetType=='opt-b-image'){
+                    $question->opt_b_image=null;
+                }
+                if($request->assetType=='opt-c-image'){
+                    $question->opt_c_image=null;
+                }
+                $question->save();
+                return Helper::successWithData($question, $message="Asset removed successfully");
+            }else {
+
+                if ($request->assetType == 'q-audio' or $request->assetType == 'opt-a-audio' or $request->assetType == 'opt-b-audio' or $request->assetType == 'opt-c-audio') {
+
+                    $questionTranslation = QuestionTranslation::find($request->id);
+
+                    if ($request->assetType == 'q-audio') {
+                        $questionTranslation->q_audio = null;
+                    }
+                    if ($request->assetType == 'opt-a-audio') {
+                        $questionTranslation->opt_a_audio = null;
+                    }
+                    if ($request->assetType == 'opt-b-audio') {
+                        $questionTranslation->opt_b_audio = null;
+                    }
+                    if ($request->assetType == 'opt-c-audio') {
+                        $questionTranslation->opt_c_audio = null;
+                    }
+                    $questionTranslation->save();
+                    return Helper::successWithData($questionTranslation, $message="Asset removed successfully");
+                }
+            }
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+
+    }
+
+
+
+
+
+
     public function findQuestionById($id)
     {
         try {
