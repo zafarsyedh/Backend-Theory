@@ -294,7 +294,7 @@ class ExamController extends Controller
     public function restartExam($id){
         try {
 
-              $isContinue= $this->exam->checkExamStartOrNot($id);
+            $isContinue= $this->exam->checkExamStartOrNot($id);
             if($isContinue!==1){
                 return  $response= Helper::error('student has been started exam',[]);
             }
@@ -472,15 +472,46 @@ class ExamController extends Controller
 
             $path='results/';
             $trafficId=$request->trafficId;
+
             if ($request->hasFile('pdf')) {
                 $pdf = $request->file('pdf');
-                $fileName =$path.$trafficId.'-Result'. '.pdf'; // Append .pdf extension
+                $fileName =$path.$trafficId.'-result'. '.pdf'; // Append .pdf extension
                 $pdf->move(public_path('storage/uploads/'.$path), $fileName);
 
-               if($result= Result::where('exam_id',$request->examid)->latest('id')->first()){
-                   $result->pdf_file=$fileName;
-                   $result->save();
-               }
+                if($result= Result::where('exam_id',$request->examid)->latest('id')->first()){
+                    $result->pdf_file=$fileName;
+                    $result->save();
+                }
+
+
+                $exam= Result::where('exam_id',$request->examid)->first();
+
+                $student= Student::where('traffic_id',$trafficId)->first();
+
+
+
+
+                $config= Configuration::latest('id')->first();
+                $emailTemplate=$config->email_template;
+                $smsTemplate=$config->sms_template;
+
+                $data = [
+                    'std_name' => $student->std_name,
+                    'exam_status' =>($exam AND $exam->status==1)?'Pass':'Fail'
+                ];
+
+
+                foreach ($data as $key => $value) {
+                    $placeholder = '{{' . $key . '}}';
+                    $emailTemplate = str_replace($placeholder, $value, $emailTemplate);
+                    $smsTemplate = str_replace($placeholder, $value, $smsTemplate);
+                }
+
+                $mailData = [
+                    'email' =>$emailTemplate,
+                ];
+
+                $student->notify(new SendMailandSmsNotification($mailData));
 
                 return response()->json(['message' => 'PDF uploaded successfully']);
             }

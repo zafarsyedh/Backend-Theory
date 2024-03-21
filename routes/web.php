@@ -9,6 +9,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+Route::get('/pdf', function () {
+    return view('pdf');
+});
+
 Route::get('/test-pusher/{text}', [PusherController::class, 'index'])->name('home');
 Route::post('/exam', [PusherController::class, 'pushedData'])->name('exam');
 Route::get('/exam-show', [PusherController::class, 'examShow']);

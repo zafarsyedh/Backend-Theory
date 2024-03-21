@@ -104,6 +104,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
     Route::any('send-sms',[ExamController::class,'sendResultEmailAndSms']);
     Route::any('store-result-pdf',[ExamController::class,'storeResultPdf']);
+Route::any('compress-pdf',[ExamController::class,'storeResultPdf'])->name('compress.pdf');
 
 //});
 
