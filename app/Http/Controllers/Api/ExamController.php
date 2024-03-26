@@ -6,9 +6,11 @@ use App\Events\CourseEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
+use App\Models\Configuration;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
 use App\Models\Result;
+use App\Models\Student;
 use App\Models\System;
 use App\Models\User;
 use App\Notifications\SendMailandSmsNotification;
@@ -18,6 +20,7 @@ use App\Repo\Interfaces\QuestionInterface;
 use App\Repo\Interfaces\SystemInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Http;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Carbon\Carbon;
 
@@ -441,85 +444,100 @@ class ExamController extends Controller
 
     //sendResultEmailAndSms
     public function sendResultEmailAndSms(Request $request){
-        try {
+//        try {
+
 
             $user = User::find(3);
+            $trafficId=16109070;
 
-            $mailText='Dear Salman Raa'.
-                'You have passed your exam.For more info visit www.bdc.ae or contact us on 8002354272';
+
+
+            $config= Configuration::latest('id')->first();
+            $emailTemplate=$config->email_template;
+            $smsTemplate=$config->sms_template;
+
+            $student= Student::where('traffic_id',16109070)->first();
+            $resultId= Result::where('exam_id',1)->first();
+
+            $type=1;
+
+            if($result=Result::find($resultId->id)){
+                ($type==1)?$result->is_send_email=1:$result->is_send_sms=1;
+                $result->save();
+            }
+
+            $data = [
+                'std_name' => $student->std_name,
+                'exam_status' =>($exam AND $exam->status==1)?'Pass':'Fail'
+            ];
+
+
+            foreach ($data as $key => $value) {
+                $placeholder = '{{' . $key . '}}';
+                $emailTemplate = str_replace($placeholder, $value, $emailTemplate);
+                $smsTemplate = str_replace($placeholder, $value, $smsTemplate);
+            }
 
             $mailData = [
-                'title' => 'Exam Result',
-                'link' => 'https://www.bdc.ae',
-                'body'=>$mailText,
-                'trafficId'=>16109070,
-
-
+                'email' =>$emailTemplate,
             ];
-            $user->notify(new SendMailandSmsNotification($mailData));
+
+            $user->notify(new SendMailandSmsNotification($mailData,$trafficId));
+
+
+
 
             dd('Done');
 
-        } catch (\Exception $e) {
-            return Helper::error($e->getMessage(),$e);
-        }
+//        } catch (\Exception $e) {
+//            return Helper::error($e->getMessage(),$e);
+//        }
     }
 
 
     //storeResultPdf
-    public function storeResultPdf(Request $request){
+    public function storeResultPdf(Request $request)
+    {
         try {
 
-            $path='results/';
-            $trafficId=$request->trafficId;
+            $path = 'results/';
+            $trafficId = $request->trafficId;
+            $examId = $request->examid;
+
 
             if ($request->hasFile('pdf')) {
                 $pdf = $request->file('pdf');
-                $fileName =$path.$trafficId.'-result'. '.pdf'; // Append .pdf extension
-                $pdf->move(public_path('storage/uploads/'.$path), $fileName);
+                $fileName = $path . $trafficId . '-result' . '.pdf'; // Append .pdf extension
+                $pdf->move(public_path('storage/uploads/' . $path), $fileName);
 
-                if($result= Result::where('exam_id',$request->examid)->latest('id')->first()){
-                    $result->pdf_file=$fileName;
+                if ($result = Result::where('exam_id', $request->examid)->latest('id')->first()) {
+                    $result->pdf_file = $fileName;
                     $result->save();
+
+                $this->sendSmsAndEmail($trafficId,$examId);
+
+                    return response()->json(['message' => 'PDF uploaded successfully']);
                 }
-
-
-                $exam= Result::where('exam_id',$request->examid)->first();
-
-                $student= Student::where('traffic_id',$trafficId)->first();
-
-
-
-
-                $config= Configuration::latest('id')->first();
-                $emailTemplate=$config->email_template;
-                $smsTemplate=$config->sms_template;
-
-                $data = [
-                    'std_name' => $student->std_name,
-                    'exam_status' =>($exam AND $exam->status==1)?'Pass':'Fail'
-                ];
-
-
-                foreach ($data as $key => $value) {
-                    $placeholder = '{{' . $key . '}}';
-                    $emailTemplate = str_replace($placeholder, $value, $emailTemplate);
-                    $smsTemplate = str_replace($placeholder, $value, $smsTemplate);
-                }
-
-                $mailData = [
-                    'email' =>$emailTemplate,
-                ];
-
-                $student->notify(new SendMailandSmsNotification($mailData));
-
-                return response()->json(['message' => 'PDF uploaded successfully']);
+                return response()->json(['message' => 'No PDF file uploaded'], 400);
             }
-            return response()->json(['message' => 'No PDF file uploaded'], 400);
 
         } catch (\Exception $e) {
-            return Helper::error($e->getMessage(),$e);
+            return Helper::error($e->getMessage(), $e);
         }
     }
 
+    public function sendSmsAndEmail($trafficId,$examId)
+    {
+        try {
+
+            $result = Result::where('exam_id',$examId)->first();
+            $student = Student::where('traffic_id', $trafficId)->first();
+
+            $this->exam->sendEmail($trafficId,$examId,$result,$student);
+            $this->exam->sendSms($student,$result);
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

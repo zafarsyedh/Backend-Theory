@@ -85,7 +85,6 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
     Route::get('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
     Route::post('save-role-permissions',[RoleController::class,'saveRolePermissions']);
-
     Route::get('get-all-results',[ExamController::class,'getAllResults']);
     Route::get('get-practice-result',[ExamController::class,'getPracticeResult']);
 
@@ -104,24 +103,15 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
     Route::any('send-sms',[ExamController::class,'sendResultEmailAndSms']);
     Route::any('store-result-pdf',[ExamController::class,'storeResultPdf']);
-Route::any('compress-pdf',[ExamController::class,'storeResultPdf'])->name('compress.pdf');
 
 //});
 
-            Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
+       Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
         // Student Area
-
         Route::any('get-exam-questions',[ExamController::class,'getQuestionsForExam']);
         Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
         Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
-
-
-
-
-
         Route::post('exam-system-status-update',[ExamController::class,'examSystemStatusUpdate']);
-
-
         Route::get('system-list',[SystemController::class,'systemList']);
         Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
 
