@@ -3,6 +3,7 @@
 namespace App\Repo;
 use App\Http\Helpers\Helper;
 use App\Models\Attempt;
+use App\Models\Configuration;
 use App\Models\Course;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
@@ -10,10 +11,12 @@ use App\Models\Result;
 use App\Models\Student;
 use App\Models\TopicArea;
 use App\Models\User;
+use App\Notifications\SendMailandSmsNotification;
 use Carbon\Carbon;
 use Dotenv\Exception\ValidationException;
 use Faker\Provider\DateTime;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -373,5 +376,52 @@ class ExamClass implements Interfaces\ExamInterface
         }
     }
 
+    public function sendEmail($trafficId,$examId,$result,$student)
+    {
+        try {
 
+            $config=new ConfigurationClass();
+            $mailData = [
+                'email' =>$config->getEmailSmsTemplate($student,$result,1),
+            ];
+            $student->notify(new SendMailandSmsNotification($mailData,$trafficId));
+            $this->updateMailAndSmsStatus($result->id,1);
+
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function sendSms($student,$result)
+    {
+
+                $contact =$student->mobile_no;
+                $trafficId=$student->traffic_id;
+
+                $config=new ConfigurationClass();
+
+                $otpText =$config->getEmailSmsTemplate($student,$result,2);
+
+                $purpose='Result Notification';
+
+                $isUseSmsGlobal = env('Is_USE_SMS_GLOBAL');
+                if($isUseSmsGlobal==true){
+                    $response=Http::get('https://api.smsglobal.com/http-api.php?action=sendsms&user=quwsoxno&password=pR9gUDSq&from=BELHASA-DC&to=' . $contact . '&text=' . $otpText);
+                }else{
+                    $response=Http::get('https://sms.bdc.ae/api/send?api_token='.env('SMS_API_TOKEN').'&traffic_id='.$trafficId.'&phone='.$contact.'&message='.$otpText.'&purpose='.$purpose);
+                }
+                $parts = explode(' ', $response);
+                if (count($parts) > 1 && $parts[0] !== 'ERROR:') {
+                    $this->updateMailAndSmsStatus($result->id,2);
+                    // 'message  send';
+                }
+    }
+    public function updateMailAndSmsStatus($resultId,$type)
+    {
+        // type 1 mean for email and 2 mean for sms
+      if( $result=Result::find($resultId)){
+          ($type==1)?$result->is_send_email=1:$result->is_send_sms=1;
+          $result->save();
+      }
+    }
 }

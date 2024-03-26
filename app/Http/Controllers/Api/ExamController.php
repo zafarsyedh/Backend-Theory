@@ -6,15 +6,21 @@ use App\Events\CourseEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
+use App\Models\Configuration;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
+use App\Models\Result;
+use App\Models\Student;
 use App\Models\System;
 use App\Models\User;
+use App\Notifications\SendMailandSmsNotification;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
 use App\Repo\Interfaces\SystemInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Http;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Carbon\Carbon;
 
@@ -291,7 +297,7 @@ class ExamController extends Controller
     public function restartExam($id){
         try {
 
-              $isContinue= $this->exam->checkExamStartOrNot($id);
+            $isContinue= $this->exam->checkExamStartOrNot($id);
             if($isContinue!==1){
                 return  $response= Helper::error('student has been started exam',[]);
             }
@@ -433,6 +439,105 @@ class ExamController extends Controller
 
         } catch (\Exception $e) {
             return Helper::error($e->getMessage(),$e);
+        }
+    }
+
+    //sendResultEmailAndSms
+    public function sendResultEmailAndSms(Request $request){
+//        try {
+
+
+            $user = User::find(3);
+            $trafficId=16109070;
+
+
+
+            $config= Configuration::latest('id')->first();
+            $emailTemplate=$config->email_template;
+            $smsTemplate=$config->sms_template;
+
+            $student= Student::where('traffic_id',16109070)->first();
+            $resultId= Result::where('exam_id',1)->first();
+
+            $type=1;
+
+            if($result=Result::find($resultId->id)){
+                ($type==1)?$result->is_send_email=1:$result->is_send_sms=1;
+                $result->save();
+            }
+
+            $data = [
+                'std_name' => $student->std_name,
+                'exam_status' =>($exam AND $exam->status==1)?'Pass':'Fail'
+            ];
+
+
+            foreach ($data as $key => $value) {
+                $placeholder = '{{' . $key . '}}';
+                $emailTemplate = str_replace($placeholder, $value, $emailTemplate);
+                $smsTemplate = str_replace($placeholder, $value, $smsTemplate);
+            }
+
+            $mailData = [
+                'email' =>$emailTemplate,
+            ];
+
+            $user->notify(new SendMailandSmsNotification($mailData,$trafficId));
+
+
+
+
+            dd('Done');
+
+//        } catch (\Exception $e) {
+//            return Helper::error($e->getMessage(),$e);
+//        }
+    }
+
+
+    //storeResultPdf
+    public function storeResultPdf(Request $request)
+    {
+        try {
+
+            $path = 'results/';
+            $trafficId = $request->trafficId;
+            $examId = $request->examid;
+
+
+            if ($request->hasFile('pdf')) {
+                $pdf = $request->file('pdf');
+                $fileName = $path . $trafficId . '-result' . '.pdf'; // Append .pdf extension
+                $pdf->move(public_path('storage/uploads/' . $path), $fileName);
+
+                if ($result = Result::where('exam_id', $request->examid)->latest('id')->first()) {
+                    $result->pdf_file = $fileName;
+                    $result->save();
+
+                $this->sendSmsAndEmail($trafficId,$examId);
+
+                    return response()->json(['message' => 'PDF uploaded successfully']);
+                }
+                return response()->json(['message' => 'No PDF file uploaded'], 400);
+            }
+
+        } catch (\Exception $e) {
+            return Helper::error($e->getMessage(), $e);
+        }
+    }
+
+    public function sendSmsAndEmail($trafficId,$examId)
+    {
+        try {
+
+            $result = Result::where('exam_id',$examId)->first();
+            $student = Student::where('traffic_id', $trafficId)->first();
+
+            $this->exam->sendEmail($trafficId,$examId,$result,$student);
+            $this->exam->sendSms($student,$result);
+
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 }
