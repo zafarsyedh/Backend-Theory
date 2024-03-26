@@ -58,6 +58,8 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
     Route::get('get-data-question/{id}',[QuestionController::class,'getDataQuestion']);
     Route::get('get-all-questions',[QuestionController::class,'index']);
     Route::delete('delete-question/{id}',[QuestionController::class,'deleteQuestion']);
+    Route::post('/remove-q-asset',[QuestionController::class,'removeQAsset']);
+
 
     Route::get('get-translation-question/{id}',[QuestionController::class,'getTranslationQuestion']);
     Route::post('save-question-translation',[QuestionController::class,'saveQuestionTranslation']);
