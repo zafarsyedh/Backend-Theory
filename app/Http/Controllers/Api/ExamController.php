@@ -301,7 +301,11 @@ class ExamController extends Controller
             if($isContinue!==1){
                 return  $response= Helper::error('student has been started exam',[]);
             }
-            $exam=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction','audioLanguage','system')->find($id);
+            $examSchedule=ExamSchedule::find($id);
+            $qry=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction');
+            ($examSchedule)?$qry=$qry->with('audioLanguage'):'';
+            $exam=$qry->with('system')->find($id);
+
             if($exam->exam_type==1){
                 $examDuration=$exam->course->courseConfig->total_duration;;
             }else{
@@ -310,6 +314,7 @@ class ExamController extends Controller
 
             $this->system->updateSystemStatus($exam->system_id,3);
             $userInfo= User::with('branch')->find($exam->invg_id);
+
             $eventStdData = [
 
                 'examId' =>$id,
@@ -322,8 +327,8 @@ class ExamController extends Controller
                 'courseName' =>$exam->course->short_name,
                 'qLangShortName' =>$exam->qLanguage->lang_short,
                 'qLangFullName' =>$exam->qLanguage->lang,
-                'audioLangShortName' =>$exam->audioLanguage->lang_short,
-                'audioLangFullName' =>$exam->audioLanguage->lang,
+                'audioLangShortName' =>($exam AND $exam->audioLanguage)?$exam->audioLanguage->lang_short:'-',
+                'audioLangFullName' =>($exam AND $exam->audioLanguage)?$exam->audioLanguage->lang:'-',
                 'examType' =>$exam->exam_type,
                 'direction' =>($exam->qLanguage->direction == 2)? 'ltr':'rtl',
                 'systemIp' =>$exam->system->system_ip,
