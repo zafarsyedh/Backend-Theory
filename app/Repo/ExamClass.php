@@ -177,7 +177,6 @@ class ExamClass implements Interfaces\ExamInterface
             $validator = Validator::make($request->all(), [
                 'exam_type' => 'required',
                 'q_lang' => 'required',
-                'audio_lang' => 'required',
                 'system_id' => 'required',
 
             ]);
