@@ -36,7 +36,6 @@ class StudentClass implements Interfaces\StudentInterface
             $validator = Validator::make($request->all(), [
                 'exam_type' => 'required',
                 'q_lang' => 'required',
-                'audio_lang' => 'required',
                 'system_id' => 'required',
                 'stdData' => 'required',
             ]);
@@ -117,7 +116,7 @@ class StudentClass implements Interfaces\StudentInterface
                 'qLangShortName' =>$request->q_lang,
                 'qLangFullName' =>$qLangInfo->lang,
                 'audioLangShortName' =>$request->audio_lang,
-                'audioLangFullName' =>$audioLangInfo->lang,
+                'audioLangFullName' =>($audioLangInfo)?$audioLangInfo->lang:'',
                 'examType' =>$request->exam_type,
                 'direction' =>($qLangInfo->direction == 2)? 'ltr':'rtl',
                 'systemIp' =>$systemInfo->system_ip,
