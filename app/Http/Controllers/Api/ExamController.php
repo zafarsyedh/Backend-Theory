@@ -106,23 +106,30 @@ class ExamController extends Controller
 
                     if($row->question->correct_opt=='a'){
                         $correctOpt=$row->question->questionTranslations[0]->opt_a;
+                        ($row->question->opt_a_image!=1)?$correctImage=$row->question->opt_a_image:$correctImage=null;
                     }
                     if($row->question->correct_opt=='b'){
                         $correctOpt=$row->question->questionTranslations[0]->opt_b;
+                        ($row->question->opt_b_image!=1)?$correctImage=$row->question->opt_b_image:$correctImage=null;
                     }
                     if($row->question->correct_opt=='c'){
                         $correctOpt=$row->question->questionTranslations[0]->opt_c;
+                        ($row->question->opt_c_image!=1)?$correctImage=$row->question->opt_c_image:$correctImage=null;
                     }
 
+                    //Choosed Options
                     if($row->choosed_option=='a'){
                         $choosedOpt=$row->question->questionTranslations[0]->opt_a;
+                        ($row->question->opt_a_image!=1)?$choosedImage=$row->question->opt_a_image:$choosedImage=null;
                     }
 
                     if($row->choosed_option=='b'){
                         $choosedOpt=$row->question->questionTranslations[0]->opt_b;
+                        ($row->question->opt_b_image!=1)?$choosedImage=$row->question->opt_b_image:$choosedImage=null;
                     }
                     if($row->choosed_option=='c'){
                         $choosedOpt=$row->question->questionTranslations[0]->opt_c;
+                        ($row->question->opt_c_image!=1)?$choosedImage=$row->question->opt_c_image:$choosedImage=null;
                     }
 
                     if($row->is_answered==1){
@@ -142,7 +149,9 @@ class ExamController extends Controller
                         'id' =>  $row->id,
                         'question' =>  $row->question->questionTranslations[0]->q_title,
                         'choosed_ans' => $choosedOpt,
+                        'choosedImage' => $choosedImage,
                         'correct_ans' => $correctOpt,
+                        'correctImage' => $correctImage,
                         'q_status' => $qStatus,
 
                     );
@@ -176,6 +185,7 @@ class ExamController extends Controller
     public function getPracticeResult(){
 
         try{
+
             $response=$this->exam->getPracticeResult();
             if($response['status']) {
                 $resData = collect([]);
