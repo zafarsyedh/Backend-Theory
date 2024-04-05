@@ -374,13 +374,13 @@ protected $qAudioname='';
             else{
                 //1 specific,2 common,3 video
                 if($request->questionType==1){
-                    $allQuestion=$this->getSpecificQuestion($courseId,$qLang,'');
+                    $allQuestion=$this->getSpecificQuestion($courseId,$qLang,$courseInfo->courseConfig->p_specific_question);
                 }
                 if($request->questionType==2){
-                     $allQuestion=$this->getCommonQuestion($qLang,'');
+                     $allQuestion=$this->getCommonQuestion($qLang,$courseInfo->courseConfig->p_common_question);
                 }
                 if($request->questionType==3){
-                     $allQuestion=$this->getVideoQuestion($courseId,'');
+                     $allQuestion=$this->getVideoQuestion($courseId,$courseInfo->courseConfig->p_video_question);
                 }
             }
 

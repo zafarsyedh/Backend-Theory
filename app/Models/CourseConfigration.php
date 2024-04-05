@@ -10,7 +10,8 @@ class CourseConfigration extends Model
     use HasFactory;
 
     protected $fillable = [
-        'course_id', 'specific_question', 'common_question', 'video_question', 'require_type', 'specific_require', 'common_require', 'video_require', 'total_require', 'total_duration', 'video_duration','practice_duration'
+        'course_id', 'specific_question', 'common_question', 'video_question', 'require_type', 'specific_require', 'common_require', 'video_require',
+        'total_require', 'total_duration', 'video_duration','practice_duration','p_specific_question','p_common_question','p_video_question'
     ];
 
     public function course()
