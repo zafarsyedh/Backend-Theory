@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
+use App\Models\Room;
+use App\Models\System;
 use App\Repo\Interfaces\BranchInterface;
 use App\Repo\Interfaces\RoomInterface;
 use Illuminate\Http\Request;
@@ -66,13 +68,18 @@ class RoomController extends Controller
 
     public function deleteRoom( $id){
         try {
-            $response = $this->room->deleteRoom($id);
-            if($response['status']){
-                $response= Helper::success($response['data'],$response['message']);
-            }else{
-                $response= Helper::error($response['message'],$response['data']);
+            if($system=System::where('room_id',$id)->count()==0) {
+                $response = $this->room->deleteRoom($id);
+                if ($response['status']) {
+                    $response = Helper::success($response['data'], $response['message']);
+                } else {
+                    $response = Helper::error($response['message'], $response['data']);
+                }
+                return $response;
             }
-            return $response;
+            else{
+                return Helper::error($system.'systems associated with this room',[]);
+            }
         } catch (\Exception $e) {
             return Helper::error($e->getMessage(),$e);
         }

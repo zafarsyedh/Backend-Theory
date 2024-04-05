@@ -87,12 +87,10 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
     Route::get('get-all-permissions/{id}',[RoleController::class,'getAllPermissions']);
     Route::post('save-role-permissions',[RoleController::class,'saveRolePermissions']);
-    Route::get('get-all-results',[ExamController::class,'getAllResults']);
-    Route::get('get-practice-result',[ExamController::class,'getPracticeResult']);
+
 
     // Exam
     Route::post('get-result-detail',[ExamController::class,'getResults']);
-    Route::get('get-student-result',[ExamController::class,'getStudentResult']);
     Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
     Route::any('exit-exam/{id}',[ExamController::class,'exitExam']);
     Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
@@ -100,13 +98,13 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
     Route::post('store-schedule-exam',[StudentController::class,'saveScheduleExam']);
     Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
     Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
-    Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
-
-
-    Route::any('send-sms',[ExamController::class,'sendResultEmailAndSms']);
-    Route::any('store-result-pdf',[ExamController::class,'storeResultPdf']);
 
 //});
+
+Route::get('get-all-results',[ExamController::class,'getAllResults']);
+Route::get('get-practice-result',[ExamController::class,'getPracticeResult']);
+Route::get('get-student-result',[ExamController::class,'getStudentResult']);
+
 
        Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);
         // Student Area
@@ -114,8 +112,12 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
         Route::post('save-exam-questions',[ExamController::class,'saveQuestionsForExam']);
         Route::post('save-practice-questions',[ExamController::class,'savePracticeQuestions']);
         Route::post('exam-system-status-update',[ExamController::class,'examSystemStatusUpdate']);
+
         Route::get('system-list',[SystemController::class,'systemList']);
         Route::get('get-bdc-std',[StudentController::class,'getBdcStd']);
+        Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
+        Route::any('send-sms',[ExamController::class,'sendResultEmailAndSms']);
+        Route::any('store-result-pdf',[ExamController::class,'storeResultPdf']);
 
 
 

@@ -211,6 +211,9 @@ class CourseClass implements CourseInterface
                         'total_duration' => $request->total_duration,
                         'practice_duration' => $request->practice_duration,
                         'video_duration' => $request->video_duration,
+                        'p_specific_question' => $request->p_specific_question,
+                        'p_common_question' => $request->p_common_question,
+                        'p_video_question' => $request->p_video_question,
                     ]
                 );
 
