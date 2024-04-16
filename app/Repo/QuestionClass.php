@@ -161,13 +161,13 @@ protected $qAudioname='';
             $qTranslation->q_id = $question->id;
             $qTranslation->lang_id = $request->lang_id;
             $qTranslation->q_title = $request->q_title;
-            $qTranslation->opt_a = $request->opt_a;
-            $qTranslation->opt_b = $request->opt_b;
-            $qTranslation->opt_c = $request->opt_c;
-            ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : '';
-            ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : '';
-            ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : '';
-            ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : '';
+            $qTranslation->opt_a = $request->opt_a!=null ? $request->opt_a :" ";
+            $qTranslation->opt_b = $request->opt_b!=null ? $request->opt_b :" ";
+            $qTranslation->opt_c = $request->opt_c!=null ? $request->opt_c :" ";
+            ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : ' ';
+            ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : ' ';
+            ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : ' ';
+            ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : ' ';
             $qTranslation->lang = 'en';
             $qTranslation->save();
 
@@ -289,11 +289,14 @@ protected $qAudioname='';
     public function removeQAsset($request)
     {
         try {
-            if($request->assetType=='q-image' OR $request->assetType=='opt-a-image' OR $request->assetType=='opt-b-image' OR $request->assetType=='opt-c-image'){
+            if($request->assetType=='q-image'  OR $request->assetType=='q_video' OR $request->assetType=='opt-a-image' OR $request->assetType=='opt-b-image' OR $request->assetType=='opt-c-image'){
                 $question=Question::find($request->id);
 
                 if($request->assetType=='q-image'){
                     $question->q_image=null;
+                }
+                if($request->assetType=='q_video'){
+                    $question->q_video=null;
                 }
                 if($request->assetType=='opt-a-image'){
                     $question->opt_a_image=null;

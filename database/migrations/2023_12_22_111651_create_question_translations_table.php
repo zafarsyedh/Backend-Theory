@@ -20,9 +20,9 @@ class CreateQuestionTranslationsTable extends Migration
             $table->unsignedBigInteger('lang_id');
             $table->foreign('lang_id')->references('id')->on('languages')->onDelete('restrict')->onUpdate('cascade');
             $table->string('q_title');
-            $table->string('opt_a')->default()->nullable();
-            $table->string('opt_b')->default()->nullable();
-            $table->string('opt_c')->default()->nullable();
+            $table->string('opt_a')->default('')->nullable();
+            $table->string('opt_b')->default('')->nullable();
+            $table->string('opt_c')->default('')->nullable();
             $table->string('opt_a_image')->default()->nullable();
             $table->string('opt_b_image')->default()->nullable();
             $table->string('opt_c_image')->default()->nullable();
