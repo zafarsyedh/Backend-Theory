@@ -340,7 +340,6 @@ protected $qAudioname='';
             $courseId=$request->course_id;
             $qLang=$request->q_lang;
             $audioLang=$request->audio_lang;
-
             $attemptId =$request->attemptId;
 
 
@@ -358,18 +357,18 @@ protected $qAudioname='';
             //1 mean for Exam and 2 mean for practice
             if($request->exam_type==1){
 
-                if($courseInfo->courseConfig->require_type==1){
+                //if($courseInfo->courseConfig->require_type==1){
 
                     $specificQ=$this->getSpecificQuestion($courseId,$qLang,$courseInfo->courseConfig->specific_question);
                     $commonQ=$this->getCommonQuestion($qLang,$courseInfo->courseConfig->common_question);
                     $videoQ=$this->getVideoQuestion($courseId,$courseInfo->courseConfig->video_question);
 
                     $allQuestion = $specificQ->merge($commonQ)->merge($videoQ);
-                }
-                else{
-                    $totalQuestion=$courseInfo->courseConfig->specific_question + $courseInfo->courseConfig->common_question + $courseInfo->courseConfig->video_question;
-                    $allQuestion=$this->getAllCourseWiseRandomQuestion($courseId,$qLang,$totalQuestion);
-                }
+//                }
+//                else{
+//                    $totalQuestion=$courseInfo->courseConfig->specific_question + $courseInfo->courseConfig->common_question + $courseInfo->courseConfig->video_question;
+//                    $allQuestion=$this->getAllCourseWiseRandomQuestion($courseId,$qLang,$totalQuestion);
+//                }
             }
             else{
                 //1 specific,2 common,3 video
