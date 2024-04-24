@@ -102,6 +102,7 @@ class ExamController extends Controller
                 $resData = collect([]);
                 $correctOpt='';
                 $choosedOpt='';
+                $choosedImage=null;
                 foreach ($response as $row){
 
                     if($row->question->correct_opt=='a'){
@@ -116,6 +117,7 @@ class ExamController extends Controller
                         $correctOpt=$row->question->questionTranslations[0]->opt_c;
                         ($row->question->opt_c_image!=1)?$correctImage=$row->question->opt_c_image:$correctImage=null;
                     }
+
 
                     //Choosed Options
                     if($row->choosed_option=='a'){
