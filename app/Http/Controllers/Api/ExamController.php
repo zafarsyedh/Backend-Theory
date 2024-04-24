@@ -408,7 +408,7 @@ class ExamController extends Controller
 
                 return Helper::success($array,'Result list');
             }else{
-                return Helper::error('Exam not found',[]);
+                return Helper::error('Result not found',[]);
             }
 
         } catch (\Exception $e) {

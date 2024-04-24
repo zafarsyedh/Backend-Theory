@@ -41,16 +41,11 @@ class ExamClass implements Interfaces\ExamInterface
                     $examQ->is_correct_ans = ($q['correctAns'] == $q['selectedValue']) ? 1 : 0;
                     $examQ->is_answered = 1;
                     $examQ->save();
-
                     }
-
                 }
-
 
                 $startDate = Carbon::parse($request->createdAt);
                  $endDate = Carbon::now();
-
-
 
                 $data=[
                     'exam_id'=>$request->exam_id,
@@ -61,6 +56,32 @@ class ExamClass implements Interfaces\ExamInterface
                 $this->createResult($data);
                $this->updateAttemptStatus($request->examAttemptId);
                 $this->updateExamScheduleStatus($request->exam_id,3);
+            }else{
+              $solvedQuestion= QuestionSolved::where('attempt_id',$request->examAttemptId) ->get();
+              if($solvedQuestion->count() > 0){
+
+                  $startDate = Carbon::parse($request->createdAt);
+                  $endDate = Carbon::now();
+
+                  foreach ($solvedQuestion as $solveQ) {
+
+                      $examQ = QuestionSolved::find($solveQ->id);
+                      $examQ->choosed_option = null;
+                      $examQ->is_correct_ans =0;
+                      $examQ->is_answered =0;
+                      $examQ->save();
+                  }
+
+                  $data=[
+                      'exam_id'=>$request->exam_id,
+                      'totalCorrectAns'=>0,
+                      'test_duration'=> $startDate->diffInMinutes($endDate),
+                  ];
+
+                  $this->createResult($data);
+                  $this->updateAttemptStatus($request->examAttemptId);
+                  $this->updateExamScheduleStatus($request->exam_id,3);
+              }
             }
 
             DB::commit();
