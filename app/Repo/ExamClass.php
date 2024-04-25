@@ -47,10 +47,15 @@ class ExamClass implements Interfaces\ExamInterface
                 $startDate = Carbon::parse($request->createdAt);
                  $endDate = Carbon::now();
 
+
+                $diff = $startDate->diff($endDate);
+               // $mainDiff= $diff->h.':'. $diff->i .':'. $diff->s;
+                $mainDiff= $diff->i .':'. $diff->s;
+
                 $data=[
                     'exam_id'=>$request->exam_id,
                     'totalCorrectAns'=>$correctAns,
-                    'test_duration'=> $startDate->diffInMinutes($endDate),
+                    'test_duration'=> $mainDiff,
                 ];
 
                 $this->createResult($data);
@@ -62,6 +67,10 @@ class ExamClass implements Interfaces\ExamInterface
 
                   $startDate = Carbon::parse($request->createdAt);
                   $endDate = Carbon::now();
+
+
+                  $diff = $startDate->diff($endDate);
+                  $mainDiff= $diff->i .':'. $diff->s;
 
                   foreach ($solvedQuestion as $solveQ) {
 
@@ -75,7 +84,7 @@ class ExamClass implements Interfaces\ExamInterface
                   $data=[
                       'exam_id'=>$request->exam_id,
                       'totalCorrectAns'=>0,
-                      'test_duration'=> $startDate->diffInMinutes($endDate),
+                      'test_duration'=> $mainDiff,
                   ];
 
                   $this->createResult($data);
@@ -351,7 +360,7 @@ class ExamClass implements Interfaces\ExamInterface
                 [
                     'exam_id' =>$data['exam_id'],
                     'total_duration' =>$courseConfiguration->total_duration,
-                    'test_duration' =>$courseConfiguration->total_duration - $data['test_duration'],
+                    'test_duration' =>$data['test_duration'],
                     'total_question' => $courseConfiguration->specific_question +  $courseConfiguration->common_question + $courseConfiguration->video_question,
                     'correct_ans' => $data['totalCorrectAns'],
                     'correct_ans_required'=>$totalRequireQuestion,
