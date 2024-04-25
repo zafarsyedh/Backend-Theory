@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Exports\UsersExport;
 use App\Imports\UsersImport;
@@ -36,5 +37,22 @@ class UserController extends Controller
         Excel::import(new UsersImport,request()->file('file'));
 
         return back();
+    }
+
+    public  function testDate()
+    {
+
+
+
+
+        $date = '2024-04-25 12:50:13';
+        $startDate = Carbon::parse($date);
+        $endDate = Carbon::now();
+        $diff = $startDate->diff($endDate);
+
+        $mainDiff= $diff->h.':'. $diff->i .':'. $diff->s;
+        return $mainDiff;
+        return "Difference: $hours hours, $minutes minutes, $seconds seconds";
+
     }
 }

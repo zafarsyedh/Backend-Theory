@@ -32,3 +32,4 @@ Route::controller(UserController::class)->group(function(){
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('test-date', [UserController::class, 'testDate']);
