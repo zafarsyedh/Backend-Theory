@@ -372,7 +372,6 @@ class ExamController extends Controller
             if($res){
 
                 $questions= $this->exam->getSolvedQuestionAccordingAttempt($res->attempt->id);
-
                 $resData = collect([]);
 
                 $totalCorrectAns=0;
@@ -531,6 +530,8 @@ class ExamController extends Controller
                     $result->pdf_file = $fileName;
                     $result->save();
 
+
+
                 $this->sendSmsAndEmail($trafficId,$examId);
 
                     return response()->json(['message' => 'PDF uploaded successfully']);
@@ -550,8 +551,15 @@ class ExamController extends Controller
             $result = Result::where('exam_id',$examId)->first();
             $student = Student::where('traffic_id', $trafficId)->first();
 
-            $this->exam->sendEmail($trafficId,$examId,$result,$student);
-            $this->exam->sendSms($student,$result);
+
+            $configuration=Configuration::latest('id')->first();
+            if($configuration AND $configuration->enable_email==1){
+                $this->exam->sendEmail($trafficId,$examId,$result,$student);
+            }
+            if($configuration AND $configuration->enable_sms==1){
+                $this->exam->sendSms($student,$result);
+            }
+
 
         } catch (\Exception $e) {
             throw $e;
