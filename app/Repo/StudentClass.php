@@ -103,6 +103,13 @@ class StudentClass implements Interfaces\StudentInterface
             $exam=ExamSchedule::where('std_id',$student->id)->latest('id')->first();
             $userInfo= User::with('branch')->find($request->invgId);
 
+
+            if($exam->exam_type==1){
+                $examDuration=$exam->course->courseConfig->total_duration;;
+            }else{
+                $examDuration=$exam->course->courseConfig->practice_duration;
+            }
+
             $eventStdData = [
 
                 'examId' =>$exam->id,
@@ -110,7 +117,7 @@ class StudentClass implements Interfaces\StudentInterface
                 'stdName' =>$student->std_name,
                 'trafficId' =>$student->traffic_id,
                 'courseId' =>$courseInfo->id,
-                'examDuration' =>$courseInfo->courseConfig->total_duration,
+                'examDuration' =>$examDuration,//$courseInfo->courseConfig->total_duration,
                 'practiceDuration' =>$courseInfo->courseConfig->practice_duration,
                 'courseName' =>$courseInfo->short_name,
                 'qLangShortName' =>$request->q_lang,

@@ -389,7 +389,7 @@ class ExamClass implements Interfaces\ExamInterface
     public function checkPracticeType($request)
     {
         try {
-            $attemptId=0;
+            $attemptId=404;
             $qry = Attempt::query();
             $qry=$qry->where('std_id',$request->std_id);
             $qry=$qry->where('practice_type',$request->practice_type);
