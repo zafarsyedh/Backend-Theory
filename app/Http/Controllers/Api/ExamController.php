@@ -263,7 +263,7 @@ class ExamController extends Controller
                         'exam_type' =>$row->exam_type==1?'Exam':'Practice',
                         'system' =>$row->system->title,
                         'exam_start_from' =>$examStartFrom,
-                        'created_at' =>$row->created_at,
+                        'created_at' =>date('d M,Y H:i:s',strtotime($row->created_at)),
                         'exam_status' =>$row->exam_status,
                     );
                     $resData->push($topicArray);
