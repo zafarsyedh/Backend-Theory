@@ -169,10 +169,12 @@ class ExamController extends Controller
     }
 
 
-    public function getAllResults(){
+    public function getAllResults(Request $request){
 
         try{
-            $response=$this->exam->getAllResultsList();
+
+
+            $response=$this->exam->getAllResultsList($request);
             if($response['status']){
                 return Helper::success($response['data'],'Results list');
             }else{
