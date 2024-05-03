@@ -138,11 +138,13 @@ class ExamClass implements Interfaces\ExamInterface
         }
     }
 
-    public function  getAllResultsList()
+    public function  getAllResultsList($request)
     {
         try {
             $qry=Result::query();
             $qry=$qry->with('exam.attempt:id,exam_id','exam.course:id,short_name','exam.student:id,traffic_id,std_name');
+            $qry=$qry->whereDate('created_at', '>=',date('Y-m-d',strtotime($request->start_date)));
+            $qry=$qry->whereDate('created_at', '<=',date('Y-m-d',strtotime($request->end_date)));
             $examSchedule=$qry->get();
 
             return Helper::successWithData($examSchedule,'record found');
@@ -393,10 +395,10 @@ class ExamClass implements Interfaces\ExamInterface
             $qry = Attempt::query();
             $qry=$qry->where('std_id',$request->std_id);
             $qry=$qry->where('practice_type',$request->practice_type);
-            $qry=$qry->where('status',0);
+//            $qry=$qry->where('status',0);
             $qry=$qry->latest('id')->first();
 
-            if($qry){
+            if($qry->status==0){
                 $attemptId= $qry->id;
             }
             return $attemptId;
