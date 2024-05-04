@@ -163,11 +163,11 @@ class CourseClass implements CourseInterface
                     ],
 
                     [
-                        'full_name' =>$request['full_name'][$c],
+                        'full_name' =>$request['full_name']?$request['full_name'][$c]:"",
                         'course_id' => $request->course_id,
-                        'lang' => $request['lang'][$c],
-                        'instructions' => $request['instructions'][$c],
-                        'video_link' => $request['video_link'][$c],
+                        'lang' => $request['lang']?$request['lang'][$c]:"",
+                        'instructions' => $request['instructions']? $request['instructions'][$c]:"",
+                        'video_link' => $request['video_link']?$request['video_link'][$c]:"",
                     ]
                 );
 
@@ -210,6 +210,7 @@ class CourseClass implements CourseInterface
                         'total_require' => $request->total_require,
                         'total_duration' => $request->total_duration,
                         'practice_duration' => $request->practice_duration,
+                        'practice_persontage' => $request->practice_persontage,
                         'video_duration' => $request->video_duration,
                         'p_specific_question' => $request->p_specific_question,
                         'p_common_question' => $request->p_common_question,
