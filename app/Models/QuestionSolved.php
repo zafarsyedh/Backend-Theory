@@ -12,7 +12,7 @@ class QuestionSolved extends Model
 
     public function question()
     {
-        return $this->belongsTo(Question::class,  'q_id','id')->select(['id','q_is_video','correct_opt','q_image','q_video','opt_a_image','opt_b_image','opt_c_image']);
+        return $this->belongsTo(Question::class,  'q_id','id')->select(['id','q_is_video','correct_opt','q_image','q_video','opt_a_image','opt_b_image','opt_c_image','q_type']);
     }
 
 }

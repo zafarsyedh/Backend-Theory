@@ -71,6 +71,22 @@
       0 => 'Termwind\\Laravel\\TermwindServiceProvider',
     ),
   ),
+  'nuwave/lighthouse' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Nuwave\\Lighthouse\\LighthouseServiceProvider',
+      1 => 'Nuwave\\Lighthouse\\Async\\AsyncServiceProvider',
+      2 => 'Nuwave\\Lighthouse\\Auth\\AuthServiceProvider',
+      3 => 'Nuwave\\Lighthouse\\Cache\\CacheServiceProvider',
+      4 => 'Nuwave\\Lighthouse\\GlobalId\\GlobalIdServiceProvider',
+      5 => 'Nuwave\\Lighthouse\\OrderBy\\OrderByServiceProvider',
+      6 => 'Nuwave\\Lighthouse\\Pagination\\PaginationServiceProvider',
+      7 => 'Nuwave\\Lighthouse\\SoftDeletes\\SoftDeletesServiceProvider',
+      8 => 'Nuwave\\Lighthouse\\Testing\\TestingServiceProvider',
+      9 => 'Nuwave\\Lighthouse\\Validation\\ValidationServiceProvider',
+    ),
+  ),
   'spatie/laravel-ignition' => 
   array (
     'providers' => 

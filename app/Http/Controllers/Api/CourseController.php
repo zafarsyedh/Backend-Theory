@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
+use App\Models\Question;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\LanguageInterface;
 use App\Repo\Interfaces\QuestionInterface;
@@ -25,8 +26,6 @@ class CourseController extends Controller
             $response['courses']=$this->course->getAllCourses();
             if($response['courses']['status']){
                 $response['langs']=$this->language->getAllLanguages();
-                $response['nonVidCommonQ']=count($this->question->getTypeWiseAllQuestion(1,0));
-                $response['vidCommonQ']=count($this->question->getTypeWiseAllQuestion(1,1));
                 $response= Helper::success($response,$response['courses']['message']);
             }else{
                 $response= Helper::error($response['courses']['message'],$response['courses']['data']);
