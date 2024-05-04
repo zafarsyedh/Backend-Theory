@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\CourseConfigration;
 use App\Models\CourseTranslation;
 use App\Models\Language;
+use App\Models\Question;
 use App\Repo\Interfaces\CourseInterface;
 
 use Illuminate\Support\Facades\DB;
@@ -21,33 +22,26 @@ class CourseClass implements CourseInterface
     {
         try {
 
+            $commonQ=Question::where('q_type',1)->count();
             $qry = Course::with('courseTranslation');
+              $qry=$qry->withCount(['courseQuestions as specificQuestion' => function ($query) {
+                    $query->whereHas('question', function ($q) {
+                        $q->where('q_is_video',0)->where('q_type',2);
 
-               $qry=$qry->with(['courseQuestions' => function ($query) {
-                    $query->whereHas('question', function ($q) {
-                        $q->where('q_is_video', 0);
-                    });
-                }, 'courseQuestions.question' => function ($query) {
-                    $query->where('q_is_video', 0);
-                }]);
-              $qry=$qry->withCount(['courseQuestions as nonVideoQuestion' => function ($query) {
-                    $query->whereHas('question', function ($q) {
-                        $q->where('q_is_video', 0);
                     });
                 }]);
-              $qry=$qry->with(['courseQuestions' => function ($query) {
-                  $query->whereHas('question', function ($q) {
-                      $q->where('q_is_video', 1);
-                  });
-              }, 'courseQuestions.question' => function ($query) {
-                  $query->where('q_is_video', 1);
-              }]);
-              $qry=$qry->withCount(['courseQuestions as videoQuestion' => function ($query) {
-                  $query->whereHas('question', function ($q) {
-                      $q->where('q_is_video', 1);
-                  });
-              }]);
+
+            $qry=$qry->withCount(['courseQuestions as videoQuestion' => function ($query) {
+                $query->whereHas('question', function ($q) {
+                    $q->where('q_is_video',1);
+
+                });
+            }]);
               $qry=$qry->get();
+
+            foreach ($qry as $course) {
+                $course->commonQuestionCount = $commonQ;
+            }
 
             return  Helper::successWithData($qry,'Record found');
         }catch (\Exception $e) {

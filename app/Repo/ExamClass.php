@@ -159,7 +159,7 @@ class ExamClass implements Interfaces\ExamInterface
     {
         try {
             $qry=Attempt::query();
-            $qry=$qry->with('student.activeCourse.course','solvedQuestion');
+            $qry=$qry->with('student.activeCourse.course','solvedQuestion.question');
             $qry=$qry->where('exam_type',2);
             $examSchedule=$qry->get();
             return Helper::successWithData($examSchedule,'record found');
