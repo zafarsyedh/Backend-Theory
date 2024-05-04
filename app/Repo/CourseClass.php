@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\TextUI\Help;
 
 class CourseClass implements CourseInterface
 {
@@ -56,8 +57,12 @@ class CourseClass implements CourseInterface
     public function getCourseConfig($id)
     {
         try {
-            $qry=Course::with('courseConfig')->find($id);
-            return  Helper::successWithData($qry,'Record found');
+            if($qry=Course::with('courseConfig')->find($id)){
+                return  Helper::successWithData($qry,'Record found');
+            }else{
+                return Helper::error('Invalid course configuration',[]);
+            }
+
         }catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(),$e);
         }
