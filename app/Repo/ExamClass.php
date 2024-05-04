@@ -398,7 +398,7 @@ class ExamClass implements Interfaces\ExamInterface
 //            $qry=$qry->where('status',0);
             $qry=$qry->latest('id')->first();
 
-            if($qry->status==0){
+            if($qry AND $qry->status==0){
                 $attemptId= $qry->id;
             }
             return $attemptId;
