@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
 use App\Models\Result;
+use App\Models\SmsEmailLog;
 use App\Models\Student;
 use App\Models\TopicArea;
 use App\Models\User;
@@ -409,31 +410,23 @@ class ExamClass implements Interfaces\ExamInterface
         }
     }
 
-    public function sendEmail($trafficId,$examId,$result,$student)
+    public function sendEmail($trafficId,$examId,$result,$student,$mailData)
     {
         try {
-
-            $config=new ConfigurationClass();
-            $mailData = [
-                'email' =>$config->getEmailSmsTemplate($student,$result,1),
-            ];
             $student->notify(new SendMailandSmsNotification($mailData,$trafficId));
             $this->updateMailAndSmsStatus($result->id,1);
+
 
         }catch (\Exception $e) {
             throw $e;
         }
     }
 
-    public function sendSms($student,$result)
+    public function sendSms($student,$result,$otpText)
     {
 
                 $contact =$student->mobile_no;
                 $trafficId=$student->traffic_id;
-
-                $config=new ConfigurationClass();
-
-                $otpText =$config->getEmailSmsTemplate($student,$result,2);
 
                 $purpose='Result Notification';
 
@@ -443,11 +436,28 @@ class ExamClass implements Interfaces\ExamInterface
                 }else{
                     $response=Http::get('https://sms.bdc.ae/api/send?api_token='.env('SMS_API_TOKEN').'&traffic_id='.$trafficId.'&phone='.$contact.'&message='.$otpText.'&purpose='.$purpose);
                 }
+
                 $parts = explode(' ', $response);
                 if (count($parts) > 1 && $parts[0] !== 'ERROR:') {
                     $this->updateMailAndSmsStatus($result->id,2);
                     // 'message  send';
                 }
+    }
+
+    public function storeSmsEmailLog($examId,$type,$isSend,$content)
+    {
+        $email = SmsEmailLog::updateOrCreate(
+            [
+                'exam_id' =>$examId,
+                'type' =>$type,
+            ],
+            [
+                'exam_id' =>$examId,
+                'content' =>$content,
+                'type' =>$type,
+                'is_send' =>$isSend,
+            ]
+        );
     }
     public function updateMailAndSmsStatus($resultId,$type)
     {
@@ -456,5 +466,20 @@ class ExamClass implements Interfaces\ExamInterface
           ($type==1)?$result->is_send_email=1:$result->is_send_sms=1;
           $result->save();
       }
+    }
+
+    public function  getLogs($request)
+    {
+        try {
+            $qry=SmsEmailLog::query();
+            $qry=$qry->with('exam.student');
+            $qry=$qry->whereDate('created_at', '>=',date('Y-m-d',strtotime($request->start_date)));
+            $qry=$qry->whereDate('created_at', '<=',date('Y-m-d',strtotime($request->end_date)));
+            $examSchedule=$qry->get();
+            return Helper::successWithData($examSchedule,'record found');
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
+        }
     }
 }

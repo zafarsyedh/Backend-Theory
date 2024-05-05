@@ -20,7 +20,9 @@ interface ExamInterface{
     public function getExamWiseResult($examId);
     public function checkPracticeType($request);
     public function checkExamStartOrNot($id);
-    public function sendEmail($trafficId,$examId,$result,$student);
-    public function sendSms($student,$result);
+    public function sendEmail($trafficId,$examId,$result,$student,$mailData);
+    public function sendSms($student,$result,$otpText);
     public function updateMailAndSmsStatus($resultId,$type);
+    public function storeSmsEmailLog($examId,$type,$isSend,$content);
+    public function getLogs($request);
 }
