@@ -102,7 +102,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 //});
 
 Route::any('get-all-results',[ExamController::class,'getAllResults']);
-Route::get('get-practice-result',[ExamController::class,'getPracticeResult']);
+Route::any('get-practice-result',[ExamController::class,'getPracticeResult']);
 Route::get('get-student-result',[ExamController::class,'getStudentResult']);
 
 

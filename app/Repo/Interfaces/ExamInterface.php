@@ -7,7 +7,7 @@ interface ExamInterface{
     public function savePracticeQuestion($request);
     public function getScheduleExamList($request);
     public function getAllResultsList($request);
-    public function getPracticeResult();
+    public function getPracticeResult($request);
     public function createExam($request,$data);
     public function updateExam($request);
     public function deleteExam($id);
