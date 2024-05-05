@@ -104,6 +104,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 Route::any('get-all-results',[ExamController::class,'getAllResults']);
 Route::any('get-practice-result',[ExamController::class,'getPracticeResult']);
 Route::get('get-student-result',[ExamController::class,'getStudentResult']);
+Route::get('get-sms-logs',[ExamController::class,'getLogs']);
 
 
        Route::get('check-system-ip/{systemIp}',[SystemController::class,'checkSystemIp']);

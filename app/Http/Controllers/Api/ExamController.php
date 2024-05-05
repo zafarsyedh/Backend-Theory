@@ -14,6 +14,7 @@ use App\Models\Student;
 use App\Models\System;
 use App\Models\User;
 use App\Notifications\SendMailandSmsNotification;
+use App\Repo\ConfigurationClass;
 use App\Repo\Interfaces\CourseInterface;
 use App\Repo\Interfaces\ExamInterface;
 use App\Repo\Interfaces\QuestionInterface;
@@ -470,6 +471,37 @@ class ExamController extends Controller
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
     }
+
+    //getLogs
+    public function getLogs(Request $request){
+
+        try{
+
+            $res=$this->exam->getLogs($request);
+            if($res){
+                $resData = collect([]);
+                foreach ($res->get('data') as $row){
+                    $array = array(
+                        'std_name' =>$row->exam->student->std_name,
+                        'traffic_id' =>$row->exam->student->traffic_id,
+                        'created_at' => date('d M,Y',strtotime($row->created_at)),
+                        'content' => $row->content,
+                        'type' => ($row->type==2)?'Email':'SMS',
+                        'isSend' => ($row->type==2)?'No':'Yes',
+                        'exam_id' => $row->exam_id,
+                    );
+                    $resData->push($array);
+                }
+                return Helper::success($resData,'Logs list');
+            }else{
+                return Helper::error('Logs not found',[]);
+            }
+
+        } catch (\Exception $e) {
+            return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
+        }
+    }
+
     //checkPracticeType
     public function checkPracticeType(Request $request){
         try {
@@ -516,54 +548,16 @@ class ExamController extends Controller
 
     //sendResultEmailAndSms
     public function sendResultEmailAndSms(Request $request){
-//        try {
+        $examId=6;
+        $trafficId=16109071;
 
+        $result = Result::where('exam_id',$examId)->first();
+        $student = Student::where('traffic_id', $trafficId)->first();
 
-            $user = User::find(3);
-            $trafficId=16109070;
+        $config=new ConfigurationClass();
+        $otpText =$config->getEmailSmsTemplate($student,$result,2);
 
-
-
-            $config= Configuration::latest('id')->first();
-            $emailTemplate=$config->email_template;
-            $smsTemplate=$config->sms_template;
-
-            $student= Student::where('traffic_id',16109070)->first();
-            $resultId= Result::where('exam_id',1)->first();
-
-            $type=1;
-
-            if($result=Result::find($resultId->id)){
-                ($type==1)?$result->is_send_email=1:$result->is_send_sms=1;
-                $result->save();
-            }
-
-            $data = [
-                'std_name' => $student->std_name,
-                'exam_status' =>($exam AND $exam->status==1)?'Pass':'Fail'
-            ];
-
-
-            foreach ($data as $key => $value) {
-                $placeholder = '{{' . $key . '}}';
-                $emailTemplate = str_replace($placeholder, $value, $emailTemplate);
-                $smsTemplate = str_replace($placeholder, $value, $smsTemplate);
-            }
-
-            $mailData = [
-                'email' =>$emailTemplate,
-            ];
-
-            $user->notify(new SendMailandSmsNotification($mailData,$trafficId));
-
-
-
-
-            dd('Done');
-
-//        } catch (\Exception $e) {
-//            return Helper::error($e->getMessage(),$e);
-//        }
+      return $res=$this->exam->sendSms($student,$result,$otpText);
     }
 
 
@@ -589,7 +583,6 @@ class ExamController extends Controller
 
 
                 $this->sendSmsAndEmail($trafficId,$examId);
-
                     return response()->json(['message' => 'PDF uploaded successfully']);
                 }
                 return response()->json(['message' => 'No PDF file uploaded'], 400);
@@ -609,12 +602,31 @@ class ExamController extends Controller
 
 
             $configuration=Configuration::latest('id')->first();
+
+            $config=new ConfigurationClass();
+            $emailContent=$config->getEmailSmsTemplate($student,$result,1);
+            $mailData = [
+                'email' =>$emailContent,
+            ];
+
+            $isSendEmail=2;
             if($configuration AND $configuration->enable_email==1){
-                $this->exam->sendEmail($trafficId,$examId,$result,$student);
+                $this->exam->sendEmail($trafficId,$examId,$result,$student,$mailData);
+                $isSendEmail=1;
             }
+            //email log
+            $this->exam->storeSmsEmailLog($examId,2,$isSendEmail,$emailContent);
+
+            $config=new ConfigurationClass();
+            $otpText =$config->getEmailSmsTemplate($student,$result,2);
+
+            $isSendSms=2;
             if($configuration AND $configuration->enable_sms==1){
-                $this->exam->sendSms($student,$result);
+                $isSendSms=1;
+                $this->exam->sendSms($student,$result,$otpText);
             }
+            //sms log
+            $this->exam->storeSmsEmailLog($examId,1,$isSendSms,$otpText);
 
 
         } catch (\Exception $e) {

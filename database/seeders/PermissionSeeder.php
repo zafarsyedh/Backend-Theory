@@ -33,6 +33,7 @@ class PermissionSeeder extends Seeder
         $running_exam = PermissionModule::updateOrCreate(['title' => 'Running Exam'], ['title' =>'Running Exam'] );
         $exam_result = PermissionModule::updateOrCreate(['title' => 'Exam Result'], ['title' =>'Exam Result'] );
         $practice_result = PermissionModule::updateOrCreate(['title' => 'Practice Result'], ['title' =>'Practice Result'] );
+        $emailLog = PermissionModule::updateOrCreate(['title' => 'SMS/Email Log'], ['title' =>'SMS/Email Log'] );
 
 
         Permission::upsert([
@@ -119,6 +120,9 @@ class PermissionSeeder extends Seeder
 
             // Practice Result
             ['name' => 'practice-result-view', 'module_id' =>$practice_result->id, 'guard_name' => 'web'],
+
+            // Log
+            ['name' => 'mail-log-view', 'module_id' =>$emailLog->id, 'guard_name' => 'web'],
 
 
         ], ['name']);
