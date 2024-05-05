@@ -186,43 +186,54 @@ class ExamController extends Controller
     }
 
     //getPracticeResult
-    public function getPracticeResult(){
+    public function getPracticeResult(Request $request){
 
         try{
 
-              $response=$this->exam->getPracticeResult();
+              $response=$this->exam->getPracticeResult($request);
             if($response['status']) {
                 $resData = collect([]);
                 foreach ($response['data'] as $row) {
 
+                    $practiceType='';
+                    if($row->practice_type==1){
+                        $practiceType='Specific';
+                    }
+                    if($row->practice_type==2){
+                        $practiceType='Common';
+                    }
+                    if($row->practice_type==3){
+                        $practiceType='Video';
+                    }
+
                     //use 1 for common 2 for specific
 
 
-                      $specificTotalCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-                        $query->where('q_type',2);
-                         })->count();
-
-
-                    $specificSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-                        $query->where('q_type', 2);
-                    })->where('is_answered', 1)->count();
-
-
-                    $commonTotalCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-                        $query->where('q_type',1);
-                        })->count();
-
-                      $commonSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-                        $query->where('q_type', 1);
-                    })->where('is_answered', 1)->count();
-
-                    $videoTotalCount= $row->solvedQuestion()->whereHas('question', function ($query) {
-                        $query->where('q_is_video',1);
-                    })->count();
-
-                    $videoSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-                        $query->where('q_is_video',1);
-                    })->where('is_answered', 1)->count();
+//                      $specificTotalCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+//                        $query->where('q_type',2);
+//                         })->count();
+//
+//
+//                    $specificSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+//                        $query->where('q_type', 2);
+//                    })->where('is_answered', 1)->count();
+//
+//
+//                    $commonTotalCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+//                        $query->where('q_type',1);
+//                        })->count();
+//
+//                      $commonSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+//                        $query->where('q_type', 1);
+//                    })->where('is_answered', 1)->count();
+//
+//                    $videoTotalCount= $row->solvedQuestion()->whereHas('question', function ($query) {
+//                        $query->where('q_is_video',1);
+//                    })->count();
+//
+//                    $videoSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+//                        $query->where('q_is_video',1);
+//                    })->where('is_answered', 1)->count();
 
 
 
@@ -230,6 +241,10 @@ class ExamController extends Controller
                     $totalAnsweredQ=$row->solvedQuestion->where('is_answered',1)->count();
                     $correctQ=$row->solvedQuestion->where('is_correct_ans',1)->count();
                     $wrongQ=$totalAnsweredQ - $correctQ;
+
+                    $totalQ=$row->solvedQuestion->count();
+                    $skipQ=$row->solvedQuestion->where('is_answered',0)->count();
+
                     $array = array(
                         'id' => $row->id,
                         'attempt_id' => $row->id,
@@ -237,16 +252,19 @@ class ExamController extends Controller
                         'std_name' => $row->student->std_name,
                         'traffic_id' => $row->student->traffic_id,
                         'course' => $row->student->activeCourse->course->short_name,
-                        'specificTotal' => $specificTotalCount,
-                        'specificSolved' => $specificSolvedCount,
-                        'commonTotal' => $commonTotalCount,
-                        'commonSolved' => $commonSolvedCount,
-                        'videoTotal' => $videoTotalCount,
-                        'videoSolved' => $videoSolvedCount,
-                        'totalQ' =>$row->solvedQuestion->count(),
+//
+                        'totalQ' =>$totalQ,
+//                        'specificTotal' => $specificTotalCount,
+//                        'specificSolved' => $specificSolvedCount,
+//                        'commonTotal' => $commonTotalCount,
+//                        'commonSolved' => $commonSolvedCount,
+//                        'videoTotal' => $videoTotalCount,
+//                        'videoSolved' => $videoSolvedCount,
                         'correctAns' =>$row->solvedQuestion->where('is_correct_ans',1)->count(),
                         'wrongAns' =>$wrongQ,
-                        'skipAns' => $row->solvedQuestion->where('is_answered',0)->count(),
+                        'skipAns' => $skipQ,
+                        'solvedQ'=>$totalQ - $skipQ,
+                        'practice_type'=>$practiceType
                     );
                     $resData->push($array);
                 }

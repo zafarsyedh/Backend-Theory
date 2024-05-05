@@ -155,12 +155,14 @@ class ExamClass implements Interfaces\ExamInterface
     }
 
     //getPracticeResult
-    public function  getPracticeResult()
+    public function  getPracticeResult($request)
     {
         try {
             $qry=Attempt::query();
             $qry=$qry->with('student.activeCourse.course','solvedQuestion.question');
             $qry=$qry->where('exam_type',2);
+            $qry=$qry->whereDate('created_at', '>=',date('Y-m-d',strtotime($request->start_date)));
+            $qry=$qry->whereDate('created_at', '<=',date('Y-m-d',strtotime($request->end_date)));
             $examSchedule=$qry->get();
             return Helper::successWithData($examSchedule,'record found');
 
