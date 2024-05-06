@@ -417,6 +417,7 @@ protected $qAudioname='';
 
                 //if($courseInfo->courseConfig->require_type==1){
 
+
                     $specificQ=$this->getSpecificQuestion($courseId,$qLang,$courseInfo->courseConfig->specific_question);
                     $commonQ=$this->getCommonQuestion($qLang,$courseInfo->courseConfig->common_question);
                     $videoQ=$this->getVideoQuestion($courseId,$courseInfo->courseConfig->video_question);
@@ -521,7 +522,7 @@ protected $qAudioname='';
                 $query->where('lang',$qLang);
             });
 
-            ($limit)?$qry=$qry->limit($limit):'';
+            ($limit!=null)?$qry=$qry->limit($limit):'';
             $qry=$qry->inRandomOrder();
             return $allQuestion = $qry->get();
         }
@@ -542,7 +543,7 @@ protected $qAudioname='';
             {
                 $query->where('lang',$qLang);
             });
-            ($limit)?$qry=$qry->limit($limit)->inRandomOrder():'';
+            ($limit!=null)?$qry=$qry->limit($limit)->inRandomOrder():'';
             return $allQuestion = $qry->get();
         }
         catch (\Exception $e) {
@@ -592,7 +593,7 @@ protected $qAudioname='';
 
             $qry = $qry->where('q_is_video', 1);
             $qry = $qry->where('status', 1);
-            ($limit)?$qry=$qry->limit($limit):'';
+            ($limit!=null)?$qry=$qry->limit($limit):'';
             return $allQuestion = $qry->get();
         }
         catch (\Exception $e) {
