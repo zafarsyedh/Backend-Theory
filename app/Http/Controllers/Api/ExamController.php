@@ -487,8 +487,9 @@ class ExamController extends Controller
                         'created_at' => date('d M,Y',strtotime($row->created_at)),
                         'content' => $row->content,
                         'type' => ($row->type==2)?'Email':'SMS',
-                        'isSend' => ($row->type==2)?'No':'Yes',
+                        'isSend' => ($row->is_send==2)?'No':'Yes',
                         'exam_id' => $row->exam_id,
+                        'notificationType' =>$row->type,
                     );
                     $resData->push($array);
                 }
@@ -582,7 +583,8 @@ class ExamController extends Controller
 
 
 
-                $this->sendSmsAndEmail($trafficId,$examId);
+                $this->sendSmsAndEmail($trafficId,$examId,2);
+                $this->sendSmsAndEmail($trafficId,$examId,1);
                     return response()->json(['message' => 'PDF uploaded successfully']);
                 }
                 return response()->json(['message' => 'No PDF file uploaded'], 400);
@@ -593,7 +595,7 @@ class ExamController extends Controller
         }
     }
 
-    public function sendSmsAndEmail($trafficId,$examId)
+    public function sendSmsAndEmail($trafficId,$examId,$type)
     {
         try {
 
@@ -610,27 +612,54 @@ class ExamController extends Controller
             ];
 
             $isSendEmail=2;
-            if($configuration AND $configuration->enable_email==1){
+            if($configuration AND $configuration->enable_email==1 AND $type==2){
                 $this->exam->sendEmail($trafficId,$examId,$result,$student,$mailData);
                 $isSendEmail=1;
             }
-            //email log
-            $this->exam->storeSmsEmailLog($examId,2,$isSendEmail,$emailContent);
+            if($type==2){
+                //email log
+                $this->exam->storeSmsEmailLog($examId,2,$isSendEmail,$emailContent);
+            }
+
 
             $config=new ConfigurationClass();
             $otpText =$config->getEmailSmsTemplate($student,$result,2);
 
             $isSendSms=2;
-            if($configuration AND $configuration->enable_sms==1){
+            if($configuration AND $configuration->enable_sms==1 AND $type==1){
                 $isSendSms=1;
                 $this->exam->sendSms($student,$result,$otpText);
             }
-            //sms log
-            $this->exam->storeSmsEmailLog($examId,1,$isSendSms,$otpText);
 
+            if($type==2) {
+                //sms log
+                $this->exam->storeSmsEmailLog($examId, 1, $isSendSms, $otpText);
+            }
 
         } catch (\Exception $e) {
             throw $e;
         }
     }
+
+    public function resendNotification(Request $request){
+
+
+        $configuration=Configuration::latest('id')->first();
+        if($request->type==2 AND $configuration->enable_email==0){
+            return Helper::error('Email disabled',[]);
+        }
+        if($request->type==2){
+            $this->sendSmsAndEmail($request->traffic_id,$request->exam_id,2);
+            return Helper::success([],'Email send successfully');
+        }
+
+        if($request->type==1 AND $configuration->enable_sms==0){
+            return Helper::error('SMS disabled',[]);
+        }
+        if($request->type==1){
+            $this->sendSmsAndEmail($request->traffic_id,$request->exam_id,1);
+            return Helper::success([],'Sms send successfully');
+        }
+    }
+
 }

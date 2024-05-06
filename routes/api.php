@@ -121,6 +121,9 @@ Route::get('get-sms-logs',[ExamController::class,'getLogs']);
         Route::any('store-result-pdf',[ExamController::class,'storeResultPdf']);
 
 
+Route::any('resend-notification',[ExamController::class,'resendNotification']);
+
+
 
 
 

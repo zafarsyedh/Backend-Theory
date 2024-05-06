@@ -414,7 +414,10 @@ class ExamClass implements Interfaces\ExamInterface
     {
         try {
             $student->notify(new SendMailandSmsNotification($mailData,$trafficId));
-            $this->updateMailAndSmsStatus($result->id,1);
+            if($result){
+                $this->updateMailAndSmsStatus($result->id,1);
+            }
+
 
 
         }catch (\Exception $e) {
