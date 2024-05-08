@@ -6,6 +6,7 @@ use App\Events\CourseEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
 use App\Http\Requests\ExamRequest;
+use App\Models\Attempt;
 use App\Models\Configuration;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
@@ -79,11 +80,14 @@ class ExamController extends Controller
 
             $response=$this->exam->savePracticeQuestion($request);
             if($response['status']){
-
                 if(QuestionSolved::where('attempt_id',$response['data'])->where('is_answered',0)->count() == 0){
                     $this->exam->updateAttemptStatus($response['data']);
+
+                    $attempt=Attempt::find($response['data']);
+                    $request->merge(['exam_id' =>$attempt->exam_id]);
+                    $this->checkPracticeAttemptComplete($request);
                 }
-                return Helper::success($response,'Questions saved');
+                return Helper::success($response,'Practice Questions saved');
             }else{
                 return Helper::errorWithData($response,'Questions not saved');
             }
@@ -531,6 +535,7 @@ class ExamController extends Controller
     //examSystemStatusUpdate
     public function examSystemStatusUpdate(Request $request){
         try {
+
             if($request->exam_id){
                 $examUpdate= $this->exam->updateExamScheduleStatus($request->exam_id,3);
             }
@@ -538,8 +543,6 @@ class ExamController extends Controller
                 $system=  System::where('system_ip',$request->system_ip)->first();
                 $this->system->updateSystemStatus($system->id,1);
             }
-
-
             return   $response= Helper::success([],'Exam and system updated successfully');
 
         } catch (\Exception $e) {
@@ -659,6 +662,119 @@ class ExamController extends Controller
         if($request->type==1){
             $this->sendSmsAndEmail($request->traffic_id,$request->exam_id,1);
             return Helper::success([],'Sms send successfully');
+        }
+    }
+
+    public  function getExamAttemptInfo(Request $request)
+    {
+        try {
+            $data['isEnableSpecific']=1;
+            $data['isEnableCommon']=1;
+            $data['isEnableVideo']=1;
+
+           $examAttemptInfo=$this->exam->getExamAttemptInfo($request->exam_id);
+
+           if($examAttemptInfo->count() > 0){
+               $specific= $examAttemptInfo->where('practice_type',1)->first();
+               $common= $examAttemptInfo->where('practice_type',2)->first();
+               $video= $examAttemptInfo->where('practice_type',3)->first();
+
+               if($specific){
+                   if($specific->practice_type==1 AND $specific->status==0){
+                       $data['isEnableCommon']=0;
+                       $data['isEnableVideo']=0;
+                   }else{
+                       $data['isEnableSpecific']=0;
+                   }
+               }
+
+               if($common){
+                   if($common AND $common->practice_type==2 AND $common->status==0){
+                       $data['isEnableSpecific']=0;
+                       $data['isEnableVideo']=0;
+                   }else{
+                       $data['isEnableCommon']=0;
+                   }
+               }
+
+               if($video){
+                   if($video AND $video->practice_type==3 AND $video->status==0){
+                       $data['isEnableSpecific']=0;
+                       $data['isEnableCommon']=0;
+                   }else{
+                       $data['isEnableVideo']=0;
+                   }
+               }
+           }
+             $response=Helper::fetchOnlyData($this->course->getCourseConfig($request->course_id));
+
+           if($response AND $response->courseConfig){
+                if($response->courseConfig->p_specific_question==0){
+                    $data['isEnableSpecific']=0;
+                }
+               if($response->courseConfig->p_common_question==0){
+                   $data['isEnableCommon']=0;
+               }
+               if($response->courseConfig->p_video_question==0){
+                   $data['isEnableVideo']=0;
+               }
+
+           }
+           return Helper::success($data,'Record found');
+
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+
+    public  function checkPracticeAttemptComplete(Request $request)
+    {
+        try {
+
+            $exam=ExamSchedule::with('course.courseConfig','system:id,system_ip')->find($request->exam_id);
+
+            $data['specificSolved']=0;
+            $data['commonSolved']=0;
+            $data['videoSolved']=0;
+
+            $attempt=Attempt::where('exam_id',$request->exam_id)->get();
+
+                if($exam AND $exam->course->courseConfig->p_specific_question > 0 ){
+                    if($attempt AND $attempt->where('practice_type',1)->pluck('status')->first()==1){
+                        $data['specificSolved']=1;
+                }
+            }else{
+                    $data['specificSolved']=1;
+                }
+
+            if($exam AND $exam->course->courseConfig->p_common_question > 0 ){
+                if($attempt AND $attempt->where('practice_type',2)->pluck('status')->first()==1){
+                    $data['commonSolved']=1;
+                }
+            }else{
+                $data['commonSolved']=1;
+            }
+
+
+            if($exam AND $exam->course->courseConfig->p_video_question > 0 ){
+                if($attempt AND $attempt->where('practice_type',3)->pluck('status')->first()==1){
+                    $data['videoSolved']=1;
+                }
+            }else{
+                $data['videoSolved']=1;
+            }
+            if($data['commonSolved']==1 AND   $data['specificSolved']==1 AND   $data['videoSolved']==1){
+                $request->merge(['exam_id' => $request->exam_id]);
+                $request->merge(['system_ip' => $exam->system->system_ip]);
+
+
+                return  $this->examSystemStatusUpdate($request);
+            }
+
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 
