@@ -153,7 +153,7 @@ class CourseClass implements CourseInterface
             if ($validator->fails())
                 return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
-            for ($c = 0; $c < count($request['full_name']); $c++) {
+            for ($c = 0; $c < count($request['lang']); $c++) {
 
                 $role = CourseTranslation::updateOrCreate(
                     [
@@ -162,11 +162,11 @@ class CourseClass implements CourseInterface
                     ],
 
                     [
-                        'full_name' =>$request['full_name']?$request['full_name'][$c]:"",
+                        'full_name' =>$request['full_name'][$c]['title']!=null?$request['full_name'][$c]['title']:"",
                         'course_id' => $request->course_id,
-                        'lang' => $request['lang']?$request['lang'][$c]:"",
-                        'instructions' => $request['instructions']? $request['instructions'][$c]:"",
-                        'video_link' => $request['video_link']?$request['video_link'][$c]:"",
+                        'lang' =>$request['lang'][$c],
+                        'instructions' =>$request['instructions'][$c]['title']!=null?$request['instructions'][$c]['title']:"",
+                        'video_link' => $request['video_link'][$c]['title']!=null?$request['video_link'][$c]['title']:"",
                     ]
                 );
 
@@ -185,13 +185,26 @@ class CourseClass implements CourseInterface
     {
         try {
             $id=$request->course_id;
-            DB::beginTransaction();
+
             $validator = Validator::make($request->all(), [
                 'course_id' => 'required',
+                'specific_question' => 'nullable|integer',
+                'common_question' => 'nullable|integer',
+                'video_question' => 'nullable|integer',
+                'video_require' => 'nullable|integer',
+                'total_require' => 'nullable|integer',
+                'total_duration' => 'nullable|integer',
+                'practice_duration' => 'nullable|integer',
+                'practice_persontage' => 'nullable|integer',
+                'video_duration' => 'nullable|integer',
+                'p_specific_question' => 'nullable|integer',
+                'p_common_question' => 'nullable|integer',
+                'p_video_question' => 'nullable|integer',
             ]);
             if ($validator->fails())
                 return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
+            DB::beginTransaction();
 
                 $role = CourseConfigration::updateOrCreate(
                     [
@@ -225,7 +238,6 @@ class CourseClass implements CourseInterface
             DB::rollBack();
             return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
-            DB::rollBack();
             return Helper::errorWithData($e->getMessage(), $e);
         }
     }
