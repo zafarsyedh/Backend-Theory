@@ -193,88 +193,177 @@ class ExamController extends Controller
     //getPracticeResult
     public function getPracticeResult(Request $request){
 
-        try{
+        try {
 
-              $response=$this->exam->getPracticeResult($request);
+            $response = $this->exam->getPracticeResult($request);
+            $resData = collect([]);
             if($response['status']) {
-                $resData = collect([]);
-                foreach ($response['data'] as $row) {
 
-                    $practiceType='';
-                    if($row->practice_type==1){
-                        $practiceType='Specific';
+               foreach ($response['data'] as $row) {
+
+
+                   $data['specificSolved']= 0;
+                   $data['commonSolved']= 0;
+                   $data['videoSolved']= 0;
+                   $data['specificCorrect']= 0;
+                   $data['commonCorrect']= 0;
+
+                   $data['specificAttemptId']= 0;
+                   $data['commonAttemptId']= 0;
+                   $data['videoAttemptId']= 0;
+
+                   $data['specificTotalQ']=$row->student->activeCourse->course->courseConfig->p_specific_question;
+                   $data['commonTotalQ']= $row->student->activeCourse->course->courseConfig->p_common_question;
+                   $data['videoTotalQ']= $row->student->activeCourse->course->courseConfig->p_video_question;
+
+
+                   $totalQ=$data['specificTotalQ'] +   $data['commonTotalQ'];
+
+                foreach ($row->attempts as $attempts){
+
+                   // $totalQ= $attempts->solvedQuestion->count();
+                    $solvedQ= $attempts->solvedQuestion->where('is_answered',1)->count();
+                    $correctAns= $attempts->solvedQuestion->where('is_correct_ans',1)->count();
+
+
+
+                    if($attempts->practice_type==1){
+
+                        $data['specificSolved']= $solvedQ;
+                        $data['specificCorrect']= $correctAns;
+                        $data['specificAttemptId']= $attempts->id;
                     }
-                    if($row->practice_type==2){
-                        $practiceType='Common';
+                    if($attempts->practice_type==2){
+
+                        $data['commonSolved']= $solvedQ;
+                        $data['commonCorrect']= $correctAns;
+                        $data['commonAttemptId']= $attempts->id;
                     }
-                    if($row->practice_type==3){
-                        $practiceType='Video';
+                    if($attempts->practice_type==3){
+
+                        $data['videoSolved']= $solvedQ;
+                        $data['videoCorrect']= $correctAns;
+                        $data['videoAttemptId']= $attempts->id;
                     }
 
-                    //use 1 for common 2 for specific
-
-
-//                      $specificTotalCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-//                        $query->where('q_type',2);
-//                         })->count();
-//
-//
-//                    $specificSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-//                        $query->where('q_type', 2);
-//                    })->where('is_answered', 1)->count();
-//
-//
-//                    $commonTotalCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-//                        $query->where('q_type',1);
-//                        })->count();
-//
-//                      $commonSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-//                        $query->where('q_type', 1);
-//                    })->where('is_answered', 1)->count();
-//
-//                    $videoTotalCount= $row->solvedQuestion()->whereHas('question', function ($query) {
-//                        $query->where('q_is_video',1);
-//                    })->count();
-//
-//                    $videoSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
-//                        $query->where('q_is_video',1);
-//                    })->where('is_answered', 1)->count();
+                    $totalCorrect=$data['specificCorrect'] + $data['commonCorrect'];
+                    $correctPercentage=($totalCorrect /$totalQ) *100;
+                }
 
 
 
-
-                    $totalAnsweredQ=$row->solvedQuestion->where('is_answered',1)->count();
-                    $correctQ=$row->solvedQuestion->where('is_correct_ans',1)->count();
-                    $wrongQ=$totalAnsweredQ - $correctQ;
-
-                    $totalQ=$row->solvedQuestion->count();
-                    $skipQ=$row->solvedQuestion->where('is_answered',0)->count();
-
-                    $array = array(
+                   $array = array(
                         'id' => $row->id,
-                        'attempt_id' => $row->id,
-                        'test_date' => date('d M Y', strtotime($row->created_at)),
+                        'test_date' => date('d M Y', strtotime($row->attempts[0]->created_at)),
                         'std_name' => $row->student->std_name,
                         'traffic_id' => $row->student->traffic_id,
                         'course' => $row->student->activeCourse->course->short_name,
-//
-                        'totalQ' =>$totalQ,
-//                        'specificTotal' => $specificTotalCount,
-//                        'specificSolved' => $specificSolvedCount,
-//                        'commonTotal' => $commonTotalCount,
-//                        'commonSolved' => $commonSolvedCount,
-//                        'videoTotal' => $videoTotalCount,
-//                        'videoSolved' => $videoSolvedCount,
-                        'correctAns' =>$row->solvedQuestion->where('is_correct_ans',1)->count(),
-                        'wrongAns' =>$wrongQ,
-                        'skipAns' => $skipQ,
-                        'solvedQ'=>$totalQ - $skipQ,
-                        'practice_type'=>$practiceType
+
+                        'specificAttemptId' => $data['specificAttemptId'],
+                        'commonAttemptId' => $data['commonAttemptId'],
+                        'videoAttemptId' => $data['videoAttemptId'],
+                        'specificQ' => $data['specificTotalQ'],
+                        'specificSolved' => $data['specificSolved'],
+                        'commonQ' => $data['commonTotalQ'],
+                        'commonSolved' => $data['commonSolved'],
+                        'videoTotalQ' => $data['videoTotalQ'],
+                        'videoSolved' => $data['videoSolved'],
+                       'grandTotalQ'=> $totalQ,
+                       'totalSolved'=>  $data['specificSolved'] + $data['commonSolved'],
+                       'percentage'=>round($correctPercentage),
                     );
-                    $resData->push($array);
-                }
-                return Helper::success($resData, 'Result list');
+
+                   $resData->push($array);
+
+               }
+
             }
+            if($resData->count() > 0){
+                return Helper::success($resData,'Practice results');
+            }else{
+                return Helper::error('Record not exist',[]);
+            }
+
+
+//            if($response['status']) {
+//                $resData = collect([]);
+//                foreach ($response['data'] as $row) {
+//
+//                    $practiceType='';
+//                    if($row->practice_type==1){
+//                        $practiceType='Specific';
+//                    }
+//                    if($row->practice_type==2){
+//                        $practiceType='Common';
+//                    }
+//                    if($row->practice_type==3){
+//                        $practiceType='Video';
+//                    }
+//
+//                    //use 1 for common 2 for specific
+//
+//
+////                      $specificTotalCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+////                        $query->where('q_type',2);
+////                         })->count();
+////
+////
+////                    $specificSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+////                        $query->where('q_type', 2);
+////                    })->where('is_answered', 1)->count();
+////
+////
+////                    $commonTotalCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+////                        $query->where('q_type',1);
+////                        })->count();
+////
+////                      $commonSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+////                        $query->where('q_type', 1);
+////                    })->where('is_answered', 1)->count();
+////
+////                    $videoTotalCount= $row->solvedQuestion()->whereHas('question', function ($query) {
+////                        $query->where('q_is_video',1);
+////                    })->count();
+////
+////                    $videoSolvedCount = $row->solvedQuestion()->whereHas('question', function ($query) {
+////                        $query->where('q_is_video',1);
+////                    })->where('is_answered', 1)->count();
+//
+//
+//
+//
+//                    $totalAnsweredQ=$row->solvedQuestion->where('is_answered',1)->count();
+//                    $correctQ=$row->solvedQuestion->where('is_correct_ans',1)->count();
+//                    $wrongQ=$totalAnsweredQ - $correctQ;
+//
+//                    $totalQ=$row->solvedQuestion->count();
+//                    $skipQ=$row->solvedQuestion->where('is_answered',0)->count();
+//
+//                    $array = array(
+//                        'id' => $row->id,
+//                        'attempt_id' => $row->id,
+//                        'test_date' => date('d M Y', strtotime($row->created_at)),
+//                        'std_name' => $row->student->std_name,
+//                        'traffic_id' => $row->student->traffic_id,
+//                        'course' => $row->student->activeCourse->course->short_name,
+////
+//                        'totalQ' =>$totalQ,
+////                        'specificTotal' => $specificTotalCount,
+////                        'specificSolved' => $specificSolvedCount,
+////                        'commonTotal' => $commonTotalCount,
+////                        'commonSolved' => $commonSolvedCount,
+////                        'videoTotal' => $videoTotalCount,
+////                        'videoSolved' => $videoSolvedCount,
+//                        'correctAns' =>$row->solvedQuestion->where('is_correct_ans',1)->count(),
+//                        'wrongAns' =>$wrongQ,
+//                        'skipAns' => $skipQ,
+//                        'solvedQ'=>$totalQ - $skipQ,
+//                        'practice_type'=>$practiceType
+//                    );
+//                    $resData->push($array);
+//                }
+//                return Helper::success($resData, 'Result list');
+//            }
         } catch (\Exception $e) {
             return Helper::sendError($e->getMessage(),$errors= [], $code = 206);
         }
@@ -366,59 +455,7 @@ class ExamController extends Controller
             return Helper::error($e->getMessage(),$e);
         }
     }
-    //restartExam
-    public function restartExam($id){
-        try {
 
-            $isContinue= $this->exam->checkExamStartOrNot($id);
-            if($isContinue!==1){
-                return  $response= Helper::error('student has been started exam',[]);
-            }
-            $examSchedule=ExamSchedule::find($id);
-            $qry=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction');
-            ($examSchedule)?$qry=$qry->with('audioLanguage'):'';
-            $exam=$qry->with('system')->find($id);
-
-            if($exam->exam_type==1){
-                $examDuration=$exam->course->courseConfig->total_duration;;
-            }else{
-                $examDuration=$exam->course->courseConfig->practice_duration;
-            }
-
-            $this->system->updateSystemStatus($exam->system_id,3);
-            $userInfo= User::with('branch')->find($exam->invg_id);
-
-            $eventStdData = [
-
-                'examId' =>$id,
-                'stdId' =>$exam->std_id,
-                'stdName' =>$exam->student->std_name,
-                'trafficId' =>$exam->student->traffic_id,
-                'courseId' =>$exam->course->id,
-                'examDuration' =>$examDuration,
-
-                'courseName' =>$exam->course->short_name,
-                'qLangShortName' =>$exam->qLanguage->lang_short,
-                'qLangFullName' =>$exam->qLanguage->lang,
-                'audioLangShortName' =>($exam AND $exam->audioLanguage)?$exam->audioLanguage->lang_short:'-',
-                'audioLangFullName' =>($exam AND $exam->audioLanguage)?$exam->audioLanguage->lang:'-',
-                'examType' =>$exam->exam_type,
-                'direction' =>($exam->qLanguage->direction == 2)? 'ltr':'rtl',
-                'systemIp' =>$exam->system->system_ip,
-                'instructions' =>count($exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short))?$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('instructions')->first():$exam->course->courseTranslation->where('lang','en')->pluck('instructions')->first(),
-                'videoLink' =>count($exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short))?$exam->course->courseTranslation->where('lang',$exam->qLanguage->lang_short)->pluck('video_link')->first():$exam->course->courseTranslation->where('lang','en')->pluck('video_link')->first(),
-                'examTemplate' =>$userInfo?$userInfo->branch->exam_template:1,
-
-
-
-            ];
-            event(new CourseEvent($eventStdData));
-            return   $response= Helper::success([],'Exam restart successfully');
-
-        } catch (\Exception $e) {
-            return Helper::error($e->getMessage(),$e);
-        }
-    }
 
 
     //getStudentResult
@@ -536,7 +573,7 @@ class ExamController extends Controller
     public function examSystemStatusUpdate(Request $request){
         try {
 
-            if($request->exam_id){
+            if($request->exam_id AND $request->closeType==1){
                 $examUpdate= $this->exam->updateExamScheduleStatus($request->exam_id,3);
             }
             if($request->system_ip){

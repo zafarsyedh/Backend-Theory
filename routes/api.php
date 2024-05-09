@@ -91,7 +91,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
     // Exam
     Route::post('get-result-detail',[ExamController::class,'getResults']);
-    Route::any('restart-exam/{id}',[ExamController::class,'restartExam']);
+    Route::any('restart-exam/{id}',[StudentController::class,'restartExam']);
     Route::any('exit-exam/{id}',[ExamController::class,'exitExam']);
     Route::get('get-schedule-exam-list',[ExamController::class,'getScheduleExamList']);
     Route::get('get-running-exam',[ExamController::class,'getRunningExam']);

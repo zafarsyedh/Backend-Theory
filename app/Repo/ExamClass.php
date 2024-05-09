@@ -19,6 +19,7 @@ use Faker\Provider\DateTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use function Laravel\Prompts\error;
 
 
 class ExamClass implements Interfaces\ExamInterface
@@ -159,13 +160,30 @@ class ExamClass implements Interfaces\ExamInterface
     public function  getPracticeResult($request)
     {
         try {
-            $qry=Attempt::query();
-            $qry=$qry->with('student.activeCourse.course','solvedQuestion.question');
-            $qry=$qry->where('exam_type',2);
-            $qry=$qry->whereDate('created_at', '>=',date('Y-m-d',strtotime($request->start_date)));
-            $qry=$qry->whereDate('created_at', '<=',date('Y-m-d',strtotime($request->end_date)));
-            $examSchedule=$qry->get();
-            return Helper::successWithData($examSchedule,'record found');
+
+
+
+            $qry = ExamSchedule::query();
+            $qry=$qry->with('student:id,std_name,traffic_id');
+            $qry->has('attempts');
+
+
+//            $qry->with(['attempts' => function ($query) {
+//                $query->with('solvedQuestion');
+//            }]);
+
+            $qry->with(['attempts' => function ($query) use ($request) {
+                $query->whereDate('created_at', '>=', date('Y-m-d',strtotime($request->start_date)))
+                    ->whereDate('created_at', '<=', date('Y-m-d',strtotime($request->end_date)))
+                    ->with('solvedQuestion');
+            }]);
+
+            $records = $qry->get();
+            if($records->count() > 0){
+                return Helper::successWithData($records, 'Records found');
+            }else{
+                return Helper::error('Records not found',[]);
+            }
 
         }  catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(), []);
@@ -268,7 +286,7 @@ class ExamClass implements Interfaces\ExamInterface
                            $query->where('exam_status', 1)
                                ->orWhere('exam_status', 2);
                        })
-                       ->whereDate('created_at', date('Y-m-d'))
+                       //->whereDate('created_at', date('Y-m-d'))
 //                       ->where('exam_type',$examType)
                        ->count() > 0) {
                    $isContinue = 0;
@@ -284,7 +302,7 @@ class ExamClass implements Interfaces\ExamInterface
         try {
             $isContinue=0;
             $exam=ExamSchedule::find($id);
-            if($exam->exam_status==1){
+            if($exam->exam_status==1 OR $exam->exam_status==2){
                 $isContinue=1;
             }
             return $isContinue;
@@ -398,7 +416,7 @@ class ExamClass implements Interfaces\ExamInterface
             $qry = Attempt::query();
             $qry=$qry->where('std_id',$request->std_id);
             $qry=$qry->where('practice_type',$request->practice_type);
-            $qry=$qry->where('exam_id',$request->exam_id);
+//            $qry=$qry->where('exam_id',$request->exam_id);
 //            $qry=$qry->where('status',0);
             $qry=$qry->latest('id')->first();
 
@@ -495,6 +513,29 @@ class ExamClass implements Interfaces\ExamInterface
 
         }  catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+
+    public function getExamIdOnTheBaseOfTrafficIdNumber($trafficId)
+    {
+        try {
+            $examId=0;
+            if($std= Student::where('traffic_id',$trafficId)->latest('id')->first()){
+
+                $exam=ExamSchedule::where('std_id', $std->id)
+                        ->where(function ($query) {
+                            $query->where('exam_status',1)
+                                ->orWhere('exam_status',2);
+                        })
+                        ->first();
+                if($exam){
+                    $examId=$exam->id;
+                }
+
+            }
+            return  $examId;
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
         }
     }
 }

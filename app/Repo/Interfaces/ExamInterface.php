@@ -26,4 +26,6 @@ interface ExamInterface{
     public function storeSmsEmailLog($examId,$type,$isSend,$content);
     public function getLogs($request);
     public function getExamAttemptInfo($examId);
+
+    public function getExamIdOnTheBaseOfTrafficIdNumber($trafficId);
 }
