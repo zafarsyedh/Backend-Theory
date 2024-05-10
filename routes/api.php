@@ -99,6 +99,7 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
     Route::post('update-schedule-exam',[ExamController::class,'updateScheduleExam']);
     Route::delete('delete-exam/{id}',[ExamController::class,'deleteExam']);
     Route::any('get-exam-attempt-info',[ExamController::class,'getExamAttemptInfo']);
+Route::any('mark-eligible',[ExamController::class,'markEligible']);
 
 //});
 
@@ -121,6 +122,9 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
         Route::post('check-practice-type',[ExamController::class,'checkPracticeType']);
         Route::any('send-sms',[ExamController::class,'sendResultEmailAndSms']);
         Route::any('store-result-pdf',[ExamController::class,'storeResultPdf']);
+
+        //Practce Result
+        Route::any('store-practice-result',[ExamController::class,'savePracticeResult']);
 
 
 Route::any('resend-notification',[ExamController::class,'resendNotification']);

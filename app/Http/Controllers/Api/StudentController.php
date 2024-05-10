@@ -59,10 +59,26 @@ class StudentController extends Controller
 
         try{
 
+            if($request->exam_type==1){
+                if(!Student::where('traffic_id',$request->stdData['regnnumb'])->where('is_eligible',1)->latest('id')->first()){
+                  return  $response= Helper::error('This is student not eligible for exam',[]);
+                }
+            }
+
              $isContinue= $this->exam->checkExamStatus($request->stdData,$request->exam_type);
            if($isContinue ==0){
 
                $examId=$this->exam->getExamIdOnTheBaseOfTrafficIdNumber($request->stdData['regnnumb']);
+
+
+               $examSchedule=ExamSchedule::latest('id')->find($examId);
+               $examSchedule->created_at=now();
+               $examSchedule->exam_status=1;
+               $examSchedule->q_lang=$request->q_lang;
+               ($request->audio_lang)?$examSchedule->audio_lang=$request->audio_lang:'';
+
+               $examSchedule->save();
+
                return  $res=$this->restartExam($examId);
 //             return  $response= Helper::error('Exam of this student is already in progress',[]);
            }
@@ -90,8 +106,6 @@ class StudentController extends Controller
                 return  $response= Helper::error('student has been started exams',[]);
             }
             $examSchedule=ExamSchedule::find($id);
-            $examSchedule->created_at=now();
-            $examSchedule->save();
             $qry=ExamSchedule::with('student:id,std_name,traffic_id','course.courseConfig','qLanguage:id,lang,lang_short,direction');
             ($examSchedule)?$qry=$qry->with('audioLanguage'):'';
             $exam=$qry->with('system')->find($id);

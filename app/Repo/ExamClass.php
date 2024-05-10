@@ -148,7 +148,6 @@ class ExamClass implements Interfaces\ExamInterface
             $qry=$qry->whereDate('created_at', '>=',date('Y-m-d',strtotime($request->start_date)));
             $qry=$qry->whereDate('created_at', '<=',date('Y-m-d',strtotime($request->end_date)));
             $examSchedule=$qry->get();
-
             return Helper::successWithData($examSchedule,'record found');
 
         }  catch (\Exception $e) {
@@ -161,22 +160,19 @@ class ExamClass implements Interfaces\ExamInterface
     {
         try {
 
-
-
             $qry = ExamSchedule::query();
             $qry=$qry->with('student:id,std_name,traffic_id');
             $qry->has('attempts');
 
-
-//            $qry->with(['attempts' => function ($query) {
-//                $query->with('solvedQuestion');
-//            }]);
-
-            $qry->with(['attempts' => function ($query) use ($request) {
-                $query->whereDate('created_at', '>=', date('Y-m-d',strtotime($request->start_date)))
-                    ->whereDate('created_at', '<=', date('Y-m-d',strtotime($request->end_date)))
-                    ->with('solvedQuestion');
-            }]);
+            if($request->exam_id > 0){
+                $qry=$qry->where('id',$request->exam_id);
+            }else {
+                $qry->with(['attempts' => function ($query) use ($request) {
+                    $query->whereDate('created_at', '>=', date('Y-m-d', strtotime($request->start_date)))
+                        ->whereDate('created_at', '<=', date('Y-m-d', strtotime($request->end_date)))
+                        ->with('solvedQuestion');
+                }]);
+            }
 
             $records = $qry->get();
             if($records->count() > 0){
@@ -284,7 +280,8 @@ class ExamClass implements Interfaces\ExamInterface
                if (ExamSchedule::where('std_id', $std->id)
                        ->where(function ($query) {
                            $query->where('exam_status', 1)
-                               ->orWhere('exam_status', 2);
+                               ->orWhere('exam_status', 2)
+                           ->orWhere('exam_status', 5);
                        })
                        //->whereDate('created_at', date('Y-m-d'))
 //                       ->where('exam_type',$examType)
@@ -525,7 +522,8 @@ class ExamClass implements Interfaces\ExamInterface
                 $exam=ExamSchedule::where('std_id', $std->id)
                         ->where(function ($query) {
                             $query->where('exam_status',1)
-                                ->orWhere('exam_status',2);
+                                ->orWhere('exam_status',2)
+                                ->orWhere('exam_status',5);
                         })
                         ->first();
                 if($exam){
