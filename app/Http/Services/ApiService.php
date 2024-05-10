@@ -11,5 +11,9 @@ public function getStudentInfo($trafficId){
    return $response = Http::get(env('API_URL').'student/'.$trafficId);
 }
 
+    public function getSharjahStudent($trafficId){
+        return $response = Http::get(env('SHARJAH_API_URL').'student/'.$trafficId);
+    }
+
 
 }

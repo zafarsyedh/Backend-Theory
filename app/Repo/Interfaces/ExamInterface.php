@@ -25,4 +25,7 @@ interface ExamInterface{
     public function updateMailAndSmsStatus($resultId,$type);
     public function storeSmsEmailLog($examId,$type,$isSend,$content);
     public function getLogs($request);
+    public function getExamAttemptInfo($examId);
+
+    public function getExamIdOnTheBaseOfTrafficIdNumber($trafficId);
 }
