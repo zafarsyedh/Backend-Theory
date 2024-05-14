@@ -74,6 +74,7 @@ class StudentController extends Controller
                $examSchedule=ExamSchedule::latest('id')->find($examId);
                $examSchedule->created_at=now();
                $examSchedule->exam_status=1;
+               $examSchedule->system_id=$request->system_id;
                $examSchedule->q_lang=$request->q_lang;
                ($request->audio_lang)?$examSchedule->audio_lang=$request->audio_lang:'';
 
