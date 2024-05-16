@@ -71,6 +71,36 @@ class ConfigurationClass implements Interfaces\ConfigurationInterface
             return Helper::errorWithData($e->getMessage(), $e);
         }
     }
+
+    public function getEmailSmsTemplate($stdInfo,$resultInfo,$type)
+    {
+        try {
+
+            $config= Configuration::latest('id')->first();
+            $emailTemplate=$config->email_template;
+            $smsTemplate=$config->sms_template;
+
+            $data = [
+                'std_name' => $stdInfo->std_name,
+                'exam_status' =>($resultInfo AND $resultInfo->status==1)?'Pass':'Fail'
+            ];
+
+            foreach ($data as $key => $value) {
+                $placeholder = '{{' . $key . '}}';
+                $emailTemplate = str_replace($placeholder, $value, $emailTemplate);
+                $smsTemplate = str_replace($placeholder, $value, $smsTemplate);
+            }
+            if($type==1){
+                return $emailTemplate;
+            }else{
+                return $smsTemplate;
+            }
+
+        }catch (\Exception $e) {
+            throw $e;
+        }
+
+    }
 }
 
 

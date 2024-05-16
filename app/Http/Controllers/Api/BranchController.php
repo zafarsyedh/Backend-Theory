@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helper;
+use App\Models\Room;
 use App\Repo\Interfaces\BranchInterface;
 use App\Repo\Interfaces\LanguageInterface;
 use App\Repo\Interfaces\TopicAreaInterface;
@@ -61,13 +62,18 @@ class BranchController extends Controller
 
     public function deleteBranch( $id){
         try {
-            $response = $this->branch->deleteBranch($id);
-            if($response['status']){
-                $response= Helper::success($response['data'],$response['message']);
-            }else{
-                $response= Helper::error($response['message'],$response['data']);
+            if($room=Room::where('branch_id',$id)->count()==0) {
+                $response = $this->branch->deleteBranch($id);
+                if ($response['status']) {
+                    $response = Helper::success($response['data'], $response['message']);
+                } else {
+                    $response = Helper::error($response['message'], $response['data']);
+                }
+                return $response;
             }
-            return $response;
+            else{
+                    return Helper::error($room.'rooms associated with this branch',[]);
+                }
         } catch (\Exception $e) {
             return Helper::error($e->getMessage(),$e);
         }

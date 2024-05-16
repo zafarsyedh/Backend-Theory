@@ -36,7 +36,6 @@ class StudentClass implements Interfaces\StudentInterface
             $validator = Validator::make($request->all(), [
                 'exam_type' => 'required',
                 'q_lang' => 'required',
-                'audio_lang' => 'required',
                 'system_id' => 'required',
                 'stdData' => 'required',
             ]);
@@ -60,16 +59,16 @@ class StudentClass implements Interfaces\StudentInterface
                     'password' => '123456',
                     'std_gender' => $stdData['std_gender'],
                     'geartype' => $stdData['geartype'],
-                    'language' => $stdData['language'],
+                    'language' =>isset($stdData['language'])?$stdData['language']:null,
                     'branch' => $stdData['branch'],
                     'mobile_no' => $stdData['mobileno'],
-                    'progress' => $stdData['progress'],
-                    'brcode' => $stdData['brcode'],
-                    'coursetype' => $stdData['coursetype'],
-                    'prefferd_golden_chance' => $stdData['prefferd_golden_chance'],
-                    'historycls' => $stdData['historycls'],
-                    'pendingamount' => $stdData['paidamount'],
-                    'paidamount' => $stdData['paidamount'],
+                    'progress' => isset($stdData['progress'])?$stdData['progress']:null,
+                    'brcode' => isset($stdData['brcode'])?$stdData['brcode']:null,
+                    'coursetype' => isset($stdData['coursetype'])?$stdData['coursetype']:null,
+                    'prefferd_golden_chance' =>isset($stdData['prefferd_golden_chance'])?$stdData['prefferd_golden_chance']:null,
+                    'historycls' => isset($stdData['historycls'])?$stdData['historycls']:null,
+                    'pendingamount' => isset($stdData['paidamount'])?$stdData['paidamount']:null,
+                    'paidamount' => isset($stdData['paidamount'])?$stdData['paidamount']:null,
 
                 ]
             );
@@ -101,7 +100,15 @@ class StudentClass implements Interfaces\StudentInterface
 
             Helper::createExamHelper($request,$paramData);
 
-            $exam=ExamSchedule::where('std_id',$student->id)->latest('id')->first();;
+            $exam=ExamSchedule::where('std_id',$student->id)->latest('id')->first();
+            $userInfo= User::with('branch')->find($request->invgId);
+
+
+            if($exam->exam_type==1){
+                $examDuration=$exam->course->courseConfig->total_duration;;
+            }else{
+                $examDuration=$exam->course->courseConfig->practice_duration;
+            }
 
             $eventStdData = [
 
@@ -110,18 +117,19 @@ class StudentClass implements Interfaces\StudentInterface
                 'stdName' =>$student->std_name,
                 'trafficId' =>$student->traffic_id,
                 'courseId' =>$courseInfo->id,
-                'examDuration' =>$courseInfo->courseConfig->total_duration,
+                'examDuration' =>$examDuration,//$courseInfo->courseConfig->total_duration,
                 'practiceDuration' =>$courseInfo->courseConfig->practice_duration,
                 'courseName' =>$courseInfo->short_name,
                 'qLangShortName' =>$request->q_lang,
                 'qLangFullName' =>$qLangInfo->lang,
                 'audioLangShortName' =>$request->audio_lang,
-                'audioLangFullName' =>$audioLangInfo->lang,
+                'audioLangFullName' =>($audioLangInfo)?$audioLangInfo->lang:'',
                 'examType' =>$request->exam_type,
                 'direction' =>($qLangInfo->direction == 2)? 'ltr':'rtl',
                 'systemIp' =>$systemInfo->system_ip,
                 'instructions' =>count($courseInfo->courseTranslation->where('lang',$request->q_lang))? $courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('instructions')->first():$courseInfo->courseTranslation->where('lang','en')->pluck('instructions')->first(),
                 'videoLink' =>count($courseInfo->courseTranslation->where('lang',$request->q_lang))? $courseInfo->courseTranslation->where('lang',$request->q_lang)->pluck('video_link')->first():$courseInfo->courseTranslation->where('lang','en')->pluck('video_link')->first(),
+                'examTemplate' =>$userInfo?$userInfo->branch->exam_template:1,
 
             ];
             event(new CourseEvent($eventStdData));

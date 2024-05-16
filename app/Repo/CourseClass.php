@@ -6,12 +6,14 @@ use App\Models\Course;
 use App\Models\CourseConfigration;
 use App\Models\CourseTranslation;
 use App\Models\Language;
+use App\Models\Question;
 use App\Repo\Interfaces\CourseInterface;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\TextUI\Help;
 
 class CourseClass implements CourseInterface
 {
@@ -20,33 +22,26 @@ class CourseClass implements CourseInterface
     {
         try {
 
+            $commonQ=Question::where('q_type',1)->count();
             $qry = Course::with('courseTranslation');
+              $qry=$qry->withCount(['courseQuestions as specificQuestion' => function ($query) {
+                    $query->whereHas('question', function ($q) {
+                        $q->where('q_is_video',0)->where('q_type',2);
 
-               $qry=$qry->with(['courseQuestions' => function ($query) {
-                    $query->whereHas('question', function ($q) {
-                        $q->where('q_is_video', 0);
-                    });
-                }, 'courseQuestions.question' => function ($query) {
-                    $query->where('q_is_video', 0);
-                }]);
-              $qry=$qry->withCount(['courseQuestions as nonVideoQuestion' => function ($query) {
-                    $query->whereHas('question', function ($q) {
-                        $q->where('q_is_video', 0);
                     });
                 }]);
-              $qry=$qry->with(['courseQuestions' => function ($query) {
-                  $query->whereHas('question', function ($q) {
-                      $q->where('q_is_video', 1);
-                  });
-              }, 'courseQuestions.question' => function ($query) {
-                  $query->where('q_is_video', 1);
-              }]);
-              $qry=$qry->withCount(['courseQuestions as videoQuestion' => function ($query) {
-                  $query->whereHas('question', function ($q) {
-                      $q->where('q_is_video', 1);
-                  });
-              }]);
+
+            $qry=$qry->withCount(['courseQuestions as videoQuestion' => function ($query) {
+                $query->whereHas('question', function ($q) {
+                    $q->where('q_is_video',1);
+
+                });
+            }]);
               $qry=$qry->get();
+
+            foreach ($qry as $course) {
+                $course->commonQuestionCount = $commonQ;
+            }
 
             return  Helper::successWithData($qry,'Record found');
         }catch (\Exception $e) {
@@ -56,8 +51,12 @@ class CourseClass implements CourseInterface
     public function getCourseConfig($id)
     {
         try {
-            $qry=Course::with('courseConfig')->find($id);
-            return  Helper::successWithData($qry,'Record found');
+            if($qry=Course::with('courseConfig')->find($id)){
+                return  Helper::successWithData($qry,'Record found');
+            }else{
+                return Helper::error('Invalid course configuration',[]);
+            }
+
         }catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(),$e);
         }
@@ -154,7 +153,7 @@ class CourseClass implements CourseInterface
             if ($validator->fails())
                 return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
-            for ($c = 0; $c < count($request['full_name']); $c++) {
+            for ($c = 0; $c < count($request['lang']); $c++) {
 
                 $role = CourseTranslation::updateOrCreate(
                     [
@@ -163,11 +162,11 @@ class CourseClass implements CourseInterface
                     ],
 
                     [
-                        'full_name' =>$request['full_name'][$c],
+                        'full_name' =>$request['full_name'][$c]['title']!=null?$request['full_name'][$c]['title']:"",
                         'course_id' => $request->course_id,
-                        'lang' => $request['lang'][$c],
-                        'instructions' => $request['instructions'][$c],
-                        'video_link' => $request['video_link'][$c],
+                        'lang' =>$request['lang'][$c],
+                        'instructions' =>$request['instructions'][$c]['title']!=null?$request['instructions'][$c]['title']:"",
+                        'video_link' => $request['video_link'][$c]['title']!=null?$request['video_link'][$c]['title']:"",
                     ]
                 );
 
@@ -186,13 +185,26 @@ class CourseClass implements CourseInterface
     {
         try {
             $id=$request->course_id;
-            DB::beginTransaction();
+
             $validator = Validator::make($request->all(), [
                 'course_id' => 'required',
+                'specific_question' => 'nullable|integer',
+                'common_question' => 'nullable|integer',
+                'video_question' => 'nullable|integer',
+                'video_require' => 'nullable|integer',
+                'total_require' => 'nullable|integer',
+                'total_duration' => 'nullable|integer',
+                'practice_duration' => 'nullable|integer',
+                'practice_persontage' => 'nullable|integer',
+                'video_duration' => 'nullable|integer',
+                'p_specific_question' => 'nullable|integer',
+                'p_common_question' => 'nullable|integer',
+                'p_video_question' => 'nullable|integer',
             ]);
             if ($validator->fails())
                 return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
+            DB::beginTransaction();
 
                 $role = CourseConfigration::updateOrCreate(
                     [
@@ -209,7 +221,12 @@ class CourseClass implements CourseInterface
                         'video_require' => $request->video_require,
                         'total_require' => $request->total_require,
                         'total_duration' => $request->total_duration,
+                        'practice_duration' => $request->practice_duration,
+                        'practice_persontage' => $request->practice_persontage,
                         'video_duration' => $request->video_duration,
+                        'p_specific_question' => $request->p_specific_question,
+                        'p_common_question' => $request->p_common_question,
+                        'p_video_question' => $request->p_video_question,
                     ]
                 );
 
@@ -221,7 +238,6 @@ class CourseClass implements CourseInterface
             DB::rollBack();
             return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
-            DB::rollBack();
             return Helper::errorWithData($e->getMessage(), $e);
         }
     }

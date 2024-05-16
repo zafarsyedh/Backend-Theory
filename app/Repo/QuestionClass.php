@@ -111,6 +111,7 @@ protected $qAudioname='';
 
             $question = new Question();
             if (Question::find($id)) {
+
                 $question = Question::find($id);
             }
 
@@ -147,6 +148,10 @@ protected $qAudioname='';
                 }
             }
 
+            if($request->question_edit_id > 0 AND $request->q_type == 'common'){
+                QuestionCourse::where('q_id',$question->id)->delete();
+            }
+
             $qTranslation = new QuestionTranslation();
             if (QuestionTranslation::where('q_id',$question->id)->where('lang','en')->first()) {
                 $qTranslation = QuestionTranslation::where('q_id', $question->id)->where('lang','en')->first();
@@ -156,13 +161,13 @@ protected $qAudioname='';
             $qTranslation->q_id = $question->id;
             $qTranslation->lang_id = $request->lang_id;
             $qTranslation->q_title = $request->q_title;
-            $qTranslation->opt_a = $request->opt_a;
-            $qTranslation->opt_b = $request->opt_b;
-            $qTranslation->opt_c = $request->opt_c;
-            ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : '';
-            ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : '';
-            ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : '';
-            ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : '';
+            $qTranslation->opt_a = $request->opt_a!=null ? $request->opt_a :" ";
+            $qTranslation->opt_b = $request->opt_b!=null ? $request->opt_b :" ";
+            $qTranslation->opt_c = $request->opt_c!=null ? $request->opt_c :" ";
+            ($this->optAAudio != null) ? $qTranslation->opt_a_audio = $this->optAAudio : ' ';
+            ($this->optBAudio != null) ? $qTranslation->opt_b_audio = $this->optBAudio : ' ';
+            ($this->optCAudio != null) ? $qTranslation->opt_c_audio = $this->optCAudio : ' ';
+            ($this->qAudioname != null) ? $qTranslation->q_audio = $this->qAudioname : ' ';
             $qTranslation->lang = 'en';
             $qTranslation->save();
 
@@ -280,6 +285,64 @@ protected $qAudioname='';
             return Helper::errorWithData($e->getMessage(),$e);
         }
     }
+
+    public function removeQAsset($request)
+    {
+        try {
+            if($request->assetType=='q-image'  OR $request->assetType=='q_video' OR $request->assetType=='opt-a-image' OR $request->assetType=='opt-b-image' OR $request->assetType=='opt-c-image'){
+                $question=Question::find($request->id);
+
+                if($request->assetType=='q-image'){
+                    $question->q_image=null;
+                }
+                if($request->assetType=='q_video'){
+                    $question->q_video=null;
+                }
+                if($request->assetType=='opt-a-image'){
+                    $question->opt_a_image=null;
+                }
+                if($request->assetType=='opt-b-image'){
+                    $question->opt_b_image=null;
+                }
+                if($request->assetType=='opt-c-image'){
+                    $question->opt_c_image=null;
+                }
+                $question->save();
+                return Helper::successWithData($question, $message="Asset removed successfully");
+            }else {
+
+                if ($request->assetType == 'q-audio' or $request->assetType == 'opt-a-audio' or $request->assetType == 'opt-b-audio' or $request->assetType == 'opt-c-audio') {
+
+                    $questionTranslation = QuestionTranslation::find($request->id);
+
+                    if ($request->assetType == 'q-audio') {
+                        $questionTranslation->q_audio = null;
+                    }
+                    if ($request->assetType == 'opt-a-audio') {
+                        $questionTranslation->opt_a_audio = null;
+                    }
+                    if ($request->assetType == 'opt-b-audio') {
+                        $questionTranslation->opt_b_audio = null;
+                    }
+                    if ($request->assetType == 'opt-c-audio') {
+                        $questionTranslation->opt_c_audio = null;
+                    }
+                    $questionTranslation->save();
+                    return Helper::successWithData($questionTranslation, $message="Asset removed successfully");
+                }
+            }
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+
+    }
+
+
+
+
+
+
     public function findQuestionById($id)
     {
         try {
@@ -335,7 +398,6 @@ protected $qAudioname='';
             $courseId=$request->course_id;
             $qLang=$request->q_lang;
             $audioLang=$request->audio_lang;
-
             $attemptId =$request->attemptId;
 
 
@@ -353,29 +415,30 @@ protected $qAudioname='';
             //1 mean for Exam and 2 mean for practice
             if($request->exam_type==1){
 
-                if($courseInfo->courseConfig->require_type==1){
+                //if($courseInfo->courseConfig->require_type==1){
+
 
                     $specificQ=$this->getSpecificQuestion($courseId,$qLang,$courseInfo->courseConfig->specific_question);
                     $commonQ=$this->getCommonQuestion($qLang,$courseInfo->courseConfig->common_question);
                     $videoQ=$this->getVideoQuestion($courseId,$courseInfo->courseConfig->video_question);
 
                     $allQuestion = $specificQ->merge($commonQ)->merge($videoQ);
-                }
-                else{
-                    $totalQuestion=$courseInfo->courseConfig->specific_question + $courseInfo->courseConfig->common_question + $courseInfo->courseConfig->video_question;
-                    $allQuestion=$this->getAllCourseWiseRandomQuestion($courseId,$qLang,$totalQuestion);
-                }
+//                }
+//                else{
+//                    $totalQuestion=$courseInfo->courseConfig->specific_question + $courseInfo->courseConfig->common_question + $courseInfo->courseConfig->video_question;
+//                    $allQuestion=$this->getAllCourseWiseRandomQuestion($courseId,$qLang,$totalQuestion);
+//                }
             }
             else{
                 //1 specific,2 common,3 video
                 if($request->questionType==1){
-                    $allQuestion=$this->getSpecificQuestion($courseId,$qLang,'');
+                    $allQuestion=$this->getSpecificQuestion($courseId,$qLang,$courseInfo->courseConfig->p_specific_question);
                 }
                 if($request->questionType==2){
-                     $allQuestion=$this->getCommonQuestion($qLang,'');
+                     $allQuestion=$this->getCommonQuestion($qLang,$courseInfo->courseConfig->p_common_question);
                 }
                 if($request->questionType==3){
-                     $allQuestion=$this->getVideoQuestion($courseId,'');
+                     $allQuestion=$this->getVideoQuestion($courseId,$courseInfo->courseConfig->p_video_question);
                 }
             }
 
@@ -459,7 +522,7 @@ protected $qAudioname='';
                 $query->where('lang',$qLang);
             });
 
-            ($limit)?$qry=$qry->limit($limit):'';
+            ($limit!=null)?$qry=$qry->limit($limit):'';
             $qry=$qry->inRandomOrder();
             return $allQuestion = $qry->get();
         }
@@ -480,7 +543,7 @@ protected $qAudioname='';
             {
                 $query->where('lang',$qLang);
             });
-            ($limit)?$qry=$qry->limit($limit)->inRandomOrder():'';
+            ($limit!=null)?$qry=$qry->limit($limit)->inRandomOrder():'';
             return $allQuestion = $qry->get();
         }
         catch (\Exception $e) {
@@ -499,6 +562,7 @@ protected $qAudioname='';
             $qry = $qry->where('status', 1);
             $qry = $qry->where('q_type', 2);
             $qry = $qry->where('q_is_video', 0);
+
             $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
             {
                 $query->where('lang',$qLang);
@@ -514,7 +578,7 @@ protected $qAudioname='';
     public function getVideoQuestion($courseId,$limit=null)
     {
         try {
-
+            $qLang='en';
             $qry = Question::query();
             $qry = $qry->select('id','topic_id');
             $qry = $qry->where(function ($query) use ($courseId) {
@@ -522,9 +586,14 @@ protected $qAudioname='';
                     ->orWhere('q_type',1);
             });
 
+            $qry=$qry->whereHas('questionTranslations', function($query) use($qLang)
+            {
+                $query->where('lang',$qLang);
+            });
+
             $qry = $qry->where('q_is_video', 1);
             $qry = $qry->where('status', 1);
-            ($limit)?$qry=$qry->limit($limit):'';
+            ($limit!=null)?$qry=$qry->limit($limit):'';
             return $allQuestion = $qry->get();
         }
         catch (\Exception $e) {

@@ -25,4 +25,6 @@ class Result extends Model
         return $this->belongsTo(ExamSchedule::class, 'exam_id', 'id');
     }
 
+
+
 }

@@ -56,21 +56,45 @@ protected $path='user-images/';
             if ($validator->fails())
                 return Helper::errorWithData($validator->errors()->first(), $validator->errors());
 
+
+
+            $userData = [
+                'name' =>$request->name,
+                'email' =>$request->email,
+
+                'phone' =>$request->phone,
+                'role_id' =>$request->role_id,
+                'room_id' =>$request->room_id,
+                'branch_id' =>$request->branch_id,
+                'status' =>$request->status,
+            ];
+
+            if (!empty($request->password)) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
             $user = User::updateOrCreate(
                 [
                     'id' => $request->id,
                 ],
-                [
-                    'name' =>$request->name,
-                    'email' =>$request->email,
-                    'password' =>Hash::make($request->password),
-                    'phone' =>$request->phone,
-                    'role_id' =>$request->role_id,
-                    'room_id' =>$request->room_id,
-                    'branch_id' =>$request->branch_id,
-                    'status' =>$request->status,
-                ]
+                $userData
             );
+
+//            $user = User::updateOrCreate(
+//                [
+//                    'id' => $request->id,
+//                ],
+//                [
+//                    'name' =>$request->name,
+//                    'email' =>$request->email,
+//                    'password' =>Hash::make($request->password),
+//                    'phone' =>$request->phone,
+//                    'role_id' =>$request->role_id,
+//                    'room_id' =>$request->room_id,
+//                    'branch_id' =>$request->branch_id,
+//                    'status' =>$request->status,
+//                ]
+//            );
             if($id)
             {
                 $user->roles()->sync($user->role_id);

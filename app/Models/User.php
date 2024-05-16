@@ -49,7 +49,7 @@ class User extends Authenticatable
     }
     public function branch()
     {
-        return $this->belongsTo(Branch::class, 'branch_id', 'id')->select(['id','title']);
+        return $this->belongsTo(Branch::class, 'branch_id', 'id')->select(['id','title','exam_template']);
     }
 
     public function room()

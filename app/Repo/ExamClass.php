@@ -3,17 +3,23 @@
 namespace App\Repo;
 use App\Http\Helpers\Helper;
 use App\Models\Attempt;
+use App\Models\Configuration;
 use App\Models\Course;
 use App\Models\ExamSchedule;
 use App\Models\QuestionSolved;
 use App\Models\Result;
+use App\Models\SmsEmailLog;
 use App\Models\Student;
 use App\Models\TopicArea;
+use App\Models\User;
+use App\Notifications\SendMailandSmsNotification;
 use Carbon\Carbon;
 use Dotenv\Exception\ValidationException;
 use Faker\Provider\DateTime;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use function Laravel\Prompts\error;
 
 
 class ExamClass implements Interfaces\ExamInterface
@@ -37,26 +43,56 @@ class ExamClass implements Interfaces\ExamInterface
                     $examQ->is_correct_ans = ($q['correctAns'] == $q['selectedValue']) ? 1 : 0;
                     $examQ->is_answered = 1;
                     $examQ->save();
-
                     }
-
                 }
-
 
                 $startDate = Carbon::parse($request->createdAt);
                  $endDate = Carbon::now();
 
 
+                $diff = $startDate->diff($endDate);
+               // $mainDiff= $diff->h.':'. $diff->i .':'. $diff->s;
+                $mainDiff= $diff->i .':'. $diff->s;
 
                 $data=[
                     'exam_id'=>$request->exam_id,
                     'totalCorrectAns'=>$correctAns,
-                    'test_duration'=> $startDate->diffInMinutes($endDate),
+                    'test_duration'=> $mainDiff,
                 ];
 
                 $this->createResult($data);
                $this->updateAttemptStatus($request->examAttemptId);
                 $this->updateExamScheduleStatus($request->exam_id,3);
+            }else{
+              $solvedQuestion= QuestionSolved::where('attempt_id',$request->examAttemptId) ->get();
+              if($solvedQuestion->count() > 0){
+
+                  $startDate = Carbon::parse($request->createdAt);
+                  $endDate = Carbon::now();
+
+
+                  $diff = $startDate->diff($endDate);
+                  $mainDiff= $diff->i .':'. $diff->s;
+
+                  foreach ($solvedQuestion as $solveQ) {
+
+                      $examQ = QuestionSolved::find($solveQ->id);
+                      $examQ->choosed_option = null;
+                      $examQ->is_correct_ans =0;
+                      $examQ->is_answered =0;
+                      $examQ->save();
+                  }
+
+                  $data=[
+                      'exam_id'=>$request->exam_id,
+                      'totalCorrectAns'=>0,
+                      'test_duration'=> $mainDiff,
+                  ];
+
+                  $this->createResult($data);
+                  $this->updateAttemptStatus($request->examAttemptId);
+                  $this->updateExamScheduleStatus($request->exam_id,3);
+              }
             }
 
             DB::commit();
@@ -88,11 +124,14 @@ class ExamClass implements Interfaces\ExamInterface
     public function  getScheduleExamList($request)
     {
         try {
+               $user= User::find($request->invgId);
+
             $qry=ExamSchedule::query();
             $qry->with('student:id,std_name,traffic_id,email','course:id,short_name','qLanguage:id,lang,lang_short','audioLanguage:id,lang,lang_short');
             $qry->with('invigilator:id,name','system:id,title,system_ip');
-            $qry=$qry->where('invg_id',$request->invgId);
-            ($request->date)?$qry=$qry->whereDate('created_at',$request->date):'';
+            ($user AND $user->role_id!==1)?$qry=$qry->where('invg_id',$request->invgId):'';
+            $qry=$qry->whereDate('created_at', '>=',$request->start_date);
+            $qry=$qry->whereDate('created_at', '<=',$request->end_date);
             $examSchedule=$qry->get();
             return Helper::successWithData($examSchedule,'record found');
 
@@ -100,14 +139,47 @@ class ExamClass implements Interfaces\ExamInterface
             return Helper::errorWithData($e->getMessage(), []);
         }
     }
-    public function  getAllResultsList()
+
+    public function  getAllResultsList($request)
     {
         try {
             $qry=Result::query();
             $qry=$qry->with('exam.attempt:id,exam_id','exam.course:id,short_name','exam.student:id,traffic_id,std_name');
-
-            $examSchedule=$qry->orderBy('id','DESC')->get();
+            $qry=$qry->whereDate('created_at', '>=',date('Y-m-d',strtotime($request->start_date)));
+            $qry=$qry->whereDate('created_at', '<=',date('Y-m-d',strtotime($request->end_date)));
+            $examSchedule=$qry->get();
             return Helper::successWithData($examSchedule,'record found');
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+
+    //getPracticeResult
+    public function  getPracticeResult($request)
+    {
+        try {
+
+            $qry = ExamSchedule::query();
+            $qry=$qry->with('student:id,std_name,traffic_id');
+            $qry->has('attempts');
+
+            if($request->exam_id > 0){
+                $qry=$qry->where('id',$request->exam_id);
+            }else {
+                $qry->with(['attempts' => function ($query) use ($request) {
+                    $query->whereDate('created_at', '>=', date('Y-m-d', strtotime($request->start_date)))
+                        ->whereDate('created_at', '<=', date('Y-m-d', strtotime($request->end_date)))
+                        ->with('solvedQuestion');
+                }]);
+            }
+
+            $records = $qry->get();
+            if($records->count() > 0){
+                return Helper::successWithData($records, 'Records found');
+            }else{
+                return Helper::error('Records not found',[]);
+            }
 
         }  catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(), []);
@@ -154,7 +226,6 @@ class ExamClass implements Interfaces\ExamInterface
             $validator = Validator::make($request->all(), [
                 'exam_type' => 'required',
                 'q_lang' => 'required',
-                'audio_lang' => 'required',
                 'system_id' => 'required',
 
             ]);
@@ -200,15 +271,37 @@ class ExamClass implements Interfaces\ExamInterface
         }
     }
 
-    public function checkExamStatus($stdData)
+    public function checkExamStatus($stdData,$examType)
     {
         try {
             $isContinue=1;
            if($std= Student::where('traffic_id',$stdData['regnnumb'])->latest('id')->first()){
-               if(ExamSchedule::where('std_id',$std->id)->where('exam_status',1)->orWhere('exam_status',2)->count() > 0){
-                   $isContinue=0;
+
+               if (ExamSchedule::where('std_id', $std->id)
+                       ->where(function ($query) {
+                           $query->where('exam_status', 1)
+                               ->orWhere('exam_status', 2)
+                           ->orWhere('exam_status', 5);
+                       })
+                       //->whereDate('created_at', date('Y-m-d'))
+//                       ->where('exam_type',$examType)
+                       ->count() > 0) {
+                   $isContinue = 0;
                }
            }
+            return $isContinue;
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
+    public function checkExamStartOrNot($id)
+    {
+        try {
+            $isContinue=0;
+            $exam=ExamSchedule::find($id);
+            if($exam->exam_status==1 OR $exam->exam_status==2){
+                $isContinue=1;
+            }
             return $isContinue;
         }catch (\Exception $e) {
             return Helper::errorWithData($e->getMessage(),$e);
@@ -287,7 +380,7 @@ class ExamClass implements Interfaces\ExamInterface
                 [
                     'exam_id' =>$data['exam_id'],
                     'total_duration' =>$courseConfiguration->total_duration,
-                    'test_duration' =>$courseConfiguration->total_duration - $data['test_duration'],
+                    'test_duration' =>$data['test_duration'],
                     'total_question' => $courseConfiguration->specific_question +  $courseConfiguration->common_question + $courseConfiguration->video_question,
                     'correct_ans' => $data['totalCorrectAns'],
                     'correct_ans_required'=>$totalRequireQuestion,
@@ -303,7 +396,7 @@ class ExamClass implements Interfaces\ExamInterface
     {
         try {
             $qry = Result::query();
-            $qry=$qry->with('attempt.student');
+            $qry=$qry->with('attempt.student','exam.qLanguage');
             $qry=$qry->where('exam_id',$examId);
             $qry=$qry->latest('id')->first();
             return $qry;
@@ -316,14 +409,15 @@ class ExamClass implements Interfaces\ExamInterface
     public function checkPracticeType($request)
     {
         try {
-            $attemptId=0;
+            $attemptId=404;
             $qry = Attempt::query();
             $qry=$qry->where('std_id',$request->std_id);
             $qry=$qry->where('practice_type',$request->practice_type);
-            $qry=$qry->where('status',0);
+//            $qry=$qry->where('exam_id',$request->exam_id);
+//            $qry=$qry->where('status',0);
             $qry=$qry->latest('id')->first();
 
-            if($qry){
+            if($qry AND $qry->status==0){
                 $attemptId= $qry->id;
             }
             return $attemptId;
@@ -332,5 +426,114 @@ class ExamClass implements Interfaces\ExamInterface
         }
     }
 
+    public function sendEmail($trafficId,$examId,$result,$student,$mailData)
+    {
+        try {
+            $student->notify(new SendMailandSmsNotification($mailData,$trafficId));
+            if($result){
+                $this->updateMailAndSmsStatus($result->id,1);
+            }
 
+
+
+        }catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function sendSms($student,$result,$otpText)
+    {
+
+                $contact =$student->mobile_no;
+                $trafficId=$student->traffic_id;
+
+                $purpose='Result Notification';
+
+                $isUseSmsGlobal = env('Is_USE_SMS_GLOBAL');
+                if($isUseSmsGlobal==true){
+                    $response=Http::get('https://api.smsglobal.com/http-api.php?action=sendsms&user=quwsoxno&password=pR9gUDSq&from=BELHASA-DC&to=' . $contact . '&text=' . $otpText);
+                }else{
+                    $response=Http::get('https://sms.bdc.ae/api/send?api_token='.env('SMS_API_TOKEN').'&traffic_id='.$trafficId.'&phone='.$contact.'&message='.$otpText.'&purpose='.$purpose);
+                }
+
+                $parts = explode(' ', $response);
+                if (count($parts) > 1 && $parts[0] !== 'ERROR:') {
+                    $this->updateMailAndSmsStatus($result->id,2);
+                    // 'message  send';
+                }
+    }
+
+    public function storeSmsEmailLog($examId,$type,$isSend,$content)
+    {
+        $email = SmsEmailLog::updateOrCreate(
+            [
+                'exam_id' =>$examId,
+                'type' =>$type,
+            ],
+            [
+                'exam_id' =>$examId,
+                'content' =>$content,
+                'type' =>$type,
+                'is_send' =>$isSend,
+            ]
+        );
+    }
+    public function updateMailAndSmsStatus($resultId,$type)
+    {
+        // type 1 mean for email and 2 mean for sms
+      if( $result=Result::find($resultId)){
+          ($type==1)?$result->is_send_email=1:$result->is_send_sms=1;
+          $result->save();
+      }
+    }
+
+    public function  getLogs($request)
+    {
+        try {
+            $qry=SmsEmailLog::query();
+            $qry=$qry->with('exam.student');
+            $qry=$qry->whereDate('created_at', '>=',date('Y-m-d',strtotime($request->start_date)));
+            $qry=$qry->whereDate('created_at', '<=',date('Y-m-d',strtotime($request->end_date)));
+            $examSchedule=$qry->get();
+            return Helper::successWithData($examSchedule,'record found');
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+    public function  getExamAttemptInfo($examId)
+    {
+        try {
+            $qry=Attempt::query();
+            $qry=$qry->where('exam_id',$examId);
+            return $qry->get();
+
+        }  catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(), []);
+        }
+    }
+
+    public function getExamIdOnTheBaseOfTrafficIdNumber($trafficId)
+    {
+        try {
+            $examId=0;
+            if($std= Student::where('traffic_id',$trafficId)->latest('id')->first()){
+
+                $exam=ExamSchedule::where('std_id', $std->id)
+                        ->where(function ($query) {
+                            $query->where('exam_status',1)
+                                ->orWhere('exam_status',2)
+                                ->orWhere('exam_status',5);
+                        })
+                        ->first();
+                if($exam){
+                    $examId=$exam->id;
+                }
+
+            }
+            return  $examId;
+        }catch (\Exception $e) {
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
 }

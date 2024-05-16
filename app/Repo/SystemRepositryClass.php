@@ -134,6 +134,19 @@ class SystemRepositryClass implements Interfaces\SystemInterface
             return Helper::errorWithData($e->getMessage(),$e);
         }
     }
+    public function checkSystemIp($systemIp)
+    {
+
+        try {
+
+          return  $system = System::where('system_ip',$systemIp)->first();
+
+            return Helper::successWithData($system, $message="System status updated");
+        }catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),$e);
+        }
+    }
 
 
 }
